@@ -16,6 +16,10 @@ from config import (
     AUDIO_PADDING_SECONDS,
     AUDIO_DIR,
     VIDEOS_DIR,
+    SFX_TICK_PATH,
+    SFX_TIMEUP_PATH,
+    SFX_TICK_VOLUME,
+    SFX_TIMEUP_VOLUME,
 )
 from integrations.kokoro_tts import audio_duration as measure_audio_duration
 
@@ -57,6 +61,19 @@ def create_composition(quiz, audio_map=None):
             if duration is not None:
                 audio_durations[key] = duration
 
+    copied_sfx = {}
+    sfx_durations = {}
+    for sfx_key, source_path in (("tick", SFX_TICK_PATH), ("timeup", SFX_TIMEUP_PATH)):
+        source = Path(source_path)
+        if source.is_file():
+            target = assets_dir / source.name
+            if not target.exists() or source.stat().st_size != target.stat().st_size:
+                shutil.copy2(source, target)
+            copied_sfx[sfx_key] = f"assets/{target.name}"
+            sfx_durations[sfx_key] = _audio_duration(target, 0.1 if sfx_key == "tick" else 0.22) or (
+                0.1 if sfx_key == "tick" else 0.22
+            )
+
     cursor = 0.0
     elements = []
     track = 0
@@ -76,6 +93,17 @@ def create_composition(quiz, audio_map=None):
             elements.append(
                 f'<audio id="audio-{_esc(key)}" data-start="{start:.3f}" data-duration="{duration:.3f}" '
                 f'data-track-index="{track}" data-volume="1" src="{_esc(src)}"></audio>'
+            )
+            track += 1
+
+    def add_sfx(media_key, source_key, start, volume=1.0):
+        nonlocal track
+        src = copied_sfx.get(source_key)
+        if src:
+            duration = sfx_durations.get(source_key, 0.1)
+            elements.append(
+                f'<audio id="sfx-{_esc(media_key)}" data-start="{start:.3f}" data-duration="{duration:.3f}" '
+                f'data-track-index="{track}" data-volume="{volume:.2f}" src="{_esc(src)}"></audio>'
             )
             track += 1
 
@@ -108,7 +136,11 @@ def create_composition(quiz, audio_map=None):
             add_audio(q_key, cursor, question_audio_duration if question_audio_duration is not None else question_duration)
         countdown_start = cursor + question_duration
         for second in range(COUNTDOWN_SECONDS, 0, -1):
-            add_text(str(second), countdown_start + (COUNTDOWN_SECONDS - second), 1.0, "countdown", f"q{n}-countdown-{second}")
+            tick_start = countdown_start + (COUNTDOWN_SECONDS - second)
+            add_text(str(second), tick_start, 1.0, "countdown", f"q{n}-countdown-{second}")
+            add_sfx(f"q{n}-{second}-tick", "tick", tick_start, SFX_TICK_VOLUME)
+        timeup_start = countdown_start + COUNTDOWN_SECONDS
+        add_sfx(f"q{n}-timeup", "timeup", timeup_start, SFX_TIMEUP_VOLUME)
         cursor = countdown_start + COUNTDOWN_SECONDS
 
         answer_audio_duration = audio_durations.get(a_key)

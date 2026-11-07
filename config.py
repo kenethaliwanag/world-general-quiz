@@ -24,6 +24,11 @@ ENDING_MESSAGE = "How many did you get right? Comment your score below!"
 AUDIO_PADDING_SECONDS = 0.5
 TTS_TIMEOUT_SECONDS = 180
 
+SFX_TICK_PATH = PROJECT_ROOT / "assets" / "sfx" / "tick.wav"
+SFX_TIMEUP_PATH = PROJECT_ROOT / "assets" / "sfx" / "timeup.wav"
+SFX_TICK_VOLUME = 0.16
+SFX_TIMEUP_VOLUME = 0.22
+
 # KokoroTTS server defaults. Start a local Kokoro-compatible server first.
 KOKORO_BASE_URL = os.getenv("KOKORO_BASE_URL", "http://localhost:7860")
 KOKORO_MODEL = os.getenv("KOKORO_MODEL", "kokoro")
