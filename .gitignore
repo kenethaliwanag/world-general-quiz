@@ -1,0 +1,46 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+env/
+*.pyo
+
+# Environment files and secrets
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+*.p12
+*.pfx
+secrets.*
+credentials.*
+
+# Node.js and package managers
+node_modules/
+.npm/
+.yarn/
+pnpm-debug.log*
+
+# Generated application output
+output/audio/*
+!output/audio/.gitkeep
+output/hyperframes/*
+!output/hyperframes/.gitkeep
+output/videos/*
+!output/videos/.gitkeep
+output/scripts/*
+output/part_*/*
+/output/part_*/*
+
+# Miscellaneous temporary files
+*.tmp
+*.temp
+*.log
+.DS_Store
+Thumbs.db

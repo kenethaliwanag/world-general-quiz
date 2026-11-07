@@ -1,0 +1,1 @@
+# Core script generator uses only the Python standard library.\n# Kokoro is called through its local HTTP API; no Python TTS package is required.\n

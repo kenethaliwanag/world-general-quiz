@@ -1,0 +1,849 @@
+[
+  {
+    "id": "q001",
+    "question": "What is the largest ocean on Earth?",
+    "answer": "The Pacific Ocean",
+    "category": "geography",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q002",
+    "question": "What is the capital city of Japan?",
+    "answer": "Tokyo",
+    "category": "geography",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q003",
+    "question": "Which country is home to the ancient city of Petra?",
+    "answer": "Jordan",
+    "category": "history",
+    "difficulty": "medium"
+  },
+  {
+    "id": "q004",
+    "question": "What is the smallest continent by land area?",
+    "answer": "Australia",
+    "category": "geography",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q005",
+    "question": "Which river flows through Egypt?",
+    "answer": "The Nile River",
+    "category": "geography",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q006",
+    "question": "What is the capital of Canada?",
+    "answer": "Ottawa",
+    "category": "geography",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q007",
+    "question": "Which desert is the largest hot desert in the world?",
+    "answer": "The Sahara Desert",
+    "category": "geography",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q008",
+    "question": "Mount Kilimanjaro is located in which country?",
+    "answer": "Tanzania",
+    "category": "geography",
+    "difficulty": "medium"
+  },
+  {
+    "id": "q009",
+    "question": "Which country has the most natural lakes?",
+    "answer": "Canada",
+    "category": "geography",
+    "difficulty": "medium"
+  },
+  {
+    "id": "q010",
+    "question": "What is the capital of Brazil?",
+    "answer": "Brasília",
+    "category": "geography",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q011",
+    "question": "Which European city is famous for its canals and gondolas?",
+    "answer": "Venice",
+    "category": "geography",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q012",
+    "question": "What is the longest mountain range on land?",
+    "answer": "The Andes",
+    "category": "geography",
+    "difficulty": "medium"
+  },
+  {
+    "id": "q013",
+    "question": "Which country is shaped like a boot?",
+    "answer": "Italy",
+    "category": "geography",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q014",
+    "question": "What is the capital of South Korea?",
+    "answer": "Seoul",
+    "category": "geography",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q015",
+    "question": "Which African country was formerly known as Abyssinia?",
+    "answer": "Ethiopia",
+    "category": "history",
+    "difficulty": "medium"
+  },
+  {
+    "id": "q016",
+    "question": "In which country would you find the city of Marrakech?",
+    "answer": "Morocco",
+    "category": "geography",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q017",
+    "question": "Which sea separates Europe and Africa?",
+    "answer": "The Mediterranean Sea",
+    "category": "geography",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q018",
+    "question": "What is the world's highest uninterrupted waterfall?",
+    "answer": "Angel Falls",
+    "category": "geography",
+    "difficulty": "medium"
+  },
+  {
+    "id": "q019",
+    "question": "Which country contains the region of Transylvania?",
+    "answer": "Romania",
+    "category": "geography",
+    "difficulty": "medium"
+  },
+  {
+    "id": "q020",
+    "question": "What is the capital of New Zealand?",
+    "answer": "Wellington",
+    "category": "geography",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q021",
+    "question": "Which planet is known as the Red Planet?",
+    "answer": "Mars",
+    "category": "science",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q022",
+    "question": "What gas do plants absorb from the atmosphere?",
+    "answer": "Carbon dioxide",
+    "category": "science",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q023",
+    "question": "What is the chemical symbol for gold?",
+    "answer": "Au",
+    "category": "science",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q024",
+    "question": "How many bones are typically in an adult human body?",
+    "answer": "206",
+    "category": "science",
+    "difficulty": "medium"
+  },
+  {
+    "id": "q025",
+    "question": "What is the largest planet in our solar system?",
+    "answer": "Jupiter",
+    "category": "science",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q026",
+    "question": "Which organ pumps blood around the human body?",
+    "answer": "The heart",
+    "category": "science",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q027",
+    "question": "What is the hardest natural substance?",
+    "answer": "Diamond",
+    "category": "science",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q028",
+    "question": "What force keeps planets in orbit around the Sun?",
+    "answer": "Gravity",
+    "category": "science",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q029",
+    "question": "What is the closest star to Earth?",
+    "answer": "The Sun",
+    "category": "science",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q030",
+    "question": "What is the process by which plants make food using sunlight?",
+    "answer": "Photosynthesis",
+    "category": "science",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q031",
+    "question": "What is the boiling point of water at sea level in Celsius?",
+    "answer": "100 degrees Celsius",
+    "category": "science",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q032",
+    "question": "Which part of the cell contains most of its genetic material?",
+    "answer": "The nucleus",
+    "category": "science",
+    "difficulty": "medium"
+  },
+  {
+    "id": "q033",
+    "question": "What is the chemical formula for water?",
+    "answer": "H₂O",
+    "category": "science",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q034",
+    "question": "Which vitamin can the human body produce through sunlight exposure?",
+    "answer": "Vitamin D",
+    "category": "science",
+    "difficulty": "medium"
+  },
+  {
+    "id": "q035",
+    "question": "What is the name of the boundary around a black hole beyond which nothing escapes?",
+    "answer": "The event horizon",
+    "category": "science",
+    "difficulty": "hard"
+  },
+  {
+    "id": "q036",
+    "question": "Which blood type is known as the universal red-cell donor?",
+    "answer": "O negative",
+    "category": "science",
+    "difficulty": "medium"
+  },
+  {
+    "id": "q037",
+    "question": "What is the study of earthquakes called?",
+    "answer": "Seismology",
+    "category": "science",
+    "difficulty": "medium"
+  },
+  {
+    "id": "q038",
+    "question": "Which planet has the most prominent ring system?",
+    "answer": "Saturn",
+    "category": "science",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q039",
+    "question": "What is the SI unit of electric current?",
+    "answer": "Ampere",
+    "category": "science",
+    "difficulty": "medium"
+  },
+  {
+    "id": "q040",
+    "question": "Which gas makes up most of Earth's atmosphere?",
+    "answer": "Nitrogen",
+    "category": "science",
+    "difficulty": "medium"
+  },
+  {
+    "id": "q041",
+    "question": "Who was the first person to walk on the Moon?",
+    "answer": "Neil Armstrong",
+    "category": "history",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q042",
+    "question": "In which year did World War II end?",
+    "answer": "1945",
+    "category": "history",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q043",
+    "question": "Which ancient civilization built the pyramids at Giza?",
+    "answer": "Ancient Egyptians",
+    "category": "history",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q044",
+    "question": "Who was the first president of the United States?",
+    "answer": "George Washington",
+    "category": "history",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q045",
+    "question": "The Renaissance began in which European country?",
+    "answer": "Italy",
+    "category": "history",
+    "difficulty": "medium"
+  },
+  {
+    "id": "q046",
+    "question": "Which wall fell in 1989, becoming a symbol of the end of the Cold War?",
+    "answer": "The Berlin Wall",
+    "category": "history",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q047",
+    "question": "Who was known as the Maid of Orléans?",
+    "answer": "Joan of Arc",
+    "category": "history",
+    "difficulty": "medium"
+  },
+  {
+    "id": "q048",
+    "question": "Which ship famously sank on its maiden voyage in 1912?",
+    "answer": "The RMS Titanic",
+    "category": "history",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q049",
+    "question": "Who was the first woman to win a Nobel Prize?",
+    "answer": "Marie Curie",
+    "category": "history",
+    "difficulty": "medium"
+  },
+  {
+    "id": "q050",
+    "question": "Which empire built the road network centered on Rome?",
+    "answer": "The Roman Empire",
+    "category": "history",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q051",
+    "question": "In which year did the French Revolution begin?",
+    "answer": "1789",
+    "category": "history",
+    "difficulty": "medium"
+  },
+  {
+    "id": "q052",
+    "question": "Who was the first emperor of China?",
+    "answer": "Qin Shi Huang",
+    "category": "history",
+    "difficulty": "medium"
+  },
+  {
+    "id": "q053",
+    "question": "Which explorer led the first expedition to circumnavigate the globe, though he died before it finished?",
+    "answer": "Ferdinand Magellan",
+    "category": "history",
+    "difficulty": "hard"
+  },
+  {
+    "id": "q054",
+    "question": "What was the name of the trade route connecting China with the Mediterranean?",
+    "answer": "The Silk Road",
+    "category": "history",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q055",
+    "question": "Which US document begins with the words 'We the People'?",
+    "answer": "The United States Constitution",
+    "category": "history",
+    "difficulty": "medium"
+  },
+  {
+    "id": "q056",
+    "question": "Which civilization developed cuneiform writing?",
+    "answer": "The Sumerians",
+    "category": "history",
+    "difficulty": "hard"
+  },
+  {
+    "id": "q057",
+    "question": "Who was the British prime minister for most of World War II?",
+    "answer": "Winston Churchill",
+    "category": "history",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q058",
+    "question": "Which ancient city was buried by the eruption of Mount Vesuvius in AD 79?",
+    "answer": "Pompeii",
+    "category": "history",
+    "difficulty": "medium"
+  },
+  {
+    "id": "q059",
+    "question": "What was the name of the first artificial satellite launched into space?",
+    "answer": "Sputnik 1",
+    "category": "science",
+    "difficulty": "medium"
+  },
+  {
+    "id": "q060",
+    "question": "Which country gifted the Statue of Liberty to the United States?",
+    "answer": "France",
+    "category": "history",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q061",
+    "question": "What is the official language of Brazil?",
+    "answer": "Portuguese",
+    "category": "culture",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q062",
+    "question": "Which language has the most native speakers worldwide?",
+    "answer": "Mandarin Chinese",
+    "category": "culture",
+    "difficulty": "medium"
+  },
+  {
+    "id": "q063",
+    "question": "What is the currency of Japan?",
+    "answer": "The yen",
+    "category": "culture",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q064",
+    "question": "Which country is traditionally associated with the tango dance?",
+    "answer": "Argentina",
+    "category": "culture",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q065",
+    "question": "What is the traditional Japanese garment called?",
+    "answer": "Kimono",
+    "category": "culture",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q066",
+    "question": "Diwali is widely known as the festival of what?",
+    "answer": "Lights",
+    "category": "culture",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q067",
+    "question": "Which country is famous for the traditional sauna?",
+    "answer": "Finland",
+    "category": "culture",
+    "difficulty": "medium"
+  },
+  {
+    "id": "q068",
+    "question": "What is the national animal of Scotland?",
+    "answer": "The unicorn",
+    "category": "culture",
+    "difficulty": "medium"
+  },
+  {
+    "id": "q069",
+    "question": "Which musical instrument has 88 keys on a standard modern version?",
+    "answer": "The piano",
+    "category": "culture",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q070",
+    "question": "What is the name of the traditional Korean dress?",
+    "answer": "Hanbok",
+    "category": "culture",
+    "difficulty": "medium"
+  },
+  {
+    "id": "q071",
+    "question": "Which country is credited with inventing paper?",
+    "answer": "China",
+    "category": "history",
+    "difficulty": "medium"
+  },
+  {
+    "id": "q072",
+    "question": "What is the main ingredient in traditional hummus?",
+    "answer": "Chickpeas",
+    "category": "culture",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q073",
+    "question": "Which city hosts the annual Oktoberfest celebration?",
+    "answer": "Munich",
+    "category": "culture",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q074",
+    "question": "What is the name of the Japanese art of paper folding?",
+    "answer": "Origami",
+    "category": "culture",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q075",
+    "question": "Which country is home to the Maasai people?",
+    "answer": "Kenya and Tanzania",
+    "category": "culture",
+    "difficulty": "medium"
+  },
+  {
+    "id": "q076",
+    "question": "What is the currency used by many countries in the European Union?",
+    "answer": "The euro",
+    "category": "culture",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q077",
+    "question": "Which sport uses the terms love, deuce, and ace?",
+    "answer": "Tennis",
+    "category": "sports",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q078",
+    "question": "How many players from one team are on the court in basketball?",
+    "answer": "Five",
+    "category": "sports",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q079",
+    "question": "Which country won the first FIFA World Cup in 1930?",
+    "answer": "Uruguay",
+    "category": "sports",
+    "difficulty": "medium"
+  },
+  {
+    "id": "q080",
+    "question": "In chess, which piece moves in an L-shape?",
+    "answer": "The knight",
+    "category": "sports",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q081",
+    "question": "How many rings are on the Olympic flag?",
+    "answer": "Five",
+    "category": "sports",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q082",
+    "question": "Which sport is played at Wimbledon?",
+    "answer": "Tennis",
+    "category": "sports",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q083",
+    "question": "In which sport would you perform a slam dunk?",
+    "answer": "Basketball",
+    "category": "sports",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q084",
+    "question": "What is the maximum score with one dart in standard darts?",
+    "answer": "60",
+    "category": "sports",
+    "difficulty": "medium"
+  },
+  {
+    "id": "q085",
+    "question": "Which country is widely credited with inventing modern football rules?",
+    "answer": "England",
+    "category": "sports",
+    "difficulty": "medium"
+  },
+  {
+    "id": "q086",
+    "question": "How long is a marathon in kilometers, approximately?",
+    "answer": "42.195 kilometers",
+    "category": "sports",
+    "difficulty": "medium"
+  },
+  {
+    "id": "q087",
+    "question": "What is the only mammal capable of true sustained flight?",
+    "answer": "The bat",
+    "category": "nature",
+    "difficulty": "medium"
+  },
+  {
+    "id": "q088",
+    "question": "What is the largest living animal?",
+    "answer": "The blue whale",
+    "category": "nature",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q089",
+    "question": "What do you call an animal that eats both plants and meat?",
+    "answer": "An omnivore",
+    "category": "nature",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q090",
+    "question": "Which bird is famous for its ability to mimic human speech?",
+    "answer": "The parrot",
+    "category": "nature",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q091",
+    "question": "What is the fastest land animal?",
+    "answer": "The cheetah",
+    "category": "nature",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q092",
+    "question": "What is a group of lions called?",
+    "answer": "A pride",
+    "category": "nature",
+    "difficulty": "medium"
+  },
+  {
+    "id": "q093",
+    "question": "Which animal is known to have three hearts?",
+    "answer": "The octopus",
+    "category": "nature",
+    "difficulty": "medium"
+  },
+  {
+    "id": "q094",
+    "question": "What is the largest species of penguin?",
+    "answer": "The emperor penguin",
+    "category": "nature",
+    "difficulty": "medium"
+  },
+  {
+    "id": "q095",
+    "question": "Which tree produces acorns?",
+    "answer": "The oak tree",
+    "category": "nature",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q096",
+    "question": "What is the term for a scientist who studies fossils?",
+    "answer": "A paleontologist",
+    "category": "science",
+    "difficulty": "medium"
+  },
+  {
+    "id": "q097",
+    "question": "Which metal is liquid at typical room temperature?",
+    "answer": "Mercury",
+    "category": "science",
+    "difficulty": "medium"
+  },
+  {
+    "id": "q098",
+    "question": "What is the name of the galaxy that contains our Solar System?",
+    "answer": "The Milky Way",
+    "category": "science",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q099",
+    "question": "Which instrument measures atmospheric pressure?",
+    "answer": "A barometer",
+    "category": "science",
+    "difficulty": "medium"
+  },
+  {
+    "id": "q100",
+    "question": "What is the fear of spiders called?",
+    "answer": "Arachnophobia",
+    "category": "science",
+    "difficulty": "medium"
+  },
+  {
+    "id": "q101",
+    "question": "Which country is home to the Great Barrier Reef?",
+    "answer": "Australia",
+    "category": "geography",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q102",
+    "question": "What is the capital of Iceland?",
+    "answer": "Reykjavík",
+    "category": "geography",
+    "difficulty": "medium"
+  },
+  {
+    "id": "q103",
+    "question": "Which famous clock tower is located in London and houses Big Ben?",
+    "answer": "The Elizabeth Tower",
+    "category": "geography",
+    "difficulty": "medium"
+  },
+  {
+    "id": "q104",
+    "question": "What is the name of the imaginary line at 0 degrees latitude?",
+    "answer": "The Equator",
+    "category": "geography",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q105",
+    "question": "Which continent has the most countries?",
+    "answer": "Africa",
+    "category": "geography",
+    "difficulty": "medium"
+  },
+  {
+    "id": "q106",
+    "question": "Which planet rotates on its side relative to its orbit?",
+    "answer": "Uranus",
+    "category": "science",
+    "difficulty": "hard"
+  },
+  {
+    "id": "q107",
+    "question": "What is the name of the first woman in space?",
+    "answer": "Valentina Tereshkova",
+    "category": "history",
+    "difficulty": "medium"
+  },
+  {
+    "id": "q108",
+    "question": "Which ancient Greek city is often called the birthplace of democracy?",
+    "answer": "Athens",
+    "category": "history",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q109",
+    "question": "What is the largest island in the world, excluding continents?",
+    "answer": "Greenland",
+    "category": "geography",
+    "difficulty": "medium"
+  },
+  {
+    "id": "q110",
+    "question": "Which country has the city of Istanbul?",
+    "answer": "Türkiye",
+    "category": "geography",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q111",
+    "question": "What is the name of the Japanese high-speed train network?",
+    "answer": "Shinkansen",
+    "category": "technology",
+    "difficulty": "medium"
+  },
+  {
+    "id": "q112",
+    "question": "What does WWW stand for?",
+    "answer": "World Wide Web",
+    "category": "technology",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q113",
+    "question": "Who is credited with inventing the World Wide Web?",
+    "answer": "Tim Berners-Lee",
+    "category": "technology",
+    "difficulty": "medium"
+  },
+  {
+    "id": "q114",
+    "question": "What does CPU stand for?",
+    "answer": "Central Processing Unit",
+    "category": "technology",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q115",
+    "question": "Which programming language is named after a type of snake?",
+    "answer": "Python",
+    "category": "technology",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q116",
+    "question": "What is the name of the process of converting data into a secret code?",
+    "answer": "Encryption",
+    "category": "technology",
+    "difficulty": "medium"
+  },
+  {
+    "id": "q117",
+    "question": "Which company developed the Android operating system initially?",
+    "answer": "Android Inc. (later acquired by Google)",
+    "category": "technology",
+    "difficulty": "hard"
+  },
+  {
+    "id": "q118",
+    "question": "What does GPS stand for?",
+    "answer": "Global Positioning System",
+    "category": "technology",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q119",
+    "question": "Which storage unit is larger: a megabyte or a gigabyte?",
+    "answer": "A gigabyte",
+    "category": "technology",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q120",
+    "question": "What is the common name for malicious software?",
+    "answer": "Malware",
+    "category": "technology",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q121",
+    "question": "Which device converts digital signals into printed text or images on paper?",
+    "answer": "A printer",
+    "category": "technology",
+    "difficulty": "easy"
+  }
+]
