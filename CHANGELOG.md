@@ -10,6 +10,8 @@
 - Added audio-duration measurement for Kokoro TTS and audio-aware HyperFrames composition timing.
 - Added TTS caching and clearer TTS connection errors.
 - Made HyperFrames compositions conformant to the installed runtime contract.
+- Recorded questions only after a Part completes successfully and added git-tracked authoritative question history with per-Part workflow commits.
+- Updated history normalization and validation tests.
 - Added `--start-part` and `--total-parts` CLI options.
 - Added synchronized countdown ticking and a distinct "time's up" sound effect to HyperFrames compositions.
 - Added free locally generated SFX assets under `assets/sfx/`.

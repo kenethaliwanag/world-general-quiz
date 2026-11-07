@@ -4,7 +4,7 @@
 
 - `main.py`: CLI entry point and orchestration.
 - `core/question_manager.py`: loads, filters and selects unique questions.
-- `core/history_manager.py`: persists used IDs and the latest Part number.
+- `core/history_manager.py`: persists used IDs and the latest Part number. Successful Parts are recorded after generation and rendering, then persisted to the repository by the generation workflows.
 - `core/quiz_generator.py`: builds a structured quiz object and readable script.
 - `core/script_exporter.py`: exports TXT, JSON, and SRT into per-Part directories.
 - `integrations/kokoro_tts.py`: calls a local KokoroTTS HTTP endpoint.

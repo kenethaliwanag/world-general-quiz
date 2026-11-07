@@ -33,7 +33,7 @@ on:
         default: true
 
 permissions:
-  contents: read
+  contents: write
 
 env:
   KOKORO_BASE_URL: "http://127.0.0.1:8880"
@@ -146,22 +146,48 @@ jobs:
 
       - name: Generate quiz videos
         run: |
-          TTS_ARG=""
-          RENDER_ARG=""
-          if [ "${{ inputs.enable_tts }}" = "true" ]; then
-            TTS_ARG="--tts"
+          set -euo pipefail
+          START_PART="${{ inputs.start_part }}"
+          TOTAL_PARTS="${{ inputs.total_parts }}"
+          QUESTIONS_PER_PART="${{ inputs.questions_per_part }}"
+          CATEGORY="${{ inputs.category }}"
+          DIFFICULTY="${{ inputs.difficulty }}"
+          if [ -z "$START_PART" ] || [ "$START_PART" -eq 0 ]; then
+            START_PART="$(python -c 'from core.history_manager import next_part_number; print(next_part_number())')"
           fi
-          if [ "${{ inputs.enable_render }}" = "true" ]; then
-            RENDER_ARG="--render"
+          if [ "$START_PART" -lt 1 ]; then
+            echo "START_PART must be 1 or greater."
+            exit 1
           fi
-          python main.py \
-            --start-part "${{ inputs.start_part }}" \
-            --total-parts "${{ inputs.total_parts }}" \
-            --count "${{ inputs.questions_per_part }}" \
-            --category "${{ inputs.category }}" \
-            --difficulty "${{ inputs.difficulty }}" \
-            $TTS_ARG \
-            $RENDER_ARG
+          if [ "$TOTAL_PARTS" -lt 1 ]; then
+            echo "TOTAL_PARTS must be 1 or greater."
+            exit 1
+          fi
+          LAST_PART=$((START_PART + TOTAL_PARTS - 1))
+          for PART_NUMBER in $(seq "$START_PART" "$LAST_PART"); do
+            TTS_ARG=""
+            RENDER_ARG=""
+            if [ "${{ inputs.enable_tts }}" = "true" ]; then
+              TTS_ARG="--tts"
+            fi
+            if [ "${{ inputs.enable_render }}" = "true" ]; then
+              RENDER_ARG="--render"
+            fi
+            python main.py \
+              --part "$PART_NUMBER" \
+              --count "$QUESTIONS_PER_PART" \
+              --category "$CATEGORY" \
+              --difficulty "$DIFFICULTY" \
+              $TTS_ARG \
+              $RENDER_ARG
+            if ! git diff --quiet -- data/used_questions.json; then
+              git config user.name "github-actions[bot]"
+              git config user.email "github-actions[bot]@users.noreply.github.com"
+              git add data/used_questions.json
+              git commit -m "Update quiz question history for Part $(printf '%03d' "$PART_NUMBER") [skip ci]"
+              git push origin HEAD:main
+            fi
+          done
 
       - name: Validate generated MP4 files
         if: always() && inputs.enable_render == true
@@ -218,5 +244,14 @@ jobs:
         with:
           name: world-general-knowledge-quiz-${{ github.run_id }}
           path: output/**
+          retention-days: 30
+          if-no-files-found: warn
+
+      - name: Upload question history for recovery
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: question-history-${{ github.run_id }}
+          path: data/used_questions.json
           retention-days: 30
           if-no-files-found: warn

@@ -215,6 +215,43 @@ tl.seek(0);
     return project_dir, cursor, timeline
 
 
+def _validate_rendered_video(path):
+    path = Path(path)
+    if not path.is_file() or path.stat().st_size == 0:
+        raise RuntimeError(f"Rendered video is missing or empty: {path}")
+    ffprobe = shutil.which("ffprobe")
+    if ffprobe is None:
+        return
+    result = subprocess.run(
+        [
+            ffprobe,
+            "-v",
+            "error",
+            "-select_streams",
+            "v:0",
+            "-show_entries",
+            "stream=width,height,r_frame_rate",
+            "-show_entries",
+            "format=duration",
+            "-of",
+            "json",
+            str(path),
+        ],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+        check=True,
+    )
+    payload = json.loads(result.stdout)
+    stream = payload["streams"][0]
+    if (stream["width"], stream["height"]) != (VIDEO_WIDTH, VIDEO_HEIGHT):
+        raise RuntimeError(f"Rendered video has invalid resolution: {stream['width']}x{stream['height']}")
+    if stream["r_frame_rate"] != f"{VIDEO_FPS}/1":
+        raise RuntimeError(f"Rendered video has invalid frame rate: {stream['r_frame_rate']}")
+    if float(payload["format"]["duration"]) <= 0:
+        raise RuntimeError(f"Rendered video has invalid duration: {payload['format']['duration']}")
+
+
 def render_video(project_dir, part_number, output_path=None):
     npx = shutil.which("npx") or shutil.which("npx.cmd")
     if npx is None:
@@ -228,4 +265,5 @@ def render_video(project_dir, part_number, output_path=None):
         [npx, "hyperframes", "render", "--output", str(output_path), "--fps", str(VIDEO_FPS)],
         cwd=str(project_dir), check=True
     )
+    _validate_rendered_video(output_path)
     return output_path

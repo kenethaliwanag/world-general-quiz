@@ -16,7 +16,7 @@ on:
         default: true
 
 permissions:
-  contents: read
+  contents: write
 
 env:
   KOKORO_BASE_URL: "http://127.0.0.1:8880"
@@ -107,6 +107,12 @@ jobs:
 
       - name: Generate next quiz Part
         run: |
+          set -euo pipefail
+          TOTAL_PARTS=1
+          QUESTIONS_PER_PART="${{ inputs.questions_per_part || 15 }}"
+          CATEGORY="all"
+          DIFFICULTY="all"
+          START_PART="$(python -c 'from core.history_manager import next_part_number; print(next_part_number())')"
           TTS_ARG="--tts"
           RENDER_ARG="--render"
           if [ "${{ inputs.enable_tts }}" = "false" ]; then
@@ -116,12 +122,19 @@ jobs:
             RENDER_ARG=""
           fi
           python main.py \
-            --total-parts 1 \
-            --count "${{ inputs.questions_per_part || 15 }}" \
-            --category all \
-            --difficulty all \
+            --part "$START_PART" \
+            --count "$QUESTIONS_PER_PART" \
+            --category "$CATEGORY" \
+            --difficulty "$DIFFICULTY" \
             $TTS_ARG \
             $RENDER_ARG
+          if ! git diff --quiet -- data/used_questions.json; then
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add data/used_questions.json
+            git commit -m "Update quiz question history for Part $(printf '%03d' "$START_PART") [skip ci]"
+            git push origin HEAD:main
+          fi
 
       - name: Upload generated outputs as artifacts
         if: always()
@@ -129,5 +142,14 @@ jobs:
         with:
           name: world-general-knowledge-quiz-scheduled-${{ github.run_id }}
           path: output/**
+          retention-days: 30
+          if-no-files-found: warn
+
+      - name: Upload question history for recovery
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: question-history-${{ github.run_id }}
+          path: data/used_questions.json
           retention-days: 30
           if-no-files-found: warn

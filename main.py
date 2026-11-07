@@ -9,10 +9,10 @@ from config import (
     KOKORO_RESPONSE_FORMAT,
     AUDIO_PADDING_SECONDS,
 )
-from core.question_manager import select_questions, record_part
+from core.question_manager import select_questions
 from core.quiz_generator import build_quiz, format_text_script
 from core.script_exporter import export_quiz, export_srt
-from core.history_manager import next_part_number, reset_history
+from core.history_manager import load_history, next_part_number, record_question_usage, reset_history
 from integrations.kokoro_tts import KokoroTTS, audio_duration as measure_audio
 from integrations.hyperframes import create_composition, render_video
 
@@ -86,13 +86,14 @@ def discover_cached_audio(part, part_dir):
     return audio_map, audio_durations
 
 
-def generate_part(part, args):
+def generate_part(part, args, history=None):
     part_dir = OUTPUT_DIR / f"part_{part:03d}"
-    selected, pool_reset = select_questions(args.count, args.category, args.difficulty, args.seed)
+    if history is None:
+        history = load_history()
+    selected, pool_reset, history = select_questions(args.count, args.category, args.difficulty, args.seed, history=history)
     quiz = build_quiz(part, selected)
     text_path, json_path, resolved_part_dir = export_quiz(quiz)
     part_dir = resolved_part_dir
-    record_part(part)
 
     audio_map, audio_durations = discover_cached_audio(part, part_dir)
 
@@ -138,7 +139,11 @@ def generate_part(part, args):
         video_path = render_video(project_dir, part)
         print(f"Rendered video: {video_path}")
 
-    return part_dir
+    question_ids = [question["id"] for question in selected]
+    history = record_question_usage(history, question_ids, part)
+    print(f"Marked {len(question_ids)} question IDs as used for Part {part}.")
+
+    return part_dir, history
 
 
 def main():
@@ -154,9 +159,10 @@ def main():
         raise SystemExit("--count must be at least 1.")
 
     parts = resolve_parts(args)
+    history = load_history()
     for part in parts:
         print(f"\n===== Generating Part {part} =====")
-        generate_part(part, args)
+        _, history = generate_part(part, args, history)
 
 
 if __name__ == "__main__":

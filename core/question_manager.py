@@ -1,7 +1,12 @@
 import json
 import random
 from config import QUESTIONS_FILE
-from core.history_manager import load_history, save_history
+from core.history_manager import (
+    _normalize_history,
+    load_history,
+    record_question_usage,
+    save_history,
+)
 
 VALID_DIFFICULTIES = {"easy", "medium", "hard"}
 
@@ -27,8 +32,12 @@ def load_questions():
         seen.add(question["id"])
     return questions
 
-def select_questions(count=15, category=None, difficulty=None, seed=None):
-    """Select unique questions, preferring never-used IDs across all Parts."""
+def select_questions(count=15, category=None, difficulty=None, seed=None, history=None):
+    """Select unique questions, preferring never-used IDs across all Parts.
+
+    Selected IDs are returned only as a reservation. They are not marked used
+    here; the caller must persist them after a Part has completed successfully.
+    """
     rng = random.Random(seed)
     all_questions = load_questions()
     candidates = [
@@ -39,21 +48,27 @@ def select_questions(count=15, category=None, difficulty=None, seed=None):
     if len(candidates) < count:
         raise ValueError(f"Only {len(candidates)} questions match these filters; {count} required.")
 
-    history = load_history()
+    if history is None:
+        history = load_history()
+    history = _normalize_history(history)
     used = set(history.get("used_ids", []))
     fresh = [q for q in candidates if q["id"] not in used]
-    pool_reset = False
+
     if len(fresh) < count:
-        # Exhausted the filtered pool: start a new cycle rather than failing.
-        fresh = candidates
-        pool_reset = True
+        raise ValueError(
+            "No unused questions remain for these filters; "
+            f"{len(fresh)} unused questions remain but {count} are required. "
+            "Reset question history explicitly to intentionally reuse questions."
+        )
 
     selected = rng.sample(fresh, count)
-    history["used_ids"] = list(dict.fromkeys(history.get("used_ids", []) + [q["id"] for q in selected]))
-    save_history(history)
-    return selected, pool_reset
+    return selected, False, history
 
-def record_part(part_number):
-    history = load_history()
-    history["last_part"] = max(int(history.get("last_part", 0)), int(part_number))
-    save_history(history)
+from core.history_manager import record_question_usage
+
+def record_part(part_number, question_ids=None, history=None):
+    if history is None:
+        history = load_history()
+    if question_ids is None:
+        question_ids = []
+    return record_question_usage(history, question_ids, part_number)
