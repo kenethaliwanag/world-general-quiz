@@ -115,9 +115,11 @@ jobs:
           export PORT=8880
           export API_LOG_LEVEL=WARNING
           export PYTHONUTF8=1
-          uv pip install -e ".[cpu]"
-          uv run --no-sync python docker/scripts/download_model.py --output api/src/models/v1_0
-          nohup uv run --no-sync uvicorn api.src.main:app --host "${HOST}" --port "${PORT}" --workers 1 > /tmp/kokoro.log 2>&1 &
+          uv venv --python 3.12
+          uv pip install --python "$PWD/.venv/bin/python" -e ".[cpu]"
+          ./.venv/bin/python -m uvicorn --version
+          uv run --python "$PWD/.venv/bin/python" --no-sync python docker/scripts/download_model.py --output api/src/models/v1_0
+          nohup "./.venv/bin/python" -m uvicorn api.src.main:app --host "${HOST}" --port "${PORT}" --workers 1 > /tmp/kokoro.log 2>&1 &
           for attempt in $(seq 1 300); do
             if curl -fsS "http://127.0.0.1:${PORT}/health" >/dev/null 2>&1; then
               curl -fsS "http://127.0.0.1:${PORT}/v1/models" >/dev/null 2>&1
