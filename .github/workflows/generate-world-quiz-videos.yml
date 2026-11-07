@@ -98,21 +98,45 @@ jobs:
       - name: Set up Kokoro TTS server
         if: ${{ inputs.enable_tts }}
         run: |
-          git clone --depth 1 --branch v0.9.2 https://github.com/remsky/Kokoro-FastAPI.git kokoro-server
+          sudo apt-get update
+          sudo apt-get install -y espeak-ng
+          if [ ! -d kokoro-server ]; then
+            git clone --depth 1 --branch v0.9.2 https://github.com/remsky/Kokoro-FastAPI.git kokoro-server
+          fi
           cd kokoro-server
-          uv sync --frozen --extra cpu
+          export PROJECT_ROOT="$PWD"
+          export USE_GPU=false
+          export PYTHONPATH="$PROJECT_ROOT:$PROJECT_ROOT/api"
+          export MODEL_DIR=src/models
+          export VOICES_DIR=src/voices/v1_0
+          export WEB_PLAYER_PATH="$PROJECT_ROOT/web"
+          export ESPEAK_DATA_PATH=/usr/lib/x86_64-linux-gnu/espeak-ng-data
+          export HOST=127.0.0.1
+          export PORT=8880
           export API_LOG_LEVEL=WARNING
-          nohup uv run uvicorn kokoro_api.main:app --host 127.0.0.1 --port 8880 --workers 1 > /tmp/kokoro.log 2>&1 &
-          for attempt in $(seq 1 180); do
-            if curl -fsS http://127.0.0.1:8880/health >/dev/null; then
-              curl -fsS http://127.0.0.1:8880/v1/models >/dev/null
+          export PYTHONUTF8=1
+          uv pip install -e ".[cpu]"
+          uv run --no-sync python docker/scripts/download_model.py --output api/src/models/v1_0
+          nohup uv run --no-sync uvicorn api.src.main:app --host "${HOST}" --port "${PORT}" --workers 1 > /tmp/kokoro.log 2>&1 &
+          for attempt in $(seq 1 300); do
+            if curl -fsS "http://127.0.0.1:${PORT}/health" >/dev/null 2>&1; then
+              curl -fsS "http://127.0.0.1:${PORT}/v1/models" >/dev/null 2>&1
               echo "Kokoro TTS is ready."
               break
             fi
             sleep 2
           done
-          curl -fsS http://127.0.0.1:8880/health >/dev/null
-          curl -fsS http://127.0.0.1:8880/v1/models >/dev/null
+          curl -fsS "http://127.0.0.1:${PORT}/health" >/dev/null
+          curl -fsS "http://127.0.0.1:${PORT}/v1/models" >/dev/null
+
+      - name: Upload Kokoro startup logs on failure
+        if: failure() && inputs.enable_tts
+        uses: actions/upload-artifact@v4
+        with:
+          name: kokoro-startup-logs-${{ github.run_id }}
+          path: /tmp/kokoro.log
+          retention-days: 7
+          if-no-files-found: warn
 
       - name: Install npm packages only when Kokoro setup is skipped
         if: ${{ !inputs.enable_tts }}
