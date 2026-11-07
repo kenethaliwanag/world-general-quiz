@@ -15,6 +15,7 @@
 - Added `--start-part` and `--total-parts` CLI options.
 - Added synchronized countdown ticking and a distinct "time's up" sound effect to HyperFrames compositions.
 - Added Phase 1 Facebook Reels dry-run publisher, publication-history manager, preflight validation, documentation, and tests.
+- Added guarded Phase 2 Meta Graph API live-publish skeleton, duplicate-history handling, API error redaction, ffprobe validation, and Phase 2 unit tests.
 - Added free locally generated SFX assets under `assets/sfx/`.
 - Added GitHub Actions workflows for validation, manual video generation, scheduled video generation, and MP4 artifact validation.
 - Added environment overrides for Kokoro TTS configuration.

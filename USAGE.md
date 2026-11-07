@@ -118,3 +118,19 @@ The current template uses a fixed narration slot for each spoken question, follo
 - HyperFrames rendering: https://hyperframes.app/docs/3-guides/4-rendering
 - KokoroTTS documentation: https://hangry-labs.github.io/kokoroTTS/docs/
 - KokoroTTS API examples: https://github.com/hangry-labs/kokoroTTS
+
+## Facebook Reels Publishing - Phase 2
+
+The dry-run helper from Phase 1 remains available:
+
+`powershell
+python main.py --publish-dry-run --part 1
+`
+
+Phase 2 adds an explicit --publish flag, but live publishing remains disabled unless:
+
+- FACEBOOK_PUBLISH_ENABLED=true
+- FACEBOOK_PUBLISH_DRY_RUN=false
+- META_PAGE_ID and META_PAGE_ACCESS_TOKEN are nonempty
+
+Do not publish without completing dry-run and manual tests.

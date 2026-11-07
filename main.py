@@ -33,6 +33,7 @@ def parse_args():
     parser.add_argument("--render", action="store_true", help="Create HyperFrames composition and render MP4.")
     parser.add_argument("--reset-history", action="store_true", help="Clear used-question history and reset Part numbering.")
     parser.add_argument("--publish-dry-run", action="store_true", help="Validate a generated Part and prepare a Facebook Reels dry-run report.")
+    parser.add_argument("--publish", action="store_true", help="Run the controlled Facebook Reels Phase 2 publisher after preflight and local validation.")
     return parser.parse_args()
 
 
@@ -187,12 +188,79 @@ def _run_publish_dry_run(args):
     print("Dry run only. No real Meta Graph API upload or publish request was performed.")
 
 
+def _run_publish_reel(args, dry_run: bool = True):
+    from config import FACEBOOK_PUBLISH_DRY_RUN, FACEBOOK_PUBLISH_ENABLED
+    from core.publish_manager import FacebookPublishManager
+    from integrations.facebook_publisher import FacebookPublisher
+
+    part_number = args.part if args.part is not None else 1
+    part_dir = OUTPUT_DIR / f"part_{part_number:03d}"
+    if not part_dir.is_dir():
+        raise SystemExit(f"Generated Part directory not found: {part_dir}")
+    video_path = part_dir / "video" / f"world_general_knowledge_quiz_part_{part_number:03d}.mp4"
+    if not video_path.is_file():
+        raise SystemExit(f"Generated MP4 not found: {video_path}")
+
+    quiz_path = part_dir / "script.json"
+    if not quiz_path.is_file():
+        raise SystemExit(f"Generated quiz JSON not found: {quiz_path}")
+    quiz = json.loads(quiz_path.read_text(encoding="utf-8"))
+
+    title = f"{quiz.get('title', 'World General Knowledge Quiz')} - Part {part_number}"
+    description = (
+        f"{quiz.get('ending', 'World General Knowledge Quiz')}\n\n"
+        f"Question set: {quiz.get('part', part_number)}. "
+        "Answer in the comments and challenge your friends."
+    )
+
+    manager = FacebookPublishManager()
+    publisher = FacebookPublisher(dry_run=dry_run)
+    requested_live = not dry_run
+    if requested_live and (not FACEBOOK_PUBLISH_ENABLED or FACEBOOK_PUBLISH_DRY_RUN):
+        raise SystemExit(
+            "Live Facebook publishing is disabled. Set FACEBOOK_PUBLISH_ENABLED=true and "
+            "FACEBOOK_PUBLISH_DRY_RUN=false only after completing dry-run and manual tests."
+        )
+
+    try:
+        if dry_run or FACEBOOK_PUBLISH_DRY_RUN or not FACEBOOK_PUBLISH_ENABLED:
+            report = publisher.run_dry_run(part_number, video_path, title, description, manager)
+            print("\nFacebook Reels dry-run report")
+            print(f"Part: {report.part_number}")
+            print(f"Video: {report.video_path}")
+            print(f"Content hash: {report.content_hash}")
+            print("Preflight: " + ("PASS" if report.preflight["success"] else "FAIL"))
+            for error in report.preflight["errors"]:
+                print(f"  - {error}")
+            print(f"Status: {report.publication_status}")
+            print(f"Report: {report.report_path}")
+            print("Phase 2 real publishing was not requested, or live guard is disabled. No real Meta Graph API publish was performed.")
+            return
+
+        result = publisher.publish_reel(part_number, video_path, title, description, manager)
+    except Exception as exc:
+        print(f"Facebook publishing failed for Part {part_number}: {exc}")
+        raise SystemExit(1) from exc
+
+    print("\nFacebook Reels publication completed" if result.get("success") else "\nFacebook Reels publication was not successful")
+    if result.get("skipped"):
+        print(f"Skipped reason: {result.get('reason')}")
+    print(f"Part: {result.get('part_number', part_number)}")
+    print(f"Video ID: {result.get('meta_video_id')}")
+    print(f"Post ID: {result.get('meta_post_id')}")
+    if result.get("errors"):
+        print("Errors:")
+        for error in result["errors"]:
+            print(f"  - {error}")
+
+
 def main():
     args = parse_args()
 
-    if args.publish_dry_run:
-        _run_publish_dry_run(args)
+    if args.publish_dry_run or args.publish:
+        _run_publish_reel(args, dry_run=args.publish_dry_run)
         return
+
 
     if args.reset_history:
         reset_history()

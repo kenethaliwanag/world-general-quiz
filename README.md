@@ -56,3 +56,24 @@ GitHub Actions workflows are included under `.github/workflows` for validation, 
 
 A local dry-run is available through python main.py --publish-dry-run --part <PART>.
 No Meta API request, credential operation, or publication occurs in Phase 1.
+
+## Facebook Reels Publishing - Phase 2
+
+Phase 2 adds a guarded live Meta Graph API skeleton and unit-test coverage for the guarded live path.
+
+Dry run only:
+
+`ash
+python main.py --publish-dry-run --part 1
+`
+
+No live Meta upload occurs unless all of these are set:
+
+`	ext
+FACEBOOK_PUBLISH_ENABLED=true
+FACEBOOK_PUBLISH_DRY_RUN=false
+META_PAGE_ID=<page-id>
+META_PAGE_ACCESS_TOKEN=<page-access-token>
+`
+
+Live publishing remains explicitly disabled by default.

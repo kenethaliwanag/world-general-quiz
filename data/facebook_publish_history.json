@@ -1,4 +1,20 @@
 {
   "schema_version": 1,
-  "records": []
+  "records": [
+    {
+      "part_number": 1,
+      "video_file_name": "world_general_knowledge_quiz_part_001.mp4",
+      "content_hash": "74a61185e36e3edd483e8b96e93cb0406b0238fcdadda0283a5fa4318c1dcf6d",
+      "title": "Title",
+      "description": "Description",
+      "status": "dry_run",
+      "meta_graph_api_version": "v26.0",
+      "meta_video_id": null,
+      "meta_post_id": null,
+      "upload_phase": "not_started",
+      "errors": [],
+      "created_at": "2026-11-07T16:25:42.894697+00:00",
+      "published_at": null
+    }
+  ]
 }
