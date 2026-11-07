@@ -18,7 +18,7 @@ VALID_PROBE = {
         {"codec_type": "video", "codec_name": "h264", "width": 1080, "height": 1920, "r_frame_rate": "30/1"},
         {"codec_type": "audio", "codec_name": "aac", "channels": 2, "sample_rate": "48000", "bit_rate": "128000"},
     ],
-    "format": {"duration": "2.5"},
+    "format": {"duration": "5.0"},
 }
 
 

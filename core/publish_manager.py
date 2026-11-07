@@ -1,67 +1,70 @@
-"""Manage Facebook publication state separately from quiz-question history."""
+"""Manage durable publication history independently from quiz history."""
 from __future__ import annotations
 
 import hashlib
 import json
 import os
 import tempfile
+from dataclasses import dataclass, asdict
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any
+from typing import Any, Iterable
 
-from config import PROJECT_ROOT
+
+PROJECT_ROOT = None
+
+def _project_root():
+    if PROJECT_ROOT is not None:
+        return PROJECT_ROOT
+    from config import PROJECT_ROOT as default_root
+
+    return default_root
 
 
 class PublishHistoryError(Exception):
-    """Raised when the publication history file is missing or malformed."""
+    """Raised when a publication history file cannot be used."""
 
 
-def _utc_now() -> str:
+def utc_now() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
-def _normalize_history(history: Any) -> dict[str, Any]:
+def normalize_history(history: Any) -> dict[str, Any]:
     if not isinstance(history, dict):
         raise PublishHistoryError("Publication history must be a JSON object.")
-
     records = history.get("records", [])
     if not isinstance(records, list):
         raise PublishHistoryError("Publication records must be a list.")
-
     for index, record in enumerate(records, 1):
         if not isinstance(record, dict):
-            raise PublishHistoryError(f"Publication record {index} must be a JSON object.")
-
+            raise PublishHistoryError(f"Publication record {index} is not a JSON object.")
     schema_version = history.get("schema_version", 1)
     try:
         schema_version = int(schema_version)
     except (TypeError, ValueError) as exc:
         raise PublishHistoryError("Publication history schema_version must be an integer.") from exc
-
     return {"schema_version": schema_version, "records": records}
 
 
 def load_publish_history(history_path: Path | None = None) -> dict[str, Any]:
-    """Load the publication history, or create an empty validated default."""
-    path = history_path or (PROJECT_ROOT / "data" / "facebook_publish_history.json")
+
+    path = history_path or _project_root() / "data" / "facebook_publish_history.json"
     if not path.exists():
         return {"schema_version": 1, "records": []}
     try:
-        return _normalize_history(json.loads(path.read_text(encoding="utf-8")))
+        return normalize_history(json.loads(path.read_text(encoding="utf-8")))
     except (json.JSONDecodeError, OSError, TypeError, ValueError) as exc:
-        raise PublishHistoryError(f"Could not read publication history {path}: {exc}") from exc
+        raise PublishHistoryError(f"Publication history could not be read: {path}: {exc}") from exc
 
 
-def save_publish_history(history: dict[str, Any], history_path: Path | None = None) -> Path:
-    """Atomically write a normalized publication history."""
-    path = history_path or (PROJECT_ROOT / "data" / "facebook_publish_history.json")
+def atomic_json_write(path: Path, history: Any) -> Path:
     path.parent.mkdir(parents=True, exist_ok=True)
-    normalized = _normalize_history(history)
-
-    handle, temp_name = tempfile.mkstemp(prefix=".facebook_publish_history_", suffix=".tmp", dir=str(path.parent))
+    normalized = normalize_history(history)
+    handle, temp_name = tempfile.mkstemp(prefix=f".{path.stem}_", suffix=".tmp", dir=str(path.parent))
     try:
-        with os.fdopen(handle, "w", encoding="utf-8") as file:
+        with os.fdopen(handle, "w", encoding="utf-8", newline="\n") as file:
             json.dump(normalized, file, indent=2, ensure_ascii=False)
+            file.write("\n")
             file.flush()
             os.fsync(file.fileno())
         os.replace(temp_name, path)
@@ -74,45 +77,75 @@ def save_publish_history(history: dict[str, Any], history_path: Path | None = No
     return path
 
 
+def save_publish_history(history: Any, history_path: Path | None = None) -> Path:
+
+    path = history_path or _project_root() / "data" / "facebook_publish_history.json"
+    return atomic_json_write(path, history)
+
+
 def sha256_file(video_path: Path) -> str:
-    """Calculate a SHA-256 digest for the supplied file."""
     if not video_path.is_file():
         raise PublishHistoryError(f"Video file does not exist: {video_path}")
     digest = hashlib.sha256()
     with video_path.open("rb") as file:
-        for chunk in iter(lambda: file.read(1024 * 1024), b""):
+        while True:
+            chunk = file.read(1024 * 1024)
+            if not chunk:
+                break
             digest.update(chunk)
     return digest.hexdigest()
 
 
-class FacebookPublishManager:
-    """A small wrapper to make publication records easy to test and use."""
+def find_record(history: dict[str, Any], *, part_number: int | None = None, content_hash: str | None = None) -> dict[str, Any] | None:
+    for record in reversed(history.get("records", [])):
+        if part_number is not None and record.get("part_number") != part_number:
+            continue
+        if content_hash is not None and record.get("content_hash") != content_hash:
+            continue
+        return record
+    return None
 
-    def __init__(self, history_path: Path | None = None) -> None:
-        self.history_path = history_path or (PROJECT_ROOT / "data" / "facebook_publish_history.json")
+
+def upsert_record(history_path: Path, record: dict[str, Any]) -> None:
+    history = load_publish_history(history_path)
+    records = history.get("records", [])
+    existing_index = None
+    for index, current in enumerate(records):
+        if current.get("part_number") == record.get("part_number") and current.get("content_hash") == record.get("content_hash"):
+            existing_index = index
+            break
+    if existing_index is None:
+        records.append(record)
+    else:
+        records[existing_index] = {**records[existing_index], **record}
+    history["records"] = records
+    save_publish_history(history, history_path)
+
+
+@dataclass(frozen=True)
+class PublishManager:
+    history_path: Path | None = None
 
     def load(self) -> dict[str, Any]:
         return load_publish_history(self.history_path)
 
-    def save(self, history: dict[str, Any]) -> Path:
-        return save_publish_history(history, self.history_path)
+    def find(self, part_number: int | None = None, content_hash: str | None = None) -> dict[str, Any] | None:
+        return find_record(self.load(), part_number=part_number, content_hash=content_hash)
 
-    def find_record(self, *, part_number: int, content_hash: str):
-        for record in reversed(load_publish_history(self.history_path).get("records", [])):
-            if record.get("part_number") == part_number and record.get("content_hash") == content_hash:
-                return record
-        return None
+    def find_record(self, part_number: int | None = None, content_hash: str | None = None) -> dict[str, Any] | None:
+        return self.find(part_number=part_number, content_hash=content_hash)
 
-    def upsert_record(self, record: dict[str, Any]) -> dict[str, Any]:
-        history = self.load()
-        key = (record.get("part_number"), record.get("content_hash"))
-        updated = False
-        for index, existing in enumerate(history["records"]):
-            if (existing.get("part_number"), existing.get("content_hash")) == key:
-                history["records"][index] = {**existing, **record}
-                updated = True
-                break
-        if not updated:
-            history["records"].append(record)
-        self.save(history)
-        return history
+    def record(self, record: dict[str, Any]) -> dict[str, Any]:
+        upsert_record(self.history_path, record)
+        return self.load()
+
+    def write_json(self, path: Path, payload: dict[str, Any]) -> None:
+        atomic_json_write(path, payload)
+
+
+    def upsert_record(self, record):
+        upsert_record(self.history_path, record)
+        return self.load()
+
+FacebookPublishManager = PublishManager
+
