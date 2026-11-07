@@ -29,6 +29,14 @@ SFX_TIMEUP_PATH = PROJECT_ROOT / "assets" / "sfx" / "timeup.wav"
 SFX_TICK_VOLUME = 0.16
 SFX_TIMEUP_VOLUME = 0.22
 
+META_GRAPH_API_VERSION = os.getenv("META_GRAPH_API_VERSION", "v26.0")
+META_PUBLISH_TIMEOUT_SECONDS = int(os.getenv("META_PUBLISH_TIMEOUT_SECONDS", "120"))
+
+FACEBOOK_PUBLISH_ENABLED = (os.getenv("FACEBOOK_PUBLISH_ENABLED", "false").strip().lower() == "true")
+FACEBOOK_PUBLISH_DRY_RUN = (os.getenv("FACEBOOK_PUBLISH_DRY_RUN", "true").strip().lower() == "true")
+META_PAGE_ID = os.getenv("META_PAGE_ID", "")
+META_PAGE_ACCESS_TOKEN = os.getenv("META_PAGE_ACCESS_TOKEN", "")
+
 # KokoroTTS server defaults. Start a local Kokoro-compatible server first.
 KOKORO_BASE_URL = os.getenv("KOKORO_BASE_URL", "http://localhost:7860")
 KOKORO_MODEL = os.getenv("KOKORO_MODEL", "kokoro")

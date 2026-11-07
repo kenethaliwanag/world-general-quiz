@@ -51,3 +51,8 @@ See [USAGE.md](USAGE.md) for setup details and all options.
 ## Cloud generation
 
 GitHub Actions workflows are included under `.github/workflows` for validation, manual video generation, and scheduled generation. The scheduled workflow stays disabled until it is enabled in GitHub, and generated videos are uploaded as workflow artifacts rather than committed to the repository.
+
+## Facebook Reels Publishing - Phase 1
+
+A local dry-run is available through python main.py --publish-dry-run --part <PART>.
+No Meta API request, credential operation, or publication occurs in Phase 1.
