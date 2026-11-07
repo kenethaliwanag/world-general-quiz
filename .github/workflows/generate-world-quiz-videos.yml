@@ -140,18 +140,17 @@ jobs:
           retention-days: 7
           if-no-files-found: warn
 
-      - name: Install npm packages only when Kokoro setup is skipped
-        if: ${{ !inputs.enable_tts }}
-        run: echo "Kokoro TTS is disabled; no TTS server will be started."
-
       - name: Generate quiz videos
+        env:
+          START_PART: ${{ inputs.start_part }}
+          TOTAL_PARTS: ${{ inputs.total_parts }}
+          QUESTIONS_PER_PART: ${{ inputs.questions_per_part }}
+          CATEGORY: ${{ inputs.category }}
+          DIFFICULTY: ${{ inputs.difficulty }}
+          ENABLE_TTS: ${{ inputs.enable_tts }}
+          ENABLE_RENDER: ${{ inputs.enable_render }}
         run: |
           set -euo pipefail
-          START_PART="${{ inputs.start_part }}"
-          TOTAL_PARTS="${{ inputs.total_parts }}"
-          QUESTIONS_PER_PART="${{ inputs.questions_per_part }}"
-          CATEGORY="${{ inputs.category }}"
-          DIFFICULTY="${{ inputs.difficulty }}"
           if [ -z "$START_PART" ] || [ "$START_PART" -eq 0 ]; then
             START_PART="$(python -c 'from core.history_manager import next_part_number; print(next_part_number())')"
           fi
@@ -167,10 +166,10 @@ jobs:
           for PART_NUMBER in $(seq "$START_PART" "$LAST_PART"); do
             TTS_ARG=""
             RENDER_ARG=""
-            if [ "${{ inputs.enable_tts }}" = "true" ]; then
+            if [ "$ENABLE_TTS" = "true" ]; then
               TTS_ARG="--tts"
             fi
-            if [ "${{ inputs.enable_render }}" = "true" ]; then
+            if [ "$ENABLE_RENDER" = "true" ]; then
               RENDER_ARG="--render"
             fi
             python main.py \

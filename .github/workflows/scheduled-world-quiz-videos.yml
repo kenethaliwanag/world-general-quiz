@@ -106,35 +106,40 @@ jobs:
 
 
       - name: Generate next quiz Part
+        env:
+          QUESTIONS_PER_PART: ${{ inputs.questions_per_part || 15 }}
+          ENABLE_TTS: ${{ inputs.enable_tts != false }}
+          ENABLE_RENDER: ${{ inputs.enable_render != false }}
         run: |
           set -euo pipefail
           TOTAL_PARTS=1
-          QUESTIONS_PER_PART="${{ inputs.questions_per_part || 15 }}"
           CATEGORY="all"
           DIFFICULTY="all"
           START_PART="$(python -c 'from core.history_manager import next_part_number; print(next_part_number())')"
-          TTS_ARG="--tts"
-          RENDER_ARG="--render"
-          if [ "${{ inputs.enable_tts }}" = "false" ]; then
-            TTS_ARG=""
+          TTS_ARG=""
+          RENDER_ARG=""
+          if [ "$ENABLE_TTS" = "true" ]; then
+            TTS_ARG="--tts"
           fi
-          if [ "${{ inputs.enable_render }}" = "false" ]; then
-            RENDER_ARG=""
+          if [ "$ENABLE_RENDER" = "true" ]; then
+            RENDER_ARG="--render"
           fi
-          python main.py \
-            --part "$START_PART" \
-            --count "$QUESTIONS_PER_PART" \
-            --category "$CATEGORY" \
-            --difficulty "$DIFFICULTY" \
-            $TTS_ARG \
-            $RENDER_ARG
-          if ! git diff --quiet -- data/used_questions.json; then
-            git config user.name "github-actions[bot]"
-            git config user.email "github-actions[bot]@users.noreply.github.com"
-            git add data/used_questions.json
-            git commit -m "Update quiz question history for Part $(printf '%03d' "$START_PART") [skip ci]"
-            git push origin HEAD:main
-          fi
+          for PART_NUMBER in $(seq "$START_PART" "$((START_PART + TOTAL_PARTS - 1))"); do
+            python main.py \
+              --part "$PART_NUMBER" \
+              --count "$QUESTIONS_PER_PART" \
+              --category "$CATEGORY" \
+              --difficulty "$DIFFICULTY" \
+              $TTS_ARG \
+              $RENDER_ARG
+            if ! git diff --quiet -- data/used_questions.json; then
+              git config user.name "github-actions[bot]"
+              git config user.email "github-actions[bot]@users.noreply.github.com"
+              git add data/used_questions.json
+              git commit -m "Update quiz question history for Part $(printf '%03d' "$PART_NUMBER") [skip ci]"
+              git push origin HEAD:main
+            fi
+          done
 
       - name: Upload generated outputs as artifacts
         if: always()
