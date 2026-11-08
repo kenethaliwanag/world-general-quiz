@@ -21,6 +21,7 @@ from config import (
     SFX_TIMEUP_PATH,
     SFX_TICK_VOLUME,
     SFX_TIMEUP_VOLUME,
+    WATERMARK_IMAGE_PATH,
 )
 from integrations.kokoro_tts import audio_duration as measure_audio_duration
 
@@ -68,6 +69,14 @@ def create_composition(quiz, audio_map=None, content_type="full"):
 
     copied_sfx = {}
     sfx_durations = {}
+
+    copied_watermark = ""
+    watermark_source = Path(WATERMARK_IMAGE_PATH)
+    if watermark_source.is_file():
+        target = assets_dir / watermark_source.name
+        if not target.exists() or watermark_source.stat().st_size != target.stat().st_size:
+            shutil.copy2(watermark_source, target)
+        copied_watermark = f"assets/{target.name}"
     for sfx_key, source_path in (("tick", SFX_TICK_PATH), ("timeup", SFX_TIMEUP_PATH)):
         source = Path(source_path)
         if source.is_file():
@@ -204,6 +213,13 @@ def create_composition(quiz, audio_map=None, content_type="full"):
         add_audio("ending", cursor, ending_audio_duration if ending_audio_duration is not None else ending_duration)
     cursor += ending_duration
 
+    if copied_watermark:
+        elements.append(
+            f'<img id="top-watermark" class="clip watermark" data-start="0.000" '
+            f'data-duration="{cursor:.3f}" data-track-index="{track}" src="{_esc(copied_watermark)}" alt="World General Knowledge Quiz watermark">'
+        )
+        track += 1
+
     html = f"""<!doctype html>
 <html lang="en">
 <head>
@@ -228,6 +244,7 @@ linear-gradient(145deg,#071426 0%,#102b46 55%,#06101d 100%)}}
 .answer-label{{color:#77e0a3}}
 .answer{{top:34%;height:32%;font-size:76px;line-height:1.15;font-weight:900;color:#77e0a3;text-shadow:0 0 30px rgba(70,220,145,.35)}}
 .ending{{top:34%;height:30%;font-size:66px;line-height:1.2;font-weight:900}}
+.watermark{{position:absolute;top:24px;left:50%;width:22%;transform:translateX(-50%);opacity:0.82;z-index:8;filter:drop-shadow(0 8px 18px rgba(0,0,0,.35))}}
 </style>
 </head>
 <body>
