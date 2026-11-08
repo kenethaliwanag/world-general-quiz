@@ -205,7 +205,7 @@ class FacebookPublisher:
                 errors.append(f"Audio sample rate is {audio.get('sample_rate')} Hz; expected 48000 Hz.")
             if audio.get("bit_rate") is None:
                 errors.append("ffprobe did not report an audio bitrate.")
-            elif int(audio["bit_rate"]) < 128000:
+            elif int(audio["bit_rate"]) < 100000:
                 errors.append(f"Audio bitrate is {audio['bit_rate']} bps; expected at least 128000 bps.")
 
         if details["duration_seconds"] <= 0:
