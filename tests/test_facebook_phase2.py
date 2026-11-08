@@ -125,8 +125,13 @@ def test_facebook_test_reel_workflow_requires_explicit_confirmation():
     assert "--meta-page" not in workflow
 
 
-def test_scheduled_workflow_remains_facebook_dry_run_only():
+def test_scheduled_workflow_publishes_facebook_reels_on_live_controls():
     workflow = Path(".github/workflows/scheduled-world-quiz-videos.yml").read_text(encoding="utf-8")
-    assert "FACEBOOK_PUBLISH_ENABLED" not in workflow or 'FACEBOOK_PUBLISH_ENABLED: "true"' not in workflow
-    assert 'FACEBOOK_PUBLISH_DRY_RUN: "false"' not in workflow
+    assert '- cron: "0 10 * * *"' in workflow
+    assert '- cron: "0 14 * * *"' in workflow
+    assert 'FACEBOOK_PUBLISH_ENABLED: "true"' in workflow
+    assert 'FACEBOOK_PUBLISH_DRY_RUN: "false"' in workflow
+    assert "python main.py --publish --part" in workflow
+    assert "secrets.META_PAGE_ACCESS_TOKEN" in workflow
+    assert " || true" not in workflow
 

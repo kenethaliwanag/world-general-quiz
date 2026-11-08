@@ -1,11 +1,11 @@
 name: Scheduled World General Knowledge Quiz Generation
 
 on:
-  # 06:00 PM Philippine Time (UTC+8).
-  # 12:00 AM Philippine Time (UTC+8).
+  # Run 06:00 PM Philippine Time (UTC+8).
+  # Run 10:00 PM Philippine Time (UTC+8).
   schedule:
-    - cron: "0 10 * * *"
-    - cron: "0 16 * * *"
+    - cron: "0 10 * * *" # 06:00 PM PHT
+    - cron: "0 14 * * *" # 10:00 PM PHT
   workflow_dispatch:
     inputs:
       questions_per_part:
@@ -146,13 +146,44 @@ jobs:
             fi
           done
 
-      - name: Facebook publication dry run (Reel and full video)
-        if: always()
+      - name: Verify required Facebook Meta secrets
+        env:
+          META_PAGE_ID: ${{ secrets.META_PAGE_ID }}
+          META_PAGE_ACCESS_TOKEN: ${{ secrets.META_PAGE_ACCESS_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [ -z "${META_PAGE_ID}" ] || [ -z "${META_PAGE_ACCESS_TOKEN}" ]; then
+            echo "Missing required Meta secret. META_PAGE_ID and META_PAGE_ACCESS_TOKEN must be configured." >&2
+            exit 1
+          fi
+
+      - name: Publish generated Facebook Reel
+        env:
+          META_PAGE_ID: ${{ secrets.META_PAGE_ID }}
+          META_PAGE_ACCESS_TOKEN: ${{ secrets.META_PAGE_ACCESS_TOKEN }}
+          FACEBOOK_PUBLISH_ENABLED: "true"
+          FACEBOOK_PUBLISH_DRY_RUN: "false"
         run: |
           set -euo pipefail
           PART_NUMBER="$(python -c 'from core.history_manager import load_history; print(load_history().get("last_part", 1))')"
-          python main.py --publish-dry-run --part "${PART_NUMBER}" --publish-content-type reel || true
-          python main.py --publish-dry-run --part "${PART_NUMBER}" --publish-content-type full_video || true
+          if [ "$PART_NUMBER" -lt 1 ]; then
+            echo "Invalid last Part number: ${PART_NUMBER}" >&2
+            exit 1
+          fi
+          echo "Publishing Facebook Reel for Part ${PART_NUMBER}"
+          python main.py --publish --part "$PART_NUMBER" --publish-content-type reel
+
+      - name: Persist Facebook publication history
+        if: success()
+        run: |
+          set -euo pipefail
+          if ! git diff --quiet -- data/facebook_publish_history.json; then
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add data/facebook_publish_history.json
+            git commit -m "Record Facebook Reel publication for Part $(printf '%03d' "$(python -c 'from core.history_manager import load_history; print(load_history().get('last_part', 1))")") [skip ci]"
+            git push origin HEAD:main
+          fi
 
       - name: Upload generated outputs as artifacts
         if: always()
