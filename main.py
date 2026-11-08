@@ -115,7 +115,7 @@ def generate_part(part, args, history=None):
         narration_dir.mkdir(parents=True, exist_ok=True)
         ext = part_audio_extension()
         try:
-            intro_text = " ".join(quiz["intro"])
+            intro_text = " ".join([quiz["intro"][0] + ".", *quiz["intro"][1:]])
             audio_map["intro"] = tts.synthesize(intro_text, narration_dir / f"part_{part:03d}_intro.{ext}")
             for item in quiz["questions"]:
                 n = item["number"]
@@ -183,7 +183,7 @@ def generate_part(part, args, history=None):
                 reel_narration_dir = reels_dir / "narration"
                 reel_narration_dir.mkdir(parents=True, exist_ok=True)
                 try:
-                    reel_audio_map["intro"] = reel_tts.synthesize(" ".join(quiz_reel["intro"]), reel_narration_dir / f"part_{part:03d}_intro.{ext}")
+                    reel_audio_map["intro"] = reel_tts.synthesize(" ".join([quiz_reel["intro"][0] + ".", *quiz_reel["intro"][1:]]), reel_narration_dir / f"part_{part:03d}_intro.{ext}")
                     for item in quiz_reel["questions"]:
                         number = item["number"]
                         reel_audio_map[f"q{number}"] = reel_tts.synthesize(item["question"], reel_narration_dir / f"part_{part:03d}_q{number:02d}.{ext}")

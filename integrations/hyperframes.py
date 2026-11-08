@@ -116,13 +116,13 @@ def create_composition(quiz, audio_map=None, content_type="full"):
     intro_lines = quiz["intro"]
     intro_audio_duration = audio_durations.get("intro")
     if intro_audio_duration is not None:
-        intro_duration = max(8.0, intro_audio_duration + AUDIO_PADDING_SECONDS)
+        intro_duration = max(4.0, intro_audio_duration + AUDIO_PADDING_SECONDS)
     else:
         intro_duration = 8.0
 
-    # Reveal the three intro phrases progressively.  Durations are weighted by
-    # word length so words appear in speaking order while preserving the
-    # existing title, subtitle, and part-line branding.
+    # Reveal each intro phrase during the portion of the narration that
+    # actually speaks it.  Avoid fixed starts so the text and audio stay
+    # synchronized.
     def word_progress_cues(text, start, total_duration):
         words = text.split()
         if not words:
@@ -144,12 +144,16 @@ def create_composition(quiz, audio_map=None, content_type="full"):
             cues.append((word_start, " ".join(prefix), max(0.01, word_end - word_start)))
         return cues
 
-    for index, (cue_start, text, duration) in enumerate(word_progress_cues(intro_lines[0], cursor, intro_duration)):
-        add_text(text, cue_start, duration, "title", f"intro-title-word-{index + 1}")
-    for index, (cue_start, text, duration) in enumerate(word_progress_cues(intro_lines[1], cursor + 1.0, max(1.0, intro_duration - 1.0))):
-        add_text(text, cue_start, duration, "subtitle", f"intro-subtitle-word-{index + 1}")
-    for index, (cue_start, text, duration) in enumerate(word_progress_cues(intro_lines[2], cursor + 3.4, max(1.0, intro_duration - 3.4))):
-        add_text(text, cue_start, duration, "partline", f"intro-partline-word-{index + 1}")
+    intro_word_counts = [len(line.split()) for line in intro_lines]
+    intro_total_words = sum(intro_word_counts) or 1
+    intro_cursor = cursor
+    intro_classes = ["title", "subtitle", "partline"]
+    for class_index, (line, word_count) in enumerate(zip(intro_lines, intro_word_counts)):
+        line_duration = max(0.01, intro_duration * word_count / intro_total_words)
+        css_class = intro_classes[min(class_index, len(intro_classes) - 1)]
+        for index, (cue_start, text, duration) in enumerate(word_progress_cues(line, intro_cursor, line_duration)):
+            add_text(text, cue_start, duration, css_class, f"intro-{css_class}-word-{index + 1}")
+        intro_cursor += line_duration
     if copied_audio.get("intro"):
         add_audio("intro", cursor, intro_audio_duration if intro_audio_duration is not None else intro_duration)
     cursor += intro_duration + TRANSITION_SECONDS
@@ -189,7 +193,7 @@ def create_composition(quiz, audio_map=None, content_type="full"):
 
     ending_audio_duration = audio_durations.get("ending")
     if ending_audio_duration is not None:
-        ending_duration = max(6.0, ending_audio_duration + AUDIO_PADDING_SECONDS)
+        ending_duration = max(4.0, ending_audio_duration + AUDIO_PADDING_SECONDS)
     else:
         ending_duration = 6.0
     add_text("HOW DID YOU DO?", cursor, ending_duration, "eyebrow", "ending-eyebrow")
