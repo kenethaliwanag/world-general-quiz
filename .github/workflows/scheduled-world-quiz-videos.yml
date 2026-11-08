@@ -6,8 +6,8 @@ on:
   schedule:
     - cron: "0 10 * * *"
     - cron: "0 16 * * *"
-  workflow_dispatch
-    inputs:
+  workflow_dispatch:
+    inputs
       questions_per_part:
         type: string
         default: "15"
