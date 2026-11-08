@@ -130,15 +130,18 @@ def create_composition(quiz, audio_map=None, content_type="full"):
         weights = [max(len(word), 1) for word in words]
         total_weight = sum(weights)
         section_end = start + total_duration
-        cursor_offset = 0.0
+        offsets = [0.0]
+        for weight in weights:
+            offsets.append(offsets[-1] + weight / total_weight * total_duration)
         cues = []
         prefix = []
         for index, word in enumerate(words):
             prefix.append(word)
-            word_start = start + cursor_offset / total_weight * total_duration
-            remaining = max(0.01, section_end - word_start)
-            cues.append((word_start, " ".join(prefix), remaining))
-            cursor_offset += weights[index]
+            word_start = start + offsets[index]
+            word_end = start + offsets[index + 1]
+            if index + 1 == len(words):
+                word_end = section_end
+            cues.append((word_start, " ".join(prefix), max(0.01, word_end - word_start)))
         return cues
 
     for index, (cue_start, text, duration) in enumerate(word_progress_cues(intro_lines[0], cursor, intro_duration)):
