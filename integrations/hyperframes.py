@@ -1,5 +1,6 @@
 """Create a vertical HyperFrames HTML composition and optionally render it."""
 import json
+import os
 import shutil
 import subprocess
 from pathlib import Path
@@ -265,9 +266,50 @@ def render_video(project_dir, part_number, output_path=None):
     else:
         output_path = Path(output_path)
     output_path.parent.mkdir(parents=True, exist_ok=True)
+    rendered_path = output_path.with_name(output_path.stem + ".raw.mp4")
+    if rendered_path.exists():
+        rendered_path.unlink()
     subprocess.run(
-        [npx, "hyperframes", "render", "--output", str(output_path), "--fps", str(VIDEO_FPS)],
+        [npx, "hyperframes", "render", "--output", str(rendered_path), "--fps", str(VIDEO_FPS)],
         cwd=str(project_dir), check=True
     )
+    _validate_rendered_video(rendered_path)
+
+    ffmpeg = shutil.which("ffmpeg")
+    if ffmpeg is None:
+        raise RuntimeError("FFmpeg is required to normalize the rendered MP4 audio for Facebook Reels.")
+    normalized_path = output_path.with_name(output_path.stem + ".normalized.mp4")
+    if normalized_path.exists():
+        normalized_path.unlink()
+    subprocess.run(
+        [
+            ffmpeg,
+            "-y",
+            "-i",
+            str(rendered_path),
+            "-c:v",
+            "copy",
+            "-c:a",
+            "aac",
+            "-ar",
+            "48000",
+            "-ac",
+            "2",
+            "-b:a",
+            "128k",
+            "-movflags",
+            "+faststart",
+            str(normalized_path),
+        ],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=True,
+    )
+    _validate_rendered_video(normalized_path)
+    os.replace(normalized_path, output_path)
+    try:
+        rendered_path.unlink()
+    except OSError:
+        pass
     _validate_rendered_video(output_path)
     return output_path
