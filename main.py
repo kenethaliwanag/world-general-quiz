@@ -82,6 +82,8 @@ def discover_cached_audio(part, part_dir):
         suffix = stem[len(f"part_{part:03d}_"):]
         if suffix == "intro":
             audio_map["intro"] = path
+        elif suffix == "reel_intro":
+            audio_map["reel_intro"] = path
         elif suffix == "ending":
             audio_map["ending"] = path
         elif "_" not in suffix and suffix.startswith("q"):
@@ -172,8 +174,49 @@ def generate_part(part, args, history=None):
             quiz_reel = build_quiz(part, reel_questions)
             _, reel_json_path, _ = export_quiz(quiz_reel, output_dir=reels_dir)
             reel_keys = ["intro", "ending"] + [f"q{number}" for number in range(1, reel_question_count + 1)] + [f"a{number}" for number in range(1, reel_question_count + 1)]
-            reel_audio_map = {key: audio_map[key] for key in reel_keys if key in audio_map}
-            reel_audio_durations = {key: audio_durations.get(key) for key in reel_audio_map}
+
+            reel_audio_map = {}
+            reel_audio_durations = {}
+            if args.tts:
+                reel_tts = KokoroTTS()
+                ext = part_audio_extension()
+                reel_narration_dir = reels_dir / "narration"
+                reel_narration_dir.mkdir(parents=True, exist_ok=True)
+                try:
+                    reel_audio_map["intro"] = reel_tts.synthesize(" ".join(quiz_reel["intro"]), reel_narration_dir / f"part_{part:03d}_intro.{ext}")
+                    for item in quiz_reel["questions"]:
+                        number = item["number"]
+                        reel_audio_map[f"q{number}"] = reel_tts.synthesize(item["question"], reel_narration_dir / f"part_{part:03d}_q{number:02d}.{ext}")
+                        reel_audio_map[f"a{number}"] = reel_tts.synthesize(f"The correct answer is {item['answer']}.", reel_narration_dir / f"part_{part:03d}_a{number:02d}.{ext}")
+                    reel_audio_map["ending"] = reel_tts.synthesize(quiz_reel["ending"], reel_narration_dir / f"part_{part:03d}_ending.{ext}")
+                except RuntimeError as exc:
+                    raise SystemExit(f"TTS failed for Part {part} Reel: {exc}")
+                for key, path in reel_audio_map.items():
+                    try:
+                        reel_audio_durations[key] = measure_audio(path)
+                    except (OSError, ValueError, RuntimeError, KeyError, IndexError, TypeError):
+                        pass
+            else:
+                cached_map, cached_durations = discover_cached_audio(part, reels_dir)
+                if cached_map:
+                    reel_audio_map.update(cached_map)
+                    reel_audio_durations.update(cached_durations)
+
+            # Full-part clips are valid for the shared question and answer
+            # clips; only intro and ending differ between videos.
+            for key in [f"q{number}" for number in range(1, reel_question_count + 1)] + [f"a{number}" for number in range(1, reel_question_count + 1)]:
+                if key not in reel_audio_map and key in audio_map:
+                    reel_audio_map[key] = audio_map[key]
+                    if key not in reel_audio_durations and key in audio_durations:
+                        reel_audio_durations[key] = audio_durations[key]
+            if "intro" not in reel_audio_map and "intro" in audio_map:
+                reel_audio_map["intro"] = audio_map["intro"]
+                if "intro" not in reel_audio_durations:
+                    reel_audio_durations["intro"] = audio_durations.get("intro")
+            if "ending" not in reel_audio_map and "ending" in audio_map:
+                reel_audio_map["ending"] = audio_map["ending"]
+                if "ending" not in reel_audio_durations:
+                    reel_audio_durations["ending"] = audio_durations.get("ending")
             reel_srt_path = export_srt(quiz_reel, reels_dir, {key: value for key, value in reel_audio_durations.items() if value is not None})
             if args.render or render_reels:
                 reel_project_dir, reel_duration, reel_timeline = create_composition(quiz_reel, reel_audio_map, content_type="reel")

@@ -25,3 +25,5 @@
 - Added GitHub Actions workflows for validation, manual video generation, scheduled video generation, and MP4 artifact validation.
 - Added environment overrides for Kokoro TTS configuration.
 - Documented cloud execution using native Ubuntu runner and local Kokoro HTTP service.
+- Generated Facebook Reel narration independently for its configured 5-question intro and outro.
+- Added progressive word-by-word display for HyperFrames intro and outro text only.
