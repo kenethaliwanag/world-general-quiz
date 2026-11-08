@@ -43,8 +43,6 @@ FACEBOOK_PUBLISH_DRY_RUN = (os.getenv("FACEBOOK_PUBLISH_DRY_RUN", "true").strip(
 META_PAGE_ID = os.getenv("META_PAGE_ID", "")
 META_PAGE_ACCESS_TOKEN = os.getenv("META_PAGE_ACCESS_TOKEN", "")
 
-FACEBOOK_REEL_QUESTION_COUNT = int(os.getenv("FACEBOOK_REELS_QUESTION_COUNT", "5"))
-
 # KokoroTTS server defaults. Start a local Kokoro-compatible server first.
 KOKORO_BASE_URL = os.getenv("KOKORO_BASE_URL", "http://localhost:7860")
 KOKORO_MODEL = os.getenv("KOKORO_MODEL", "kokoro")

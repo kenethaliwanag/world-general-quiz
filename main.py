@@ -188,11 +188,6 @@ def generate_part(part, args, history=None):
     history = record_question_usage(history, question_ids, part)
     print(f"Marked {len(question_ids)} question IDs as used for Part {part}.")
     return part_dir, history
-    question_ids = [question["id"] for question in selected]
-    history = record_question_usage(history, question_ids, part)
-    print(f"Marked {len(question_ids)} question IDs as used for Part {part}.")
-
-    return part_dir, history
 
 
 def _run_publish_reel(args, dry_run: bool = True):

@@ -567,6 +567,7 @@ class FacebookPublisher:
             "meta_post_id": None,
             "upload_phase": "initialize",
             "errors": [],
+            "content_type": content_type,
             "created_at": utc_now(),
             "published_at": None,
         }
@@ -780,10 +781,13 @@ class FacebookPublisher:
     def get_page_metadata(self) -> dict[str, Any]:
         if not self.access_token or not self.page_id:
             raise FacebookPublisherError("META_PAGE_ID and META_PAGE_ACCESS_TOKEN are required before contacting Meta.")
+        query = urllib.parse.urlencode({
+            "fields": "id,name,username,link,category",
+            "access_token": self.access_token,
+        })
         return self._request_json(
             "GET",
-            f"{self.graph_api_base_url}/{self.graph_api_version}/{self.page_id}",
-            query={"fields": "id,name,username,link,category", "access_token": self.access_token},
+            f"{self.graph_api_base_url}/{self.graph_api_version}/{self.page_id}?{query}",
         )
 
     def _start_upload(self, title: str, description: str) -> tuple[str, str]:
@@ -805,7 +809,7 @@ class FacebookPublisher:
         return str(video_id), str(upload_url)
 
     def _upload_binary(self, upload_url: str, video_path: Path) -> dict[str, Any]:
-        pass
+        file_size = video_path.stat().st_size
         request = urllib.request.Request(
             upload_url,
             data=video_path.read_bytes(),
@@ -873,8 +877,6 @@ class FacebookPublisher:
             raise FacebookPublisherError("Live Facebook publishing is disabled. Set FACEBOOK_PUBLISH_ENABLED=true and FACEBOOK_PUBLISH_DRY_RUN=false.")
         if publish_manager is None:
             publish_manager = FacebookPublishManager()
-
-            publish_manager = _FacebookPublishManager()
 
         if config_errors or not self.publish_enabled or self.dry_run:
             if config_errors:
@@ -958,6 +960,7 @@ class FacebookPublisher:
         }
         publish_manager.upsert_record(pending_record)
 
+        video_id = None
         try:
             video_id, upload_url = self._start_upload(title, description)
             publish_manager.upsert_record(
@@ -973,6 +976,7 @@ class FacebookPublisher:
                     "meta_post_id": None,
                     "upload_phase": "transfer",
                     "errors": [],
+                    "content_type": content_type,
                     "created_at": pending_record["created_at"],
                 }
             )
@@ -990,6 +994,7 @@ class FacebookPublisher:
                     "meta_post_id": None,
                     "upload_phase": "finish",
                     "errors": [],
+                    "content_type": content_type,
                     "created_at": pending_record["created_at"],
                 }
             )
@@ -1007,6 +1012,7 @@ class FacebookPublisher:
                 "meta_post_id": post_id,
                 "upload_phase": "finish",
                 "errors": [],
+                "content_type": content_type,
                 "created_at": pending_record["created_at"],
                 "published_at": utc_now(),
             }
@@ -1030,10 +1036,11 @@ class FacebookPublisher:
                     "description": description,
                     "status": "failed",
                     "meta_graph_api_version": self.graph_api_version,
-                    "meta_video_id": None,
+                    "meta_video_id": video_id,
                     "meta_post_id": None,
                     "upload_phase": "failed",
                     "errors": [str(exc)],
+                    "content_type": content_type,
                     "created_at": pending_record.get("created_at", utc_now()),
                     "published_at": None,
                 }
