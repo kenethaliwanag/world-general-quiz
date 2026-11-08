@@ -4,6 +4,7 @@ import logging
 from pathlib import Path
 
 from config import (
+    FACEBOOK_REEL_QUESTION_COUNT,
     QUESTIONS_PER_PART,
     OUTPUT_DIR,
     KOKORO_RESPONSE_FORMAT,
@@ -32,8 +33,15 @@ def parse_args():
     parser.add_argument("--tts", action="store_true", help="Generate narration using a running KokoroTTS server.")
     parser.add_argument("--render", action="store_true", help="Create HyperFrames composition and render MP4.")
     parser.add_argument("--reset-history", action="store_true", help="Clear used-question history and reset Part numbering.")
-    parser.add_argument("--publish-dry-run", action="store_true", help="Validate a generated Part and prepare a Facebook Reels dry-run report.")
-    parser.add_argument("--publish", action="store_true", help="Run the controlled Facebook Reels Phase 2 publisher after preflight and local validation.")
+    parser.add_argument("--publish-dry-run", action="store_true", help="Validate a generated Part and prepare a Facebook publication dry-run report.")
+    parser.add_argument("--publish", action="store_true", help="Run the guarded Facebook publisher after preflight and local validation.")
+    parser.add_argument("--publish-content-type", choices=["reel", "full_video"], default="reel", help="Facebook content type for --publish or --publish-dry-run.")
+    parser.add_argument("--render-reels", action="store_true", help="Render a separate 3-to-5 question Facebook Reel from the same Part.")
+    parser.add_argument("--render-facebook-reels", action="store_true", help="Alias for --render-reels.")
+    parser.add_argument("--facebook-reels", action="store_true", help="Alias for --render-reels.")
+    parser.add_argument("--reels-question-count", type=int, default=FACEBOOK_REEL_QUESTION_COUNT, help="Reel question count, 3-5.")
+    parser.add_argument("--facebook-reels-question-count", type=int, default=None, help="Alias for the Reel question count.")
+
     return parser.parse_args()
 
 
@@ -134,58 +142,57 @@ def generate_part(part, args, history=None):
     if pool_reset:
         print("\nNOTE: The unused question pool was too small for this selection. History was cycled for this filtered pool.")
 
-    if args.render:
-        project_dir, duration, timeline = create_composition(quiz, audio_map)
-        print(f"\nHyperFrames project: {project_dir}")
-        print(f"Estimated composition duration: {duration:.1f} seconds")
-        video_path = render_video(project_dir, part)
-        print(f"Rendered video: {video_path}")
+    render_reels = bool(
+        getattr(args, "render_reels", False)
+        or getattr(args, "render_facebook_reels", False)
+        or getattr(args, "facebook_reels", False)
+    )
+    if args.render or render_reels:
+        if args.render:
+            project_dir, duration, timeline = create_composition(quiz, audio_map)
+            print(f"\nHyperFrames project: {project_dir}")
+            print(f"Estimated composition duration: {duration:.1f} seconds")
+            video_path = render_video(project_dir, part)
+            print(f"Rendered video: {video_path}")
 
+        if render_reels:
+            reel_question_count = getattr(args, "reels_question_count", None)
+            if reel_question_count is None:
+                reel_question_count = getattr(args, "facebook_reels_question_count", None)
+            if reel_question_count is None:
+                reel_question_count = FACEBOOK_REEL_QUESTION_COUNT
+            if reel_question_count < 3 or reel_question_count > 5:
+                raise SystemExit("Facebook Reels question count must be between 3 and 5.")
+            if len(selected) < reel_question_count:
+                raise SystemExit(f"Only {len(selected)} questions are available; cannot render {reel_question_count} Reel questions.")
+
+            reels_dir = part_dir / "facebook" / "reels"
+            reels_dir.mkdir(parents=True, exist_ok=True)
+            reel_questions = selected[:reel_question_count]
+            quiz_reel = build_quiz(part, reel_questions)
+            _, reel_json_path, _ = export_quiz(quiz_reel, output_dir=reels_dir)
+            reel_keys = ["intro", "ending"] + [f"q{number}" for number in range(1, reel_question_count + 1)] + [f"a{number}" for number in range(1, reel_question_count + 1)]
+            reel_audio_map = {key: audio_map[key] for key in reel_keys if key in audio_map}
+            reel_audio_durations = {key: audio_durations.get(key) for key in reel_audio_map}
+            reel_srt_path = export_srt(quiz_reel, reels_dir, {key: value for key, value in reel_audio_durations.items() if value is not None})
+            if args.render or render_reels:
+                reel_project_dir, reel_duration, reel_timeline = create_composition(quiz_reel, reel_audio_map, content_type="reel")
+                print(f"Reel HyperFrames project: {reel_project_dir}")
+                print(f"Reel composition duration: {reel_duration:.1f} seconds")
+                reels_output_path = reels_dir / f"world_general_knowledge_quiz_part_{part:03d}_reel.mp4"
+                reel_video_path = render_video(reel_project_dir, part, output_path=reels_output_path)
+                print(f"Rendered Facebook Reel: {reel_video_path}")
+                print(f"Reel SRT: {reel_srt_path}")
+
+    question_ids = [question["id"] for question in selected]
+    history = record_question_usage(history, question_ids, part)
+    print(f"Marked {len(question_ids)} question IDs as used for Part {part}.")
+    return part_dir, history
     question_ids = [question["id"] for question in selected]
     history = record_question_usage(history, question_ids, part)
     print(f"Marked {len(question_ids)} question IDs as used for Part {part}.")
 
     return part_dir, history
-
-
-def _run_publish_dry_run(args):
-    from core.publish_manager import FacebookPublishManager
-    from integrations.facebook_publisher import FacebookPublisher
-
-    part_number = args.part if args.part is not None else 1
-    part_dir = OUTPUT_DIR / f"part_{part_number:03d}"
-    if not part_dir.is_dir():
-        raise SystemExit(f"Generated Part directory not found: {part_dir}")
-    video_path = part_dir / "video" / f"world_general_knowledge_quiz_part_{part_number:03d}.mp4"
-    if not video_path.is_file():
-        raise SystemExit(f"Generated MP4 not found: {video_path}")
-
-    quiz_path = part_dir / "script.json"
-    if not quiz_path.is_file():
-        raise SystemExit(f"Generated quiz JSON not found: {quiz_path}")
-    quiz = json.loads(quiz_path.read_text(encoding="utf-8"))
-
-    title = f"{quiz.get('title', 'World General Knowledge Quiz')} - Part {part_number}"
-    description = (
-        f"{quiz.get('ending', 'World General Knowledge Quiz')}\n\n"
-        f"Question set: {quiz.get('part', part_number)}. "
-        "Answer in the comments and challenge your friends."
-    )
-
-    manager = FacebookPublishManager()
-    publisher = FacebookPublisher(dry_run=True)
-    report = publisher.run_dry_run(part_number, video_path, title, description, manager)
-
-    print("\nFacebook Reels dry-run report")
-    print(f"Part: {report.part_number}")
-    print(f"Video: {report.video_path}")
-    print(f"Content hash: {report.content_hash}")
-    print(f"Preflight: {'PASS' if report.preflight['success'] else 'FAIL'}")
-    for error in report.preflight["errors"]:
-        print(f"  - {error}")
-    print(f"Status: {report.publication_status}")
-    print(f"Report: {report.report_path}")
-    print("Dry run only. No real Meta Graph API upload or publish request was performed.")
 
 
 def _run_publish_reel(args, dry_run: bool = True):
@@ -194,10 +201,14 @@ def _run_publish_reel(args, dry_run: bool = True):
     from integrations.facebook_publisher import FacebookPublisher
 
     part_number = args.part if args.part is not None else 1
+    content_type = getattr(args, "publish_content_type", "reel") or "reel"
     part_dir = OUTPUT_DIR / f"part_{part_number:03d}"
     if not part_dir.is_dir():
         raise SystemExit(f"Generated Part directory not found: {part_dir}")
-    video_path = part_dir / "video" / f"world_general_knowledge_quiz_part_{part_number:03d}.mp4"
+    if content_type == "full_video":
+        video_path = part_dir / "video" / f"world_general_knowledge_quiz_part_{part_number:03d}.mp4"
+    else:
+        video_path = part_dir / "facebook" / "reels" / f"world_general_knowledge_quiz_part_{part_number:03d}_reel.mp4"
     if not video_path.is_file():
         raise SystemExit(f"Generated MP4 not found: {video_path}")
 
@@ -206,7 +217,8 @@ def _run_publish_reel(args, dry_run: bool = True):
         raise SystemExit(f"Generated quiz JSON not found: {quiz_path}")
     quiz = json.loads(quiz_path.read_text(encoding="utf-8"))
 
-    title = f"{quiz.get('title', 'World General Knowledge Quiz')} - Part {part_number}"
+    suffix = " Reel" if content_type == "reel" else " Video"
+    title = f"{quiz.get('title', 'World General Knowledge Quiz')} - Part {part_number}{suffix}"
     description = (
         f"{quiz.get('ending', 'World General Knowledge Quiz')}\n\n"
         f"Question set: {quiz.get('part', part_number)}. "
@@ -224,8 +236,9 @@ def _run_publish_reel(args, dry_run: bool = True):
 
     try:
         if dry_run or FACEBOOK_PUBLISH_DRY_RUN or not FACEBOOK_PUBLISH_ENABLED:
-            report = publisher.run_dry_run(part_number, video_path, title, description, manager)
-            print("\nFacebook Reels dry-run report")
+            report = publisher.run_dry_run(part_number, video_path, title, description, manager, content_type=content_type)
+            print("\nFacebook publication dry-run report")
+            print(f"Content type: {content_type}")
             print(f"Part: {report.part_number}")
             print(f"Video: {report.video_path}")
             print(f"Content hash: {report.content_hash}")
@@ -234,10 +247,13 @@ def _run_publish_reel(args, dry_run: bool = True):
                 print(f"  - {error}")
             print(f"Status: {report.publication_status}")
             print(f"Report: {report.report_path}")
-            print("Phase 2 real publishing was not requested, or live guard is disabled. No real Meta Graph API publish was performed.")
+            print("No real Meta Graph API upload or publish request was performed.")
             return
 
-        result = publisher.publish_reel(part_number, video_path, title, description, manager)
+        if content_type == "full_video":
+            result = publisher.publish_full_video(part_number, video_path, title, description, manager)
+        else:
+            result = publisher.publish_reel(part_number, video_path, title, description, manager)
     except Exception as exc:
         print(f"Facebook publishing failed for Part {part_number}: {exc}")
         raise SystemExit(1) from exc

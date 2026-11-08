@@ -1,9 +1,12 @@
 name: Scheduled World General Knowledge Quiz Generation
 
 on:
+  # 06:00 PM Philippine Time (UTC+8).
+  # 12:00 AM Philippine Time (UTC+8).
   schedule:
-    - cron: "0 8 * * 6"
-  workflow_dispatch:
+    - cron: "0 10 * * *"
+    - cron: "0 16 * * *"
+  workflow_dispatch
     inputs:
       questions_per_part:
         type: string
@@ -131,7 +134,9 @@ jobs:
               --category "$CATEGORY" \
               --difficulty "$DIFFICULTY" \
               $TTS_ARG \
-              $RENDER_ARG
+              $RENDER_ARG \
+              --render-reels \
+              --reels-question-count 5
             if ! git diff --quiet -- data/used_questions.json; then
               git config user.name "github-actions[bot]"
               git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -140,6 +145,14 @@ jobs:
               git push origin HEAD:main
             fi
           done
+
+      - name: Facebook publication dry run (Reel and full video)
+        if: always()
+        run: |
+          set -euo pipefail
+          PART_NUMBER="$(python -c 'from core.history_manager import load_history; print(load_history().get("last_part", 1))')"
+          python main.py --publish-dry-run --part "${PART_NUMBER}" --publish-content-type reel || true
+          python main.py --publish-dry-run --part "${PART_NUMBER}" --publish-content-type full_video || true
 
       - name: Upload generated outputs as artifacts
         if: always()

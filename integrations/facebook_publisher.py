@@ -151,7 +151,7 @@ class FacebookPublisher:
             errors.append("META_PUBLISH_TIMEOUT_SECONDS must be greater than zero.")
         return tuple(errors)
 
-    def validate_video(self, video_path: Path | str) -> VideoPreflightResult:
+    def validate_video(self, video_path: Path | str, content_type: str = "reel") -> VideoPreflightResult:
         """Validate a Part against the Facebook Reels technical profile."""
         path = Path(video_path)
         errors: list[str] = []
@@ -210,7 +210,7 @@ class FacebookPublisher:
 
         if details["duration_seconds"] <= 0:
             errors.append("Video duration must be greater than zero.")
-        if details["duration_seconds"] < 3 or details["duration_seconds"] > 90:
+        if content_type == "reel" and (details["duration_seconds"] < 3 or details["duration_seconds"] > 90):
             errors.append(
                 f"Video duration is {details['duration_seconds']:.3f} seconds; "
                 "Meta expects a Reel duration between 3 and 90 seconds."
@@ -258,6 +258,7 @@ class FacebookPublisher:
         title: str,
         description: str,
         content_hash: str,
+        content_type: str = "reel",
     ) -> dict[str, Any]:
         video_path = Path(video_path)
         return {
@@ -293,11 +294,12 @@ class FacebookPublisher:
         title: str,
         description: str,
         publish_manager,
+        content_type: str = "reel",
     ) -> DryRunReport:
         path = Path(video_path)
-        preflight = self.validate_video(path)
+        preflight = self.validate_video(path, content_type=content_type)
         content_hash = self.calculate_content_hash(path)
-        payload = self.build_reel_payload(part_number, path, title, description, content_hash)
+        payload = self.build_reel_payload(part_number, path, title, description, content_hash, content_type=content_type)
         status = "dry_run" if preflight.success else "failed"
 
         record = {
@@ -312,6 +314,7 @@ class FacebookPublisher:
             "meta_post_id": None,
             "upload_phase": "not_started",
             "errors": list(preflight.errors),
+            "content_type": content_type,
             "created_at": utc_now(),
             "published_at": None,
         }
@@ -498,9 +501,11 @@ class FacebookPublisher:
         title: str,
         description: str,
         publish_manager,
+        content_type: str = "reel",
     ) -> dict[str, Any]:
         path = Path(video_path)
-        preflight = self.validate_video(path)
+        content_type = content_type or "reel"
+        preflight = self.validate_video(path, content_type=content_type)
         content_hash = self.calculate_content_hash(path)
         errors = self.validate_configuration()
         if errors:
@@ -634,6 +639,7 @@ class FacebookPublisher:
         title: str,
         description: str,
         content_hash: str,
+        content_type: str = "reel",
     ) -> dict[str, Any]:
         video_path = Path(video_path)
         return {
@@ -670,11 +676,12 @@ class FacebookPublisher:
         title: str,
         description: str,
         publish_manager,
+        content_type: str = "reel",
     ) -> DryRunReport:
         path = Path(video_path)
-        preflight = self.validate_video(path)
+        preflight = self.validate_video(path, content_type=content_type)
         content_hash = self.calculate_content_hash(path)
-        payload = self.build_reel_payload(part_number, path, title, description, content_hash)
+        payload = self.build_reel_payload(part_number, path, title, description, content_hash, content_type=content_type)
         status = "dry_run" if preflight.success else "failed"
 
         record = {
@@ -689,6 +696,7 @@ class FacebookPublisher:
             "meta_post_id": None,
             "upload_phase": "not_started",
             "errors": list(preflight.errors),
+            "content_type": content_type,
             "created_at": utc_now(),
             "published_at": None,
         }
@@ -853,9 +861,11 @@ class FacebookPublisher:
         title: str,
         description: str,
         publish_manager,
+        content_type: str = "reel",
     ) -> dict[str, Any]:
         path = Path(video_path)
-        preflight = self.validate_video(path)
+        content_type = content_type or "reel"
+        preflight = self.validate_video(path, content_type=content_type)
         content_hash = self.calculate_content_hash(path)
 
         config_errors = self.validate_configuration()
@@ -1030,6 +1040,36 @@ class FacebookPublisher:
             )
             raise
 
+    def publish_full_video(
+        self,
+        part_number: int,
+        video_path: Path | str,
+        title: str,
+        description: str,
+        publish_manager,
+        content_type: str = "full_video",
+    ) -> dict[str, Any]:
+        if content_type != "full_video":
+            content_type = "full_video"
+        if self.dry_run or not self.publish_enabled:
+            return self.run_dry_run(part_number, video_path, title, description, publish_manager, content_type=content_type)
+        return {
+            "success": False,
+            "content_type": content_type,
+            "reason": "live_page_video_not_implemented",
+            "errors": ["Full Page Video live publishing is intentionally reserved until the exact Page Video upload protocol and test credentials are verified."],
+        }
+
+    def publish_full_video(
+        self,
+        part_number: int,
+        video_path: Path | str,
+        title: str,
+        description: str,
+        publish_manager,
+    ) -> dict[str, Any]:
+        return self.run_dry_run(part_number, video_path, title, description, publish_manager, content_type="full_video")
+
     def from_environment(self):
         return self
 
@@ -1053,3 +1093,4 @@ def redact_url_secret(value: str) -> str:
 def serialize_json(path: Path, payload: dict[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, indent=2, ensure_ascii=False), encoding="utf-8")
+

@@ -13,6 +13,9 @@ HISTORY_FILE = DATA_DIR / "used_questions.json"
 
 QUIZ_TITLE = "World General Knowledge Quiz"
 QUESTIONS_PER_PART = 15
+FACEBOOK_REELS_QUESTION_COUNT = int(os.getenv("FACEBOOK_REELS_QUESTION_COUNT", "5"))
+FACEBOOK_REELS_MIN_QUESTIONS = 3
+FACEBOOK_REELS_MAX_QUESTIONS = 5
 COUNTDOWN_SECONDS = 5
 ANSWER_DISPLAY_SECONDS = 3
 TRANSITION_SECONDS = 0.5
@@ -31,12 +34,16 @@ SFX_TIMEUP_VOLUME = 0.22
 
 META_GRAPH_API_VERSION = os.getenv("META_GRAPH_API_VERSION", "v26.0")
 META_GRAPH_API_BASE_URL = os.getenv("META_GRAPH_API_BASE_URL", "https://graph.facebook.com")
+META_VIDEO_UPLOAD_BASE_URL = os.getenv("META_VIDEO_UPLOAD_BASE_URL", "https://graph-video.facebook.com")
 META_PUBLISH_TIMEOUT_SECONDS = int(os.getenv("META_PUBLISH_TIMEOUT_SECONDS", "120"))
+FACEBOOK_REEL_QUESTION_COUNT = int(os.getenv("FACEBOOK_REELS_QUESTION_COUNT", "5"))
 
 FACEBOOK_PUBLISH_ENABLED = (os.getenv("FACEBOOK_PUBLISH_ENABLED", "false").strip().lower() == "true")
 FACEBOOK_PUBLISH_DRY_RUN = (os.getenv("FACEBOOK_PUBLISH_DRY_RUN", "true").strip().lower() == "true")
 META_PAGE_ID = os.getenv("META_PAGE_ID", "")
 META_PAGE_ACCESS_TOKEN = os.getenv("META_PAGE_ACCESS_TOKEN", "")
+
+FACEBOOK_REEL_QUESTION_COUNT = int(os.getenv("FACEBOOK_REELS_QUESTION_COUNT", "5"))
 
 # KokoroTTS server defaults. Start a local Kokoro-compatible server first.
 KOKORO_BASE_URL = os.getenv("KOKORO_BASE_URL", "http://localhost:7860")

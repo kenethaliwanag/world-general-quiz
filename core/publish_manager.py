@@ -38,6 +38,11 @@ def normalize_history(history: Any) -> dict[str, Any]:
     for index, record in enumerate(records, 1):
         if not isinstance(record, dict):
             raise PublishHistoryError(f"Publication record {index} is not a JSON object.")
+    for index, record in enumerate(records, 1):
+        if "content_type" not in record or record.get("content_type") not in {"reel", "full_video"}:
+            filename = str(record.get("video_file_name", ""))
+            record["content_type"] = "reel" if filename.endswith("_reel.mp4") else "full_video"
+
     schema_version = history.get("schema_version", 1)
     try:
         schema_version = int(schema_version)
@@ -96,22 +101,38 @@ def sha256_file(video_path: Path) -> str:
     return digest.hexdigest()
 
 
-def find_record(history: dict[str, Any], *, part_number: int | None = None, content_hash: str | None = None) -> dict[str, Any] | None:
+def find_record(history: dict[str, Any], *, part_number: int | None = None, content_hash: str | None = None, content_type: str | None = None) -> dict[str, Any] | None:
     for record in reversed(history.get("records", [])):
         if part_number is not None and record.get("part_number") != part_number:
             continue
         if content_hash is not None and record.get("content_hash") != content_hash:
             continue
+        if content_type is not None and record.get("content_type") != content_type:
+            continue
         return record
     return None
+
+
+def _record_content_type(record: dict[str, Any]) -> str:
+    content_type = record.get("content_type")
+    if content_type in {"reel", "full_video"}:
+        return content_type
+    filename = str(record.get("video_file_name", ""))
+    return "reel" if Path(filename).name.endswith("_reel.mp4") else "full_video"
 
 
 def upsert_record(history_path: Path, record: dict[str, Any]) -> None:
     history = load_publish_history(history_path)
     records = history.get("records", [])
+    record = {**record, "content_type": _record_content_type(record)}
     existing_index = None
     for index, current in enumerate(records):
-        if current.get("part_number") == record.get("part_number") and current.get("content_hash") == record.get("content_hash"):
+        current_type = _record_content_type(current)
+        if (
+            current.get("part_number") == record.get("part_number")
+            and current.get("content_hash") == record.get("content_hash")
+            and current_type == record.get("content_type")
+        ):
             existing_index = index
             break
     if existing_index is None:
@@ -129,11 +150,11 @@ class PublishManager:
     def load(self) -> dict[str, Any]:
         return load_publish_history(self.history_path)
 
-    def find(self, part_number: int | None = None, content_hash: str | None = None) -> dict[str, Any] | None:
-        return find_record(self.load(), part_number=part_number, content_hash=content_hash)
+    def find(self, part_number: int | None = None, content_hash: str | None = None, content_type: str | None = None) -> dict[str, Any] | None:
+        return find_record(self.load(), part_number=part_number, content_hash=content_hash, content_type=content_type)
 
-    def find_record(self, part_number: int | None = None, content_hash: str | None = None) -> dict[str, Any] | None:
-        return self.find(part_number=part_number, content_hash=content_hash)
+    def find_record(self, part_number: int | None = None, content_hash: str | None = None, content_type: str | None = None) -> dict[str, Any] | None:
+        return self.find(part_number=part_number, content_hash=content_hash, content_type=content_type)
 
     def record(self, record: dict[str, Any]) -> dict[str, Any]:
         upsert_record(self.history_path, record)

@@ -15,7 +15,10 @@ from integrations import hyperframes
 def _args(render=True):
     return SimpleNamespace(count=2, category="all", difficulty="all", seed=42,
                            part=None, start_part=None, total_parts=None,
-                           tts=False, render=render, reset_history=False)
+                           tts=False, render=render, reset_history=False,
+                           render_reels=False, render_facebook_reels=False,
+                           facebook_reels=False, reels_question_count=2,
+                           facebook_reels_question_count=None)
 
 
 def _bank(tmp_path, monkeypatch):

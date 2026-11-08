@@ -36,10 +36,14 @@ def _audio_duration(path, fallback=None):
         return fallback
 
 
-def create_composition(quiz, audio_map=None):
+def create_composition(quiz, audio_map=None, content_type="full"):
     audio_map = audio_map or {}
     part = quiz["part"]
-    project_dir = OUTPUT_DIR / "hyperframes" / f"part_{part:03d}"
+    project_subdir = "reels" if content_type == "reel" else ""
+    project_components = [OUTPUT_DIR, "hyperframes", f"part_{part:03d}"]
+    if project_subdir:
+        project_components.append(project_subdir)
+    project_dir = Path(*project_components)
     assets_dir = project_dir / "assets"
     assets_dir.mkdir(parents=True, exist_ok=True)
 

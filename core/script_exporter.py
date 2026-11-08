@@ -9,8 +9,12 @@ def part_directory(part_number):
     return OUTPUT_DIR / f"part_{part_number:03d}"
 
 
-def export_quiz(quiz):
-    part_dir = part_directory(quiz["part"])
+def export_quiz(quiz, output_dir=None):
+    if output_dir is None:
+        part_dir = part_directory(quiz["part"])
+    else:
+        part_dir = Path(output_dir)
+        part_dir.mkdir(parents=True, exist_ok=True)
     part_dir.mkdir(parents=True, exist_ok=True)
     (part_dir / "narration").mkdir(exist_ok=True)
     (part_dir / "subtitles").mkdir(exist_ok=True)
