@@ -178,10 +178,11 @@ jobs:
         run: |
           set -euo pipefail
           if ! git diff --quiet -- data/facebook_publish_history.json; then
+            PART_NUMBER="$(python -c 'from core.history_manager import load_history; print(load_history().get("last_part", 1))')"
             git config user.name "github-actions[bot]"
             git config user.email "github-actions[bot]@users.noreply.github.com"
             git add data/facebook_publish_history.json
-            git commit -m "Record Facebook Reel publication for Part $(printf '%03d' "$(python -c 'from core.history_manager import load_history; print(load_history().get('last_part', 1))")") [skip ci]"
+            git commit -m "Record Facebook Reel publication for Part $(printf '%03d' "$PART_NUMBER") [skip ci]"
             git push origin HEAD:main
           fi
 
