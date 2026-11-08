@@ -1,0 +1,205 @@
+name: Facebook Test Reel
+
+on:
+  workflow_dispatch:
+    inputs:
+      part_number:
+        description: "Part number to publish. Use 0 to choose the next stored Part number."
+        type: number
+        default: 0
+      confirm_live_publish:
+        description: "Explicitly authorize publishing exactly one live Facebook Reel to the Facebook Page."
+        type: boolean
+        default: false
+
+concurrency:
+  group: facebook-test-reel
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+env:
+  KOKORO_BASE_URL: "http://127.0.0.1:8880"
+  KOKORO_MODEL: "kokoro"
+  KOKORO_VOICE: "af_heart"
+  KOKORO_RESPONSE_FORMAT: "mp3"
+
+jobs:
+  publish-one-reel:
+    name: Publish one live Facebook Reel
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Require explicit live Reel authorization
+        env:
+          CONFIRM: ${{ inputs.confirm_live_publish }}
+        run: |
+          set -euo pipefail
+          if [ "$CONFIRM" != "true" ]; then
+            echo "Refusing to publish: confirm_live_publish must be explicitly set to true." >&2
+            exit 1
+          fi
+
+      - name: Verify required Meta secrets are configured
+        env:
+          META_PAGE_ID: ${{ secrets.META_PAGE_ID }}
+          META_PAGE_ACCESS_TOKEN: ${{ secrets.META_PAGE_ACCESS_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [ -z "${META_PAGE_ID}" ] || [ -z "${META_PAGE_ACCESS_TOKEN}" ]; then
+            echo "Missing required Meta secret. META_PAGE_ID and META_PAGE_ACCESS_TOKEN must be configured." >&2
+            exit 1
+          fi
+
+      - name: Resolve Part number
+        id: part
+        run: |
+          set -euo pipefail
+          PART="${{ inputs.part_number }}"
+          PART="${PART:-0}"
+          if [ "$PART" = "0" ]; then
+            PART="$(python -c 'from core.history_manager import next_part_number; print(next_part_number())')"
+          fi
+          if [ "$PART" -lt 1 ]; then
+            echo "Part number must be 1 or greater." >&2
+            exit 1
+          fi
+          echo "part_number=$PART" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install FFmpeg
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Restore question history
+        uses: actions/cache@v4
+        with:
+          path: data/used_questions.json
+          key: world-quiz-question-history-${{ github.ref }}
+          restore-keys: world-quiz-question-history-
+          save-always: true
+
+      - name: Restore HyperFrames browser cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/hyperframes
+          key: world-quiz-hyperframes-browser-${{ runner.os }}
+          restore-keys: world-quiz-hyperframes-browser-
+
+      - name: Install HyperFrames
+        run: |
+          npm install --global hyperframes@0.9.20
+          npx hyperframes --version
+          npx hyperframes browser ensure
+
+      - name: Set up Kokoro TTS server
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y espeak-ng
+          if [ ! -d kokoro-server ]; then
+            git clone --depth 1 --branch v0.9.2 https://github.com/remsky/Kokoro-FastAPI.git kokoro-server
+          fi
+          cd kokoro-server
+          export PROJECT_ROOT="$PWD"
+          export USE_GPU=false
+          export PYTHONPATH="$PROJECT_ROOT:$PROJECT_ROOT/api"
+          export MODEL_DIR=src/models
+          export VOICES_DIR=src/voices/v1_0
+          export WEB_PLAYER_PATH="$PROJECT_ROOT/web"
+          export ESPEAK_DATA_PATH=/usr/lib/x86_64-linux-gnu/espeak-ng-data
+          export HOST=127.0.0.1
+          export PORT=8880
+          export API_LOG_LEVEL=WARNING
+          export PYTHONUTF8=1
+          uv venv --python 3.12
+          uv pip install --python "$PWD/.venv/bin/python" -e ".[cpu]"
+          ./.venv/bin/python -m uvicorn --version
+          uv run --python "$PWD/.venv/bin/python" --no-sync python docker/scripts/download_model.py --output api/src/models/v1_0
+          nohup "./.venv/bin/python" -m uvicorn api.src.main:app --host "${HOST}" --port "${PORT}" --workers 1 > /tmp/kokoro.log 2>&1 &
+          for attempt in $(seq 1 300); do
+            if curl -fsS "http://127.0.0.1:${PORT}/health" >/dev/null 2>&1; then
+              curl -fsS "http://127.0.0.1:${PORT}/v1/models" >/dev/null 2>&1
+              echo "Kokoro TTS is ready."
+              break
+            fi
+            sleep 2
+          done
+          curl -fsS "http://127.0.0.1:${PORT}/health" >/dev/null
+          curl -fsS "http://127.0.0.1:${PORT}/v1/models" >/dev/null
+
+      - name: Generate exactly one Facebook Reel
+        env:
+          QUESTIONS_PER_PART: "15"
+        run: |
+          set -euo pipefail
+          PART_NUMBER="${{ steps.part.outputs.part_number }}"
+          python main.py \
+            --part "$PART_NUMBER" \
+            --count "$QUESTIONS_PER_PART" \
+            --category all \
+            --difficulty all \
+            --tts \
+            --render \
+            --render-reels \
+            --reels-question-count 5
+          if ! git diff --quiet -- data/used_questions.json; then
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add data/used_questions.json
+            git commit -m "Update quiz question history for Part $(printf '%03d' "$PART_NUMBER") [skip ci]"
+            git push origin HEAD:main
+          fi
+
+      - name: Preflight the generated Reel
+        env:
+          PART_NUMBER: ${{ steps.part.outputs.part_number }}
+        run: |
+          set -euo pipefail
+          PYTHONPATH="${GITHUB_WORKSPACE}" python main.py --publish-dry-run --part "$PART_NUMBER" --publish-content-type reel
+
+      - name: Publish the generated Reel to Facebook
+        env:
+          PART_NUMBER: ${{ steps.part.outputs.part_number }}
+          META_PAGE_ID: ${{ secrets.META_PAGE_ID }}
+          META_PAGE_ACCESS_TOKEN: ${{ secrets.META_PAGE_ACCESS_TOKEN }}
+          FACEBOOK_PUBLISH_ENABLED: "true"
+          FACEBOOK_PUBLISH_DRY_RUN: "false"
+        run: |
+          set -euo pipefail
+          python main.py --publish --part "$PART_NUMBER" --publish-content-type reel
+
+      - name: Upload generated Reel as an artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: facebook-test-reel-${{ github.run_id }}
+          path: |
+            output/**
+            data/facebook_publish_history.json
+          retention-days: 30
+          if-no-files-found: warn
+
+      - name: Generate step summary
+        if: failure()
+        run: |
+          echo "Facebook Test Reel failed. Review the job logs and generated artifacts." >> "$GITHUB_STEP_SUMMARY"

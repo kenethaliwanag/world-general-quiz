@@ -4,7 +4,7 @@ from unittest.mock import patch
 
 import core.publish_manager as publish_manager
 import integrations.facebook_publisher as facebook_publisher
-from tests.test_facebook_publisher import VALID_PROBE
+from tests.test_facebook_publisher import VALID_PROBE, _stub_preflight
 from integrations.facebook_publisher import FacebookApiError, FacebookPublisher, FacebookPublisherError, FacebookPublisherError
 
 
@@ -108,4 +108,25 @@ def test_phase2_api_errors_are_redacted(tmp_path, monkeypatch):
     raised = True
     assert "secret_token_value" not in result
     assert raised
+
+
+
+def test_facebook_test_reel_workflow_requires_explicit_confirmation():
+    workflow = Path(".github/workflows/facebook-test-reel.yml").read_text(encoding="utf-8")
+    assert "confirm_live_publish:" in workflow
+    assert "default: false" in workflow
+    assert 'FACEBOOK_PUBLISH_ENABLED: "true"' in workflow
+    assert 'FACEBOOK_PUBLISH_DRY_RUN: "false"' in workflow
+    assert "--publish-content-type reel" in workflow
+    assert "--publish-content-type full_video" not in workflow
+    assert "schedule:" not in workflow
+    assert " || true" not in workflow
+    assert "secrets.META_PAGE_ID" in workflow
+    assert "--meta-page" not in workflow
+
+
+def test_scheduled_workflow_remains_facebook_dry_run_only():
+    workflow = Path(".github/workflows/scheduled-world-quiz-videos.yml").read_text(encoding="utf-8")
+    assert "FACEBOOK_PUBLISH_ENABLED" not in workflow or 'FACEBOOK_PUBLISH_ENABLED: "true"' not in workflow
+    assert 'FACEBOOK_PUBLISH_DRY_RUN: "false"' not in workflow
 
