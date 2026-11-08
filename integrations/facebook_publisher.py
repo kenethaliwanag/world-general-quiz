@@ -795,10 +795,8 @@ class FacebookPublisher:
             "POST",
             f"{self.graph_api_base_url}/{self.graph_api_version}/{self.page_id}/video_reels",
             {
-                "upload_phase": "START",
+                "upload_phase": "start",
                 "access_token": self.access_token,
-                "title": title,
-                "description": description,
             },
             timeout=self.timeout_seconds,
         )
@@ -847,7 +845,7 @@ class FacebookPublisher:
             {
                 "access_token": self.access_token,
                 "video_id": video_id,
-                "upload_phase": "FINISH",
+                "upload_phase": "finish",
                 "video_state": "PUBLISHED",
                 "title": title,
                 "description": description,
