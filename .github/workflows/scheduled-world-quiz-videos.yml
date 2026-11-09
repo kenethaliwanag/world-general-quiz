@@ -136,7 +136,9 @@ jobs:
               $TTS_ARG \
               $RENDER_ARG \
               --render-reels \
-              --reels-question-count 5
+              --reels-question-count 5 \
+              --render-ten-video \
+              --ten-question-count 10
             if ! git diff --quiet -- data/used_questions.json; then
               git config user.name "github-actions[bot]"
               git config user.email "github-actions[bot]@users.noreply.github.com"

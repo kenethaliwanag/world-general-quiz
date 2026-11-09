@@ -38,8 +38,10 @@ def _audio_duration(path, fallback=None):
         return fallback
 
 
-def create_composition(quiz, audio_map=None, content_type="full"):
+def create_composition(quiz, audio_map=None, content_type="full", tracker=None):
     audio_map = audio_map or {}
+    if tracker is None:
+        tracker = content_type.startswith("ten_question")
     part = quiz["part"]
     project_subdir = "reels" if content_type == "reel" else ""
     project_components = [OUTPUT_DIR, "hyperframes", f"part_{part:03d}"]
@@ -167,8 +169,10 @@ def create_composition(quiz, audio_map=None, content_type="full"):
         add_audio("intro", cursor, intro_audio_duration if intro_audio_duration is not None else intro_duration)
     cursor += intro_duration + TRANSITION_SECONDS
 
+    tracker_events = [] if tracker else []
     for item in quiz["questions"]:
         n = item["number"]
+        question_start = cursor
         q_key, a_key = f"q{n}", f"a{n}"
         question_audio_duration = audio_durations.get(q_key)
         if question_audio_duration is not None:
@@ -194,6 +198,9 @@ def create_composition(quiz, audio_map=None, content_type="full"):
             reveal_duration = max(ANSWER_DISPLAY_SECONDS, answer_audio_duration + AUDIO_PADDING_SECONDS)
         else:
             reveal_duration = ANSWER_DISPLAY_SECONDS
+        answer_reveal_start = cursor
+        if tracker:
+            tracker_events.append((n, item["question"], item["answer"], question_start, answer_reveal_start))
         add_text("CORRECT ANSWER", cursor, reveal_duration, "eyebrow answer-label", f"q{n}-answer-label")
         add_text(item["answer"], cursor, reveal_duration, "answer", f"q{n}-answer")
         if copied_audio.get(a_key):
@@ -212,6 +219,18 @@ def create_composition(quiz, audio_map=None, content_type="full"):
     if copied_audio.get("ending"):
         add_audio("ending", cursor, ending_audio_duration if ending_audio_duration is not None else ending_duration)
     cursor += ending_duration
+
+    if tracker:
+        tracker_end = cursor + ending_duration
+        tracker_start_top = 12.0
+        tracker_step = 7.4
+        for number, question, answer, active_start, answer_reveal_start in tracker_events:
+            row_top = f"{tracker_start_top + (number - 1) * tracker_step:.2f}%"
+            number_extra = f'style="top:{row_top};left:73%;width:6%;height:6%;text-align:left;justify-content:flex-start;padding:0;font-size:30px"'
+            answer_extra = f'style="top:{row_top};left:79.5%;width:17%;height:6%;text-align:left;justify-content:flex-start;padding:0;font-size:22px;overflow:hidden"'
+            add_text(str(number), 0.0, tracker_end, "tracker-pending", f"tracker-number-{number}", extra=number_extra)
+            add_text(str(number), active_start, max(0.01, answer_reveal_start - active_start), "tracker-active", f"tracker-number-active-{number}", extra=number_extra)
+            add_text(answer, answer_reveal_start, max(0.01, tracker_end - answer_reveal_start), "tracker-answer", f"tracker-answer-{number}", extra=answer_extra)
 
     if copied_watermark:
         elements.append(
@@ -244,6 +263,9 @@ linear-gradient(145deg,#071426 0%,#102b46 55%,#06101d 100%)}}
 .answer-label{{color:#77e0a3}}
 .answer{{top:34%;height:32%;font-size:76px;line-height:1.15;font-weight:900;color:#77e0a3;text-shadow:0 0 30px rgba(70,220,145,.35)}}
 .ending{{top:34%;height:30%;font-size:66px;line-height:1.2;font-weight:900}}
+.tracker-pending{{position:absolute;z-index:5;color:rgba(245,207,114,.72);font-size:34px;font-weight:800}}
+.tracker-active{{position:absolute;z-index:6;color:#f5cf72;font-size:34px;font-weight:900}}
+.tracker-answer{{position:absolute;z-index:7;color:#8ee8bf;font-size:22px;font-weight:700;overflow:hidden}}
 .watermark{{position:absolute;top:24px;left:50%;width:22%;transform:translateX(-50%);opacity:0.82;z-index:8;filter:drop-shadow(0 8px 18px rgba(0,0,0,.35))}}
 </style>
 </head>

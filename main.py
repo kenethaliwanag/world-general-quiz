@@ -5,6 +5,7 @@ from pathlib import Path
 
 from config import (
     FACEBOOK_REEL_QUESTION_COUNT,
+    FACEBOOK_TEN_VIDEO_QUESTION_COUNT,
     QUESTIONS_PER_PART,
     OUTPUT_DIR,
     KOKORO_RESPONSE_FORMAT,
@@ -35,12 +36,16 @@ def parse_args():
     parser.add_argument("--reset-history", action="store_true", help="Clear used-question history and reset Part numbering.")
     parser.add_argument("--publish-dry-run", action="store_true", help="Validate a generated Part and prepare a Facebook publication dry-run report.")
     parser.add_argument("--publish", action="store_true", help="Run the guarded Facebook publisher after preflight and local validation.")
-    parser.add_argument("--publish-content-type", choices=["reel", "full_video"], default="reel", help="Facebook content type for --publish or --publish-dry-run.")
+    parser.add_argument("--publish-content-type", choices=["reel", "full_video", "ten_question_video"], default="reel", help="Facebook content type for --publish or --publish-dry-run.")
     parser.add_argument("--render-reels", action="store_true", help="Render a separate 3-to-5 question Facebook Reel from the same Part.")
     parser.add_argument("--render-facebook-reels", action="store_true", help="Alias for --render-reels.")
     parser.add_argument("--facebook-reels", action="store_true", help="Alias for --render-reels.")
     parser.add_argument("--reels-question-count", type=int, default=FACEBOOK_REEL_QUESTION_COUNT, help="Reel question count, 3-5.")
     parser.add_argument("--facebook-reels-question-count", type=int, default=None, help="Alias for the Reel question count.")
+    parser.add_argument("--render-ten-video", action="store_true", help="Render a separate 10-question Facebook Page Video.")
+    parser.add_argument("--render-facebook-ten-video", action="store_true", help="Alias for --render-ten-video.")
+    parser.add_argument("--facebook-ten-video", action="store_true", help="Alias for --render-ten-video.")
+    parser.add_argument("--facebook-ten-question-count", type=int, default=None, help="Requested Facebook 10-video question count.")
 
     return parser.parse_args()
 
@@ -149,7 +154,12 @@ def generate_part(part, args, history=None):
         or getattr(args, "render_facebook_reels", False)
         or getattr(args, "facebook_reels", False)
     )
-    if args.render or render_reels:
+    render_ten_video = bool(
+        getattr(args, "render_ten_video", False)
+        or getattr(args, "render_facebook_ten_video", False)
+        or getattr(args, "facebook_ten_video", False)
+    )
+    if args.render or render_reels or render_ten_video:
         if args.render:
             project_dir, duration, timeline = create_composition(quiz, audio_map)
             print(f"\nHyperFrames project: {project_dir}")
@@ -227,6 +237,70 @@ def generate_part(part, args, history=None):
                 print(f"Rendered Facebook Reel: {reel_video_path}")
                 print(f"Reel SRT: {reel_srt_path}")
 
+        if render_ten_video:
+            ten_question_count = getattr(args, "facebook_ten_question_count", FACEBOOK_TEN_VIDEO_QUESTION_COUNT)
+            if ten_question_count is None:
+                ten_question_count = FACEBOOK_TEN_VIDEO_QUESTION_COUNT
+            if ten_question_count != 10:
+                raise SystemExit("Facebook 10-question video requires exactly 10 questions.")
+            if len(selected) < ten_question_count:
+                raise SystemExit(f"Only {len(selected)} questions are available; cannot render a 10-question video.")
+
+            ten_dir = part_dir / "facebook" / "videos"
+            ten_dir.mkdir(parents=True, exist_ok=True)
+            ten_questions = selected[:ten_question_count]
+            quiz_ten = build_quiz(part, ten_questions)
+            _, ten_json_path, _ = export_quiz(quiz_ten, output_dir=ten_dir)
+            ten_keys = ["intro", "ending"] + [f"q{number}" for number in range(1, ten_question_count + 1)] + [f"a{number}" for number in range(1, ten_question_count + 1)]
+            ten_audio_map = {}
+            ten_audio_durations = {}
+            if args.tts:
+                ten_tts = KokoroTTS()
+                ext = part_audio_extension()
+                ten_narr_dir = ten_dir / "narration"
+                ten_narr_dir.mkdir(parents=True, exist_ok=True)
+                try:
+                    ten_audio_map["intro"] = ten_tts.synthesize(" ".join([quiz_ten["intro"][0] + ".", *quiz_ten["intro"][1:]]), ten_narr_dir / f"part_{part:03d}_intro.{ext}")
+                    for item in quiz_ten["questions"]:
+                        number = item["number"]
+                        ten_audio_map[f"q{number}"] = ten_tts.synthesize(item["question"], ten_narr_dir / f"part_{part:03d}_q{number:02d}.{ext}")
+                        ten_audio_map[f"a{number}"] = ten_tts.synthesize(f"The correct answer is {item['answer']}.", ten_narr_dir / f"part_{part:03d}_a{number:02d}.{ext}")
+                    ten_audio_map["ending"] = ten_tts.synthesize(quiz_ten["ending"], ten_narr_dir / f"part_{part:03d}_ending.{ext}")
+                except RuntimeError as exc:
+                    raise SystemExit(f"TTS failed for Part {part} 10-question video: {exc}")
+                for key, path in ten_audio_map.items():
+                    try:
+                        ten_audio_durations[key] = measure_audio(path)
+                    except (OSError, ValueError, RuntimeError, KeyError, IndexError, TypeError):
+                        pass
+            else:
+                cached_map, cached_durations = discover_cached_audio(part, ten_dir)
+                if cached_map:
+                    ten_audio_map.update(cached_map)
+                    ten_audio_durations.update(cached_durations)
+
+            for key in [f"q{number}" for number in range(1, ten_question_count + 1)] + [f"a{number}" for number in range(1, ten_question_count + 1)]:
+                if key not in ten_audio_map and key in audio_map:
+                    ten_audio_map[key] = audio_map[key]
+                    if key not in ten_audio_durations and key in audio_durations:
+                        ten_audio_durations[key] = audio_durations[key]
+            if "intro" not in ten_audio_map and "intro" in audio_map:
+                ten_audio_map["intro"] = audio_map["intro"]
+                if "intro" not in ten_audio_durations:
+                    ten_audio_durations["intro"] = audio_durations.get("intro")
+            if "ending" not in ten_audio_map and "ending" in audio_map:
+                ten_audio_map["ending"] = audio_map["ending"]
+                if "ending" not in ten_audio_durations:
+                    ten_audio_durations["ending"] = audio_durations.get("ending")
+            ten_srt_path = export_srt(quiz_ten, ten_dir, {key: value for key, value in ten_audio_durations.items() if value is not None})
+            if args.render or render_ten_video:
+                ten_project_dir, _, _ = create_composition(quiz_ten, ten_audio_map, content_type="ten_question_video", tracker=True)
+                print(f"10-question Facebook HyperFrames project: {ten_project_dir}")
+                ten_output_path = ten_dir / f"world_general_knowledge_quiz_part_{part:03d}_10_questions.mp4"
+                ten_video_path = render_video(ten_project_dir, part, output_path=ten_output_path)
+                print(f"Rendered 10-question Facebook Page Video: {ten_video_path}")
+                print(f"10-question subtitles: {ten_srt_path}")
+
     question_ids = [question["id"] for question in selected]
     history = record_question_usage(history, question_ids, part)
     print(f"Marked {len(question_ids)} question IDs as used for Part {part}.")
@@ -245,6 +319,8 @@ def _run_publish_reel(args, dry_run: bool = True):
         raise SystemExit(f"Generated Part directory not found: {part_dir}")
     if content_type == "full_video":
         video_path = part_dir / "video" / f"world_general_knowledge_quiz_part_{part_number:03d}.mp4"
+    elif content_type == "ten_question_video":
+        video_path = part_dir / "facebook" / "videos" / f"world_general_knowledge_quiz_part_{part_number:03d}_10_questions.mp4"
     else:
         video_path = part_dir / "facebook" / "reels" / f"world_general_knowledge_quiz_part_{part_number:03d}_reel.mp4"
     if not video_path.is_file():
@@ -255,7 +331,12 @@ def _run_publish_reel(args, dry_run: bool = True):
         raise SystemExit(f"Generated quiz JSON not found: {quiz_path}")
     quiz = json.loads(quiz_path.read_text(encoding="utf-8"))
 
-    suffix = " Reel" if content_type == "reel" else " Video"
+    if content_type == "reel":
+        suffix = " Reel"
+    elif content_type == "ten_question_video":
+        suffix = " 10 Questions"
+    else:
+        suffix = " Video"
     title = f"{quiz.get('title', 'World General Knowledge Quiz')} - Part {part_number}{suffix}"
     description = (
         f"{quiz.get('ending', 'World General Knowledge Quiz')}\n\n"
@@ -290,6 +371,8 @@ def _run_publish_reel(args, dry_run: bool = True):
 
         if content_type == "full_video":
             result = publisher.publish_full_video(part_number, video_path, title, description, manager)
+        elif content_type == "ten_question_video":
+            result = publisher.publish_ten_question_video(part_number, video_path, title, description, manager)
         else:
             result = publisher.publish_reel(part_number, video_path, title, description, manager)
     except Exception as exc:

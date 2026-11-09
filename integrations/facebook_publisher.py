@@ -643,8 +643,13 @@ class FacebookPublisher:
         content_type: str = "reel",
     ) -> dict[str, Any]:
         video_path = Path(video_path)
+        endpoint = (
+            f"{self.graph_api_base_url}/{self.graph_api_version}/<page_id>/video_reels"
+            if content_type == "reel"
+            else f"{self.graph_api_base_url}/{self.graph_api_version}/<page_id>/videos"
+        )
         return {
-            "endpoint": f"{self.graph_api_base_url}/{self.graph_api_version}/<page_id>/video_reels",
+            "endpoint": endpoint,
             "method": "POST",
             "phase_1_mode": "dry_run",
             "phase_2_mode": "live_when_guarded",
@@ -1074,6 +1079,25 @@ class FacebookPublisher:
         publish_manager,
     ) -> dict[str, Any]:
         return self.run_dry_run(part_number, video_path, title, description, publish_manager, content_type="full_video")
+
+    def publish_ten_question_video(
+        self,
+        part_number: int,
+        video_path: Path | str,
+        title: str,
+        description: str,
+        publish_manager,
+    ) -> dict[str, Any]:
+        if self.dry_run or not self.publish_enabled:
+            return self.run_dry_run(
+                part_number, video_path, title, description, publish_manager, content_type="ten_question_video"
+            )
+        return {
+            "success": False,
+            "content_type": "ten_question_video",
+            "reason": "live_page_video_not_implemented",
+            "errors": ["Ten-question Facebook Page Video live publishing remains reserved until the exact Page Video upload protocol and credentials are verified."],
+        }
 
     def from_environment(self):
         return self

@@ -21,3 +21,18 @@ def test_intro_and_outro_use_progressive_word_elements(tmp_path, monkeypatch):
     assert 'ending-text-word-1' in html
     assert 'ending-text-word-6' in html
     assert "HOW DID YOU DO?" in html
+
+def test_tracker_renders_all_question_numbers(tmp_path, monkeypatch):
+    questions = [
+        {"id": f"q{i}", "question": f"Question {i}?", "answer": f"Answer {i}.",
+         "category": "general", "difficulty": "easy"}
+        for i in range(1, 11)
+    ]
+    from core.quiz_generator import build_quiz
+    monkeypatch.setattr(hyperframes, "OUTPUT_DIR", tmp_path / "output")
+    quiz = build_quiz(1, questions)
+    project_dir, duration, timeline = hyperframes.create_composition(quiz, audio_map=None, tracker=True)
+    html = (project_dir / "index.html").read_text(encoding="utf-8")
+    for i in range(1, 11):
+        assert f'tracker-number-{i}' in html
+        assert f'tracker-answer-{i}' in html

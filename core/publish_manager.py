@@ -38,10 +38,16 @@ def normalize_history(history: Any) -> dict[str, Any]:
     for index, record in enumerate(records, 1):
         if not isinstance(record, dict):
             raise PublishHistoryError(f"Publication record {index} is not a JSON object.")
+    valid_content_types = {"reel", "full_video", "ten_question_video"}
     for index, record in enumerate(records, 1):
-        if "content_type" not in record or record.get("content_type") not in {"reel", "full_video"}:
+        if "content_type" not in record or record.get("content_type") not in valid_content_types:
             filename = str(record.get("video_file_name", ""))
-            record["content_type"] = "reel" if filename.endswith("_reel.mp4") else "full_video"
+            if filename.endswith("_reel.mp4"):
+                record["content_type"] = "reel"
+            elif filename.endswith("_10_questions.mp4"):
+                record["content_type"] = "ten_question_video"
+            else:
+                record["content_type"] = "full_video"
 
     schema_version = history.get("schema_version", 1)
     try:
@@ -115,10 +121,15 @@ def find_record(history: dict[str, Any], *, part_number: int | None = None, cont
 
 def _record_content_type(record: dict[str, Any]) -> str:
     content_type = record.get("content_type")
-    if content_type in {"reel", "full_video"}:
+    if content_type in {"reel", "full_video", "ten_question_video"}:
         return content_type
     filename = str(record.get("video_file_name", ""))
-    return "reel" if Path(filename).name.endswith("_reel.mp4") else "full_video"
+    basename = Path(filename).name
+    if basename.endswith("_reel.mp4"):
+        return "reel"
+    if basename.endswith("_10_questions.mp4"):
+        return "ten_question_video"
+    return "full_video"
 
 
 def upsert_record(history_path: Path, record: dict[str, Any]) -> None:

@@ -18,7 +18,9 @@ def _args(render=True):
                            tts=False, render=render, reset_history=False,
                            render_reels=False, render_facebook_reels=False,
                            facebook_reels=False, reels_question_count=2,
-                           facebook_reels_question_count=None)
+                           facebook_reels_question_count=None,
+                           render_ten_video=False, render_facebook_ten_video=False,
+                           facebook_ten_video=False, facebook_ten_question_count=None)
 
 
 def _bank(tmp_path, monkeypatch):
@@ -38,7 +40,7 @@ def _bank(tmp_path, monkeypatch):
     return history_manager.load_history(), questions
 
 
-def _fake_create(quiz, audio_map=None):
+def _fake_create(quiz, audio_map=None, **kwargs):
     project_dir = Path(main.OUTPUT_DIR) / "hyperframes" / f"part_{quiz['part']:03d}"
     project_dir.mkdir(parents=True, exist_ok=True)
     (project_dir / "index.html").write_text("composition", encoding="utf-8")
@@ -48,8 +50,8 @@ def _fake_create(quiz, audio_map=None):
 def test_generate_part_records_history_after_render(tmp_path, monkeypatch):
     history, _ = _bank(tmp_path, monkeypatch)
     monkeypatch.setattr(main, "create_composition", _fake_create)
-    monkeypatch.setattr(main, "render_video", lambda project_dir, part_number: (
-        _fake_video(main.OUTPUT_DIR, part_number)
+    monkeypatch.setattr(main, "render_video", lambda project_dir, part_number, output_path=None: (
+        _fake_video(main.OUTPUT_DIR, part_number, output_path)
     ))
     args = _args(render=True)
     part_dir, returned_history = main.generate_part(1, args, history=history)
@@ -61,8 +63,11 @@ def test_generate_part_records_history_after_render(tmp_path, monkeypatch):
     assert returned_history["last_part"] == 1
 
 
-def _fake_video(output_dir, part_number):
-    target = Path(output_dir) / f"part_{part_number:03d}" / "video" / f"world_general_knowledge_quiz_part_{part_number:03d}.mp4"
+def _fake_video(output_dir, part_number, output_path=None):
+    if output_path is not None:
+        target = Path(output_path)
+    else:
+        target = Path(output_dir) / f"part_{part_number:03d}" / "video" / f"world_general_knowledge_quiz_part_{part_number:03d}.mp4"
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_bytes(b"fake mp4")
     return target
@@ -126,7 +131,7 @@ def test_successive_parts_do_not_reuse_question_ids(tmp_path, monkeypatch):
     history, _ = _bank(tmp_path, monkeypatch)
     before = history
     monkeypatch.setattr(main, "create_composition", _fake_create)
-    monkeypatch.setattr(main, "render_video", lambda project_dir, part_number: _fake_video(main.OUTPUT_DIR, part_number))
+    monkeypatch.setattr(main, "render_video", lambda project_dir, part_number, output_path=None: _fake_video(main.OUTPUT_DIR, part_number, output_path))
 
     first_dir, first_history = main.generate_part(1, _args(render=True), history=before)
     second_dir, second_history = main.generate_part(2, _args(render=True), history=first_history)
@@ -138,3 +143,37 @@ def test_successive_parts_do_not_reuse_question_ids(tmp_path, monkeypatch):
     second_ids = {question["id"] for question in __import__("json").loads((second_dir / "script.json").read_text())["questions"]}
     assert not first_ids.intersection(second_ids)
     assert history_manager.load_history()["last_part"] == 2
+
+
+def test_generate_part_renders_ten_question_facebook_video(tmp_path, monkeypatch):
+    import json
+    questions = [
+        {"id": f"q{i}", "question": f"Question {i}?", "answer": f"Answer {i}.",
+         "category": "general", "difficulty": "easy"}
+        for i in range(1, 16)
+    ]
+    q_file = tmp_path / "questions.json"
+    q_file.write_text(json.dumps(questions), encoding="utf-8")
+    h_file = tmp_path / "used.json"
+    out_dir = tmp_path / "output"
+    import core.history_manager as history_manager
+    import core.question_manager as question_manager
+    import core.script_exporter as exporter
+    monkeypatch.setattr(history_manager, "HISTORY_FILE", h_file)
+    monkeypatch.setattr(question_manager, "QUESTIONS_FILE", q_file)
+    monkeypatch.setattr(main, "OUTPUT_DIR", out_dir)
+    monkeypatch.setattr(exporter, "OUTPUT_DIR", out_dir)
+    monkeypatch.setattr(main, "create_composition", _fake_create)
+    monkeypatch.setattr(main, "render_video", lambda project_dir, part_number, output_path=None: _fake_video(main.OUTPUT_DIR, part_number, output_path))
+    args = SimpleNamespace(count=10, category="all", difficulty="all", seed=42,
+                           part=None, start_part=None, total_parts=None,
+                           tts=False, render=True, reset_history=False,
+                           render_reels=False, render_facebook_reels=False,
+                           facebook_reels=False, reels_question_count=2,
+                           facebook_reels_question_count=None,
+                           render_ten_video=True, render_facebook_ten_video=False,
+                           facebook_ten_video=False, facebook_ten_question_count=10)
+    history = history_manager.load_history()
+    part_dir, returned_history = main.generate_part(1, args, history=history)
+    assert (part_dir / "facebook" / "videos" / "world_general_knowledge_quiz_part_001_10_questions.mp4").exists()
+    assert (part_dir / "facebook" / "videos" / "script.json").exists()

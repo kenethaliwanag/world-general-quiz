@@ -27,3 +27,5 @@
 - Documented cloud execution using native Ubuntu runner and local Kokoro HTTP service.
 - Generated Facebook Reel narration independently for its configured 5-question intro and outro.
 - Added progressive word-by-word display for HyperFrames intro and outro text only.
+- Added separate 10-question Facebook Page Video format at `output/part_XXX/facebook/videos/..._10_questions.mp4`.
+- Added a persistent numbered answer tracker to the 10-question HyperFrames composition.

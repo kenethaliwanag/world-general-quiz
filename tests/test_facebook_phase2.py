@@ -133,5 +133,6 @@ def test_scheduled_workflow_publishes_facebook_reels_on_live_controls():
     assert 'FACEBOOK_PUBLISH_DRY_RUN: "false"' in workflow
     assert "python main.py --publish --part" in workflow
     assert "secrets.META_PAGE_ACCESS_TOKEN" in workflow
+    assert "--render-ten-video" in workflow
     assert " || true" not in workflow
 
