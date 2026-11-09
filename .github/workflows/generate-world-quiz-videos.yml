@@ -166,11 +166,15 @@ jobs:
           for PART_NUMBER in $(seq "$START_PART" "$LAST_PART"); do
             TTS_ARG=""
             RENDER_ARG=""
+            REEL_RENDER_ARG=""
+            TEN_RENDER_ARG=""
             if [ "$ENABLE_TTS" = "true" ]; then
               TTS_ARG="--tts"
             fi
             if [ "$ENABLE_RENDER" = "true" ]; then
               RENDER_ARG="--render"
+              REEL_RENDER_ARG="--render-reels --reels-question-count 5"
+              TEN_RENDER_ARG="--render-ten-video --ten-question-count 10"
             fi
             python main.py \
               --part "$PART_NUMBER" \
@@ -178,7 +182,9 @@ jobs:
               --category "$CATEGORY" \
               --difficulty "$DIFFICULTY" \
               $TTS_ARG \
-              $RENDER_ARG
+              $RENDER_ARG \
+              $REEL_RENDER_ARG \
+              $TEN_RENDER_ARG
             if ! git diff --quiet -- data/used_questions.json; then
               git config user.name "github-actions[bot]"
               git config user.email "github-actions[bot]@users.noreply.github.com"
