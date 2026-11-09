@@ -45,7 +45,8 @@ def parse_args():
     parser.add_argument("--render-ten-video", action="store_true", help="Render a separate 10-question Facebook Page Video.")
     parser.add_argument("--render-facebook-ten-video", action="store_true", help="Alias for --render-ten-video.")
     parser.add_argument("--facebook-ten-video", action="store_true", help="Alias for --render-ten-video.")
-    parser.add_argument("--facebook-ten-question-count", type=int, default=None, help="Requested Facebook 10-video question count.")
+    parser.add_argument("--ten-question-count", type=int, default=FACEBOOK_TEN_VIDEO_QUESTION_COUNT, help="Requested Facebook 10-video question count.")
+    parser.add_argument("--facebook-ten-question-count", type=int, default=None, help="Alias for the Facebook 10-video question count.")
 
     return parser.parse_args()
 
