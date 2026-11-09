@@ -86,6 +86,24 @@
       "created_at": "2026-11-09T20:34:42.077555+00:00",
       "published_at": null,
       "content_type": "reel"
+    },
+    {
+      "part_number": 2,
+      "video_file_name": "world_general_knowledge_quiz_part_002_reel.mp4",
+      "content_hash": "d39b7b9333b07df8fabb60f3bbccff43043998cf47d5223c5973555215045f76",
+      "title": "World General Knowledge Quiz - Part 2 Reel",
+      "description": "How many did you get right? Comment your score below!\n\nQuestion set: 2. Answer in the comments and challenge your friends.",
+      "status": "failed",
+      "meta_graph_api_version": "v26.0",
+      "meta_video_id": null,
+      "meta_post_id": null,
+      "upload_phase": "not_started",
+      "errors": [
+        "Audio bitrate is 11851 bps; expected at least 128000 bps."
+      ],
+      "created_at": "2026-11-09T23:19:28.275297+00:00",
+      "published_at": null,
+      "content_type": "reel"
     }
   ]
 }
