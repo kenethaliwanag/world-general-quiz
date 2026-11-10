@@ -138,6 +138,24 @@
       "content_type": "ten_question_video",
       "created_at": "2026-11-10T17:44:15.215733+00:00",
       "published_at": null
+    },
+    {
+      "part_number": 2,
+      "video_file_name": "world_general_knowledge_quiz_part_002_10_questions.mp4",
+      "content_hash": "1e55f879034d0dc8358ace682850a6d8cfe464cfde775aebded7c5d0f71db559",
+      "title": "World General Knowledge Quiz - Part 2 | 10 Questions",
+      "description": "🌍 Think you know the world? Test yourself with 10 quick general knowledge questions!\n\nComment your score below 👇 and challenge a friend to beat it.\n\n#WorldGeneralKnowledgeQuiz #GeneralKnowledge #Trivia #QuizTime #LearnOnFacebook",
+      "status": "failed",
+      "meta_graph_api_version": "v26.0",
+      "meta_video_id": null,
+      "meta_post_id": null,
+      "upload_phase": "not_started",
+      "errors": [
+        "Audio bitrate is 95602 bps; expected at least 128000 bps."
+      ],
+      "content_type": "ten_question_video",
+      "created_at": "2026-11-10T20:50:20.457297+00:00",
+      "published_at": null
     }
   ]
 }
