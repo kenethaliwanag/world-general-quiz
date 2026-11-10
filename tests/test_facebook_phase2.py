@@ -125,7 +125,7 @@ def test_facebook_test_reel_workflow_requires_explicit_confirmation():
     assert "--meta-page" not in workflow
 
 
-def test_scheduled_workflow_publishes_facebook_reels_on_live_controls():
+def test_scheduled_workflow_publishes_ten_question_facebook_page_video():
     workflow = Path(".github/workflows/scheduled-world-quiz-videos.yml").read_text(encoding="utf-8")
     assert '- cron: "0 10 * * *"' in workflow
     assert '- cron: "0 14 * * *"' in workflow
@@ -134,5 +134,69 @@ def test_scheduled_workflow_publishes_facebook_reels_on_live_controls():
     assert "python main.py --publish --part" in workflow
     assert "secrets.META_PAGE_ACCESS_TOKEN" in workflow
     assert "--render-ten-video" in workflow
+    assert "--publish-content-type ten_question_video" in workflow
     assert " || true" not in workflow
 
+
+def test_phase2_ten_question_page_video_publish_succeeds(tmp_path, monkeypatch):
+    publisher, manager = _live_publisher(tmp_path)
+    video = Path(tmp_path, "world_general_knowledge_quiz_part_001_10_questions.mp4")
+    video.write_bytes(b"ten-question video")
+    monkeypatch.setattr(facebook_publisher, "_run_ffprobe", lambda path: VALID_PROBE)
+    monkeypatch.setattr(publisher, "_upload_page_video", lambda path, title, description: {"id": "ten-video-id", "post_id": "ten-post-id"})
+
+    result = publisher.publish_ten_question_video(1, video, "10 Questions", "Trivia challenge", manager)
+
+    assert result["success"]
+    assert result["meta_video_id"] == "ten-video-id"
+    assert result["meta_post_id"] == "ten-post-id"
+    record = manager.find_record(part_number=1, content_hash=result["content_hash"])
+    assert record["status"] == "published"
+    assert record["content_type"] == "ten_question_video"
+
+
+def test_phase2_ten_question_page_video_failure_is_recorded(tmp_path, monkeypatch):
+    publisher, manager = _live_publisher(tmp_path)
+    video = Path(tmp_path, "world_general_knowledge_quiz_part_001_10_questions.mp4")
+    video.write_bytes(b"ten-question video")
+    monkeypatch.setattr(facebook_publisher, "_run_ffprobe", lambda path: VALID_PROBE)
+
+    def failing_upload(path, title, description):
+        raise FacebookApiError("Meta rejected the Page Video")
+
+    monkeypatch.setattr(publisher, "_upload_page_video", failing_upload)
+
+    raised = False
+    try:
+        publisher.publish_ten_question_video(1, video, "10 Questions", "Trivia challenge", manager)
+    except FacebookApiError as exc:
+        raised = True
+        assert "rejected" in str(exc).lower()
+    assert raised
+    record = manager.find_record(part_number=1, content_hash=publisher.calculate_content_hash(video))
+    assert record["status"] == "failed"
+    assert record["content_type"] == "ten_question_video"
+
+
+def test_ten_question_video_live_publish_uses_page_video_upload(tmp_path, monkeypatch):
+    publisher, manager = _live_publisher(tmp_path)
+    video = Path(tmp_path, "world_general_knowledge_quiz_part_001_10_questions.mp4")
+    video.write_bytes(b"ten-question-video")
+    monkeypatch.setattr(facebook_publisher, "_run_ffprobe", _stub_preflight(VALID_PROBE))
+    monkeypatch.setattr(publisher, "_upload_page_video", lambda path, title, description: {"id": "page-video-10", "post_id": "post-10"})
+    result = publisher.publish_ten_question_video(1, video, "Title", "Description", manager)
+    assert result["success"] is True
+    assert result["meta_video_id"] == "page-video-10"
+    record = manager.find_record(part_number=1, content_hash=publisher.calculate_content_hash(video))
+    assert record["content_type"] == "ten_question_video"
+    assert record["status"] == "published"
+
+
+def test_ten_question_video_dry_run_uses_page_video_endpoint(tmp_path, monkeypatch):
+    publisher = FacebookPublisher(dry_run=True)
+    manager = publish_manager.FacebookPublishManager(history_path=tmp_path / "data" / "facebook_publish_history.json")
+    video = Path(tmp_path, "world_general_knowledge_quiz_part_001_10_questions.mp4")
+    video.write_bytes(b"ten-question-video")
+    monkeypatch.setattr(facebook_publisher, "_run_ffprobe", _stub_preflight(VALID_PROBE))
+    report = publisher.run_dry_run(1, video, "Title", "Description", manager, content_type="ten_question_video")
+    assert report.dry_run_payload["endpoint"].endswith("/videos")

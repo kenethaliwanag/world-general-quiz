@@ -335,15 +335,22 @@ def _run_publish_reel(args, dry_run: bool = True):
     if content_type == "reel":
         suffix = " Reel"
     elif content_type == "ten_question_video":
-        suffix = " 10 Questions"
+        suffix = " | 10 Questions"
     else:
         suffix = " Video"
     title = f"{quiz.get('title', 'World General Knowledge Quiz')} - Part {part_number}{suffix}"
-    description = (
-        f"{quiz.get('ending', 'World General Knowledge Quiz')}\n\n"
-        f"Question set: {quiz.get('part', part_number)}. "
-        "Answer in the comments and challenge your friends."
-    )
+    if content_type == "ten_question_video":
+        description = (
+            "🌍 Think you know the world? Test yourself with 10 quick general knowledge questions!\n\n"
+            "Comment your score below 👇 and challenge a friend to beat it.\n\n"
+            "#WorldGeneralKnowledgeQuiz #GeneralKnowledge #Trivia #QuizTime #LearnOnFacebook"
+        )
+    else:
+        description = (
+            f"{quiz.get('ending', 'World General Knowledge Quiz')}\n\n"
+            f"Question set: {quiz.get('part', part_number)}. "
+            "Answer in the comments and challenge your friends."
+        )
 
     manager = FacebookPublishManager()
     publisher = FacebookPublisher(dry_run=dry_run)
@@ -380,7 +387,7 @@ def _run_publish_reel(args, dry_run: bool = True):
         print(f"Facebook publishing failed for Part {part_number}: {exc}")
         raise SystemExit(1) from exc
 
-    print("\nFacebook Reels publication completed" if result.get("success") else "\nFacebook Reels publication was not successful")
+    print("\nFacebook publication completed" if result.get("success") else "\nFacebook publication was not successful")
     if result.get("skipped"):
         print(f"Skipped reason: {result.get('reason')}")
     print(f"Part: {result.get('part_number', part_number)}")

@@ -159,7 +159,7 @@ jobs:
             exit 1
           fi
 
-      - name: Publish generated Facebook Reel
+      - name: Publish generated 10-question Facebook Page Video
         env:
           META_PAGE_ID: ${{ secrets.META_PAGE_ID }}
           META_PAGE_ACCESS_TOKEN: ${{ secrets.META_PAGE_ACCESS_TOKEN }}
@@ -172,8 +172,8 @@ jobs:
             echo "Invalid last Part number: ${PART_NUMBER}" >&2
             exit 1
           fi
-          echo "Publishing Facebook Reel for Part ${PART_NUMBER}"
-          python main.py --publish --part "$PART_NUMBER" --publish-content-type reel
+          echo "Publishing 10-question Facebook Page Video for Part ${PART_NUMBER}"
+          python main.py --publish --part "$PART_NUMBER" --publish-content-type ten_question_video
 
       - name: Persist Facebook publication history
         if: success()
@@ -184,7 +184,7 @@ jobs:
             git config user.name "github-actions[bot]"
             git config user.email "github-actions[bot]@users.noreply.github.com"
             git add data/facebook_publish_history.json
-            git commit -m "Record Facebook Reel publication for Part $(printf '%03d' "$PART_NUMBER") [skip ci]"
+            git commit -m "Record Facebook Page Video publication for Part $(printf '%03d' "$PART_NUMBER") [skip ci]"
             git push origin HEAD:main
           fi
 

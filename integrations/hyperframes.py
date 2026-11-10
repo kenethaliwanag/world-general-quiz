@@ -43,7 +43,12 @@ def create_composition(quiz, audio_map=None, content_type="full", tracker=None):
     if tracker is None:
         tracker = content_type.startswith("ten_question")
     part = quiz["part"]
-    project_subdir = "reels" if content_type == "reel" else ""
+    if content_type == "reel":
+        project_subdir = "reels"
+    elif content_type.startswith("ten_question"):
+        project_subdir = "videos"
+    else:
+        project_subdir = ""
     project_components = [OUTPUT_DIR, "hyperframes", f"part_{part:03d}"]
     if project_subdir:
         project_components.append(project_subdir)
@@ -168,6 +173,11 @@ def create_composition(quiz, audio_map=None, content_type="full", tracker=None):
     if copied_audio.get("intro"):
         add_audio("intro", cursor, intro_audio_duration if intro_audio_duration is not None else intro_duration)
     cursor += intro_duration + TRANSITION_SECONDS
+    quiz_start_cursor = cursor
+
+    if tracker:
+        hook_start = max(0.0, quiz_start_cursor - 1.0)
+        add_text("CAN YOU GET ALL 10 CORRECT?", hook_start, max(0.01, quiz_start_cursor - hook_start), "hook", "intro-hook")
 
     tracker_events = [] if tracker else []
     for item in quiz["questions"]:
@@ -207,6 +217,7 @@ def create_composition(quiz, audio_map=None, content_type="full", tracker=None):
             add_audio(a_key, cursor, answer_audio_duration if answer_audio_duration is not None else reveal_duration)
         cursor += reveal_duration + TRANSITION_SECONDS
 
+    quiz_end_cursor = cursor
     ending_audio_duration = audio_durations.get("ending")
     if ending_audio_duration is not None:
         ending_duration = max(4.0, ending_audio_duration + AUDIO_PADDING_SECONDS)
@@ -216,19 +227,21 @@ def create_composition(quiz, audio_map=None, content_type="full", tracker=None):
     for index, (cue_start, text, duration) in enumerate(word_progress_cues(quiz["ending"], cursor, ending_duration)):
         add_text(text, cue_start, duration, "ending", f"ending-text-word-{index + 1}")
     add_text(f"PART {part}", cursor + max(0.0, ending_duration - 2.5), 2.5, "partline", "ending-part")
+    if tracker:
+        add_text("Comment your score out of 10 - Share with friends - Follow for more quizzes", cursor, ending_duration, "cta", "ending-cta")
     if copied_audio.get("ending"):
         add_audio("ending", cursor, ending_audio_duration if ending_audio_duration is not None else ending_duration)
     cursor += ending_duration
 
     if tracker:
-        tracker_end = cursor + ending_duration
-        tracker_start_top = 12.0
-        tracker_step = 7.4
+        tracker_end = quiz_end_cursor
+        tracker_start_top = 16.0
+        tracker_step = 6.8
         for number, question, answer, active_start, answer_reveal_start in tracker_events:
             row_top = f"{tracker_start_top + (number - 1) * tracker_step:.2f}%"
-            number_extra = f'style="top:{row_top};left:73%;width:6%;height:6%;text-align:left;justify-content:flex-start;padding:0;font-size:30px"'
-            answer_extra = f'style="top:{row_top};left:79.5%;width:17%;height:6%;text-align:left;justify-content:flex-start;padding:0;font-size:22px;overflow:hidden"'
-            add_text(str(number), 0.0, tracker_end, "tracker-pending", f"tracker-number-{number}", extra=number_extra)
+            number_extra = f'style="top:{row_top};left:3%;width:5%;height:6%;text-align:left;justify-content:flex-start;padding:0;font-size:30px"'
+            answer_extra = f'style="top:{row_top};left:9%;width:19%;height:6%;text-align:left;justify-content:flex-start;padding:0;font-size:22px;overflow:hidden"'
+            add_text(str(number), quiz_start_cursor, max(0.01, tracker_end - quiz_start_cursor), "tracker-pending", f"tracker-number-{number}", extra=number_extra)
             add_text(str(number), active_start, max(0.01, answer_reveal_start - active_start), "tracker-active", f"tracker-number-active-{number}", extra=number_extra)
             add_text(answer, answer_reveal_start, max(0.01, tracker_end - answer_reveal_start), "tracker-answer", f"tracker-answer-{number}", extra=answer_extra)
 
@@ -266,11 +279,14 @@ linear-gradient(145deg,#071426 0%,#102b46 55%,#06101d 100%)}}
 .tracker-pending{{position:absolute;z-index:5;color:rgba(245,207,114,.72);font-size:34px;font-weight:800}}
 .tracker-active{{position:absolute;z-index:6;color:#f5cf72;font-size:34px;font-weight:900}}
 .tracker-answer{{position:absolute;z-index:7;color:#8ee8bf;font-size:22px;font-weight:700;overflow:hidden}}
+.tracker-layout .question,.tracker-layout .answer,.tracker-layout .answer-label,.tracker-layout .countdown,.tracker-layout .eyebrow{{left:30%;width:64%}}
+.hook{{top:82%;left:8%;width:84%;font-size:34px;color:#f5cf72;font-weight:900;text-align:center;letter-spacing:2px}}
+.cta{{top:84%;left:8%;width:84%;font-size:26px;color:#d7e6ff;text-align:center}}
 .watermark{{position:absolute;top:24px;left:50%;width:22%;transform:translateX(-50%);opacity:0.82;z-index:8;filter:drop-shadow(0 8px 18px rgba(0,0,0,.35))}}
 </style>
 </head>
 <body>
-<div id="root" data-composition-id="{part_id}" data-start="0" data-width="{VIDEO_WIDTH}" data-height="{VIDEO_HEIGHT}" data-duration="{cursor:.3f}">
+<div id="root" class="{"tracker-layout" if tracker else ""}" data-composition-id="{part_id}" data-start="0" data-width="{VIDEO_WIDTH}" data-height="{VIDEO_HEIGHT}" data-duration="{cursor:.3f}">
 {''.join(elements)}
 </div>
 <script>

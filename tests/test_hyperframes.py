@@ -36,3 +36,10 @@ def test_tracker_renders_all_question_numbers(tmp_path, monkeypatch):
     for i in range(1, 11):
         assert f'tracker-number-{i}' in html
         assert f'tracker-answer-{i}' in html
+    assert html.count('class="clip tracker-pending"') == 10
+    assert 'left:3%' in html
+    assert 'left:9%' in html
+    assert 'left:73%' not in html
+    assert 'tracker-layout' in html
+    assert 'CAN YOU GET ALL 10 CORRECT?' in html
+    assert 'Comment your score out of 10' in html

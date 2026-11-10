@@ -29,3 +29,6 @@
 - Added progressive word-by-word display for HyperFrames intro and outro text only.
 - Added separate 10-question Facebook Page Video format at `output/part_XXX/facebook/videos/..._10_questions.mp4`.
 - Added a persistent numbered answer tracker to the 10-question HyperFrames composition.
+- Moved the 10-question tracker to the left and separated the quiz layout to prevent overlap.
+- Added opening hook and closing call-to-action overlays to the 10-question format.
+- Scheduled publishing now targets the 10-question Facebook Page Video instead of the 5-question Reel.

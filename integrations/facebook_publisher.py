@@ -122,6 +122,7 @@ class FacebookPublisher:
             FACEBOOK_PUBLISH_DRY_RUN,
             FACEBOOK_PUBLISH_ENABLED,
             META_GRAPH_API_BASE_URL,
+            META_VIDEO_UPLOAD_BASE_URL,
             META_GRAPH_API_VERSION,
             META_PAGE_ACCESS_TOKEN,
             META_PAGE_ID,
@@ -130,6 +131,7 @@ class FacebookPublisher:
 
         self.graph_api_version = graph_api_version or META_GRAPH_API_VERSION
         self.graph_api_base_url = META_GRAPH_API_BASE_URL.rstrip("/")
+        self.video_upload_base_url = META_VIDEO_UPLOAD_BASE_URL.rstrip("/")
         self.dry_run = dry_run if dry_run is not None else FACEBOOK_PUBLISH_DRY_RUN
         self.publish_enabled = FACEBOOK_PUBLISH_ENABLED
         self.timeout_seconds = int(timeout_seconds if timeout_seconds else META_PUBLISH_TIMEOUT_SECONDS)
@@ -1080,6 +1082,71 @@ class FacebookPublisher:
     ) -> dict[str, Any]:
         return self.run_dry_run(part_number, video_path, title, description, publish_manager, content_type="full_video")
 
+    def _request_multipart(
+        self,
+        url: str,
+        fields: dict[str, str],
+        file_field: str,
+        file_name: str,
+        file_data: bytes,
+        file_content_type: str = "video/mp4",
+    ) -> dict[str, Any]:
+        boundary = "----QuizBoundary7MA4YWxkTrZu0gW"
+        body = bytearray()
+        for key, value in fields.items():
+            body += (
+                f"--{boundary}\r\n"
+                f'Content-Disposition: form-data; name="{key}"\r\n\r\n'
+                f"{value}\r\n"
+            ).encode("utf-8")
+        body += (
+            f"--{boundary}\r\n"
+            f'Content-Disposition: form-data; name="{file_field}"; filename="{file_name}"\r\n'
+            f"Content-Type: {file_content_type}\r\n\r\n"
+        ).encode("utf-8")
+        body += file_data
+        body += f"\r\n--{boundary}--\r\n".encode("utf-8")
+        request = urllib.request.Request(
+            url,
+            data=bytes(body),
+            headers={
+                "Content-Type": f"multipart/form-data; boundary={boundary}",
+                "Accept": "application/json",
+            },
+            method="POST",
+        )
+        try:
+            with urllib.request.urlopen(request, timeout=max(self.timeout_seconds, 300)) as response:
+                raw = response.read()
+        except urllib.error.HTTPError as exc:
+            raw = exc.read()
+            raise FacebookApiError(self._redacted_error(raw, exc.code)) from exc
+        except urllib.error.URLError as exc:
+            raise FacebookApiError(f"Facebook Page Video upload connection failed: {exc.reason}") from exc
+        except TimeoutError as exc:
+            raise FacebookApiError("Facebook Page Video upload timed out.") from exc
+        if not raw:
+            return {}
+        try:
+            parsed = json.loads(raw.decode("utf-8"))
+        except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+            raise FacebookApiError("Facebook Page Video upload returned invalid JSON.") from exc
+        return parsed if isinstance(parsed, dict) else {}
+
+    def _upload_page_video(self, video_path: Path, title: str, description: str) -> dict[str, Any]:
+        url = f"{self.video_upload_base_url}/{self.graph_api_version}/{self.page_id}/videos"
+        return self._request_multipart(
+            url,
+            {
+                "access_token": self.access_token,
+                "title": title,
+                "description": description,
+            },
+            "source",
+            video_path.name,
+            video_path.read_bytes(),
+        )
+
     def publish_ten_question_video(
         self,
         part_number: int,
@@ -1088,16 +1155,119 @@ class FacebookPublisher:
         description: str,
         publish_manager,
     ) -> dict[str, Any]:
+        content_type = "ten_question_video"
+        path = Path(video_path)
+        preflight = self.validate_video(path, content_type=content_type)
+        content_hash = self.calculate_content_hash(path)
+        config_errors = self.validate_configuration()
+
+        if not preflight.success or config_errors:
+            record = {
+                "part_number": part_number,
+                "video_file_name": path.name,
+                "content_hash": content_hash,
+                "title": title,
+                "description": description,
+                "status": "failed",
+                "meta_graph_api_version": self.graph_api_version,
+                "meta_video_id": None,
+                "meta_post_id": None,
+                "upload_phase": "not_started",
+                "errors": list(preflight.errors) + list(config_errors),
+                "content_type": content_type,
+                "created_at": utc_now(),
+                "published_at": None,
+            }
+            publish_manager.upsert_record(record)
+            return {
+                "success": False,
+                "part_number": part_number,
+                "content_hash": content_hash,
+                "errors": list(preflight.errors) + list(config_errors),
+            }
+
         if self.dry_run or not self.publish_enabled:
-            return self.run_dry_run(
-                part_number, video_path, title, description, publish_manager, content_type="ten_question_video"
-            )
-        return {
-            "success": False,
-            "content_type": "ten_question_video",
-            "reason": "live_page_video_not_implemented",
-            "errors": ["Ten-question Facebook Page Video live publishing remains reserved until the exact Page Video upload protocol and credentials are verified."],
+            return self.run_dry_run(part_number, path, title, description, publish_manager, content_type=content_type)
+
+        prior_record = publish_manager.find_record(
+            part_number=part_number, content_hash=content_hash, content_type=content_type
+        )
+        if prior_record is not None and prior_record.get("status") == "published":
+            return {
+                "success": True,
+                "skipped": True,
+                "reason": "already_published",
+                "part_number": part_number,
+                "content_hash": content_hash,
+                "meta_video_id": prior_record.get("meta_video_id"),
+                "meta_post_id": prior_record.get("meta_post_id"),
+                "errors": [],
+            }
+
+        pending_record = {
+            "part_number": part_number,
+            "video_file_name": path.name,
+            "content_hash": content_hash,
+            "title": title,
+            "description": description,
+            "status": "publish_started",
+            "meta_graph_api_version": self.graph_api_version,
+            "meta_video_id": None,
+            "meta_post_id": None,
+            "upload_phase": "initialize",
+            "errors": [],
+            "content_type": content_type,
+            "created_at": utc_now(),
+            "published_at": None,
         }
+        publish_manager.upsert_record(pending_record)
+
+        try:
+            result = self._upload_page_video(path, title, description)
+            video_id = result.get("id") or result.get("video_id")
+            if not video_id:
+                raise FacebookApiError("Meta did not return a video ID for the 10-question Page Video.")
+            published_record = dict(pending_record)
+            published_record.update(
+                {
+                    "status": "published",
+                    "meta_video_id": str(video_id),
+                    "meta_post_id": result.get("post_id") or str(video_id),
+                    "upload_phase": "finish",
+                    "published_at": utc_now(),
+                    "errors": [],
+                }
+            )
+            publish_manager.upsert_record(published_record)
+            return {
+                "success": True,
+                "part_number": part_number,
+                "content_hash": content_hash,
+                "meta_video_id": str(video_id),
+                "meta_post_id": published_record["meta_post_id"],
+                "errors": [],
+                "result": result,
+            }
+        except Exception as exc:
+            publish_manager.upsert_record(
+                {
+                    "part_number": part_number,
+                    "video_file_name": path.name,
+                    "content_hash": content_hash,
+                    "title": title,
+                    "description": description,
+                    "status": "failed",
+                    "meta_graph_api_version": self.graph_api_version,
+                    "meta_video_id": None,
+                    "meta_post_id": None,
+                    "upload_phase": "failed",
+                    "errors": [str(exc)],
+                    "content_type": content_type,
+                    "created_at": pending_record["created_at"],
+                    "published_at": None,
+                }
+            )
+            raise
 
     def from_environment(self):
         return self
