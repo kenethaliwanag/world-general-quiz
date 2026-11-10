@@ -63,7 +63,7 @@ jobs:
       - run: npx hyperframes browser ensure
 
       - name: Set up Kokoro TTS server
-        if: ${{ inputs.enable_tts != false }}
+        if: ${{ github.event_name != 'workflow_dispatch' || inputs.enable_tts != false }}
         run: |
           sudo apt-get update
           sudo apt-get install -y espeak-ng
@@ -99,7 +99,7 @@ jobs:
           curl -fsS "http://127.0.0.1:${PORT}/v1/models" >/dev/null
 
       - name: Upload Kokoro startup logs on failure
-        if: failure() && inputs.enable_tts
+        if: failure() && (github.event_name != 'workflow_dispatch' || inputs.enable_tts != false)
         uses: actions/upload-artifact@v4
         with:
           name: kokoro-startup-logs-${{ github.run_id }}
@@ -111,8 +111,8 @@ jobs:
       - name: Generate next quiz Part
         env:
           QUESTIONS_PER_PART: ${{ inputs.questions_per_part || 15 }}
-          ENABLE_TTS: ${{ inputs.enable_tts != false }}
-          ENABLE_RENDER: ${{ inputs.enable_render != false }}
+          ENABLE_TTS: ${{ github.event_name != 'workflow_dispatch' || inputs.enable_tts != false }}
+          ENABLE_RENDER: ${{ github.event_name != 'workflow_dispatch' || inputs.enable_render != false }}
         run: |
           set -euo pipefail
           TOTAL_PARTS=1
