@@ -32,3 +32,6 @@
 - Moved the 10-question tracker to the left and separated the quiz layout to prevent overlap.
 - Added opening hook and closing call-to-action overlays to the 10-question format.
 - Scheduled publishing now targets the 10-question Facebook Page Video instead of the 5-question Reel.
+- Redesigned the 10-question composition into a two-column answer board (10 numbered slots) with a branded header, difficulty pill, countdown timer bar, and no mascot.
+- Replaced the big centered answer card in the 10-question format with the answer revealed inside its numbered slot; earlier answers stay on screen until the quiz ends.
+- Enlarged the closing call to action into a "COMMENT YOUR SCORE OUT OF 10" pill with a share/follow sub-line.

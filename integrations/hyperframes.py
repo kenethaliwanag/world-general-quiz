@@ -25,6 +25,20 @@ from config import (
 )
 from integrations.kokoro_tts import audio_duration as measure_audio_duration
 
+# Ten-question quiz screen layout (1080x1920).  Mirrors the reference board:
+# branded header, question block, countdown bar and a two-column answer grid.
+CONTENT_LEFT_PX = 54
+CONTENT_WIDTH_PX = 972
+TIMER_WIDTH_PX = 860
+SLOT_COLUMNS = ((54, 122, 391), (567, 635, 391))
+SLOT_GRID_TOP_PX = 800
+SLOT_GRID_BOTTOM_PX = 1700
+SLOT_BOX_HEIGHT_PX = 155
+SLOT_NUMBER_WIDTH_PX = 60
+
+DIFFICULTY_COLORS = {"easy": "#4ade80", "medium": "#fbbf24", "hard": "#f87171"}
+DIFFICULTY_TEXT = {"easy": "#0d2a1c", "medium": "#3a2a00", "hard": "#3a0d0d"}
+
 
 def _esc(value):
     return (str(value).replace("&", "&amp;").replace("<", "&lt;")
@@ -36,6 +50,40 @@ def _audio_duration(path, fallback=None):
         return measure_audio_duration(path)
     except (OSError, ValueError, RuntimeError, KeyError, IndexError, TypeError, json.JSONDecodeError):
         return fallback
+
+
+def _answer_font_size(answer: str) -> int:
+    length = len(answer)
+    if length <= 12:
+        return 32
+    if length <= 22:
+        return 28
+    return 24
+
+
+def _question_font_size(question: str) -> int:
+    length = len(question)
+    if length <= 45:
+        return 52
+    if length <= 70:
+        return 46
+    return 42
+
+
+def _timer_color(fraction: float) -> str:
+    if fraction > 0.6:
+        return "#4ade80"
+    if fraction > 0.3:
+        return "#fbbf24"
+    return "#ef4444"
+
+
+def _title_lines(title: str) -> list[str]:
+    words = str(title).upper().split()
+    if len(words) < 4:
+        return [" ".join(words)]
+    half = (len(words) + 1) // 2
+    return [" ".join(words[:half]), " ".join(words[half:])]
 
 
 def create_composition(quiz, audio_map=None, content_type="full", tracker=None):
@@ -179,9 +227,10 @@ def create_composition(quiz, audio_map=None, content_type="full", tracker=None):
         hook_start = max(0.0, quiz_start_cursor - 1.0)
         add_text("CAN YOU GET ALL 10 CORRECT?", hook_start, max(0.01, quiz_start_cursor - hook_start), "hook", "intro-hook")
 
-    tracker_events = [] if tracker else []
+    tracker_events = []
     for item in quiz["questions"]:
         n = item["number"]
+        question_text = item["question"]
         question_start = cursor
         q_key, a_key = f"q{n}", f"a{n}"
         question_audio_duration = audio_durations.get(q_key)
@@ -190,8 +239,30 @@ def create_composition(quiz, audio_map=None, content_type="full", tracker=None):
         else:
             question_duration = 3.5
         question_visible_duration = question_duration + COUNTDOWN_SECONDS
-        add_text(f"QUESTION {n:02d}", cursor, question_visible_duration, "eyebrow", f"q{n}-eyebrow")
-        add_text(item["question"], cursor, question_visible_duration, "question", f"q{n}-question")
+        if tracker:
+            add_text(f"QUESTION {n}", cursor, question_visible_duration, "qlabel", f"q{n}-label")
+            difficulty = str(item.get("difficulty", "easy")).lower()
+            add_text(
+                difficulty.upper(),
+                cursor,
+                question_visible_duration,
+                "qdiff",
+                f"q{n}-difficulty",
+                extra=(
+                    f'style="background:{DIFFICULTY_COLORS.get(difficulty, DIFFICULTY_COLORS["easy"])};'
+                    f'color:{DIFFICULTY_TEXT.get(difficulty, DIFFICULTY_TEXT["easy"])}"'
+                ),
+            )
+        else:
+            add_text(f"QUESTION {n:02d}", cursor, question_visible_duration, "eyebrow", f"q{n}-eyebrow")
+        add_text(
+            question_text,
+            cursor,
+            question_visible_duration,
+            "question",
+            f"q{n}-question",
+            extra=f'style="font-size:{_question_font_size(question_text)}px"' if tracker else "",
+        )
         if copied_audio.get(q_key):
             add_audio(q_key, cursor, question_audio_duration if question_audio_duration is not None else question_duration)
         countdown_start = cursor + question_duration
@@ -199,6 +270,18 @@ def create_composition(quiz, audio_map=None, content_type="full", tracker=None):
             tick_start = countdown_start + (COUNTDOWN_SECONDS - second)
             add_text(str(second), tick_start, 1.0, "countdown", f"q{n}-countdown-{second}")
             add_sfx(f"q{n}-{second}-tick", "tick", tick_start, SFX_TICK_VOLUME)
+            if tracker:
+                fraction = second / COUNTDOWN_SECONDS
+                add_text(
+                    "",
+                    tick_start,
+                    1.0,
+                    "timer-fill",
+                    f"q{n}-timer-{second}",
+                    extra=f'style="width:{fraction * TIMER_WIDTH_PX:.0f}px;background:{_timer_color(fraction)}"',
+                )
+        if tracker:
+            add_text("", countdown_start, float(COUNTDOWN_SECONDS), "timer-track", f"q{n}-timer-track")
         timeup_start = countdown_start + COUNTDOWN_SECONDS
         add_sfx(f"q{n}-timeup", "timeup", timeup_start, SFX_TIMEUP_VOLUME)
         cursor = countdown_start + COUNTDOWN_SECONDS
@@ -210,9 +293,10 @@ def create_composition(quiz, audio_map=None, content_type="full", tracker=None):
             reveal_duration = ANSWER_DISPLAY_SECONDS
         answer_reveal_start = cursor
         if tracker:
-            tracker_events.append((n, item["question"], item["answer"], question_start, answer_reveal_start))
-        add_text("CORRECT ANSWER", cursor, reveal_duration, "eyebrow answer-label", f"q{n}-answer-label")
-        add_text(item["answer"], cursor, reveal_duration, "answer", f"q{n}-answer")
+            tracker_events.append((n, question_text, item["answer"], question_start, answer_reveal_start))
+        else:
+            add_text("CORRECT ANSWER", cursor, reveal_duration, "eyebrow answer-label", f"q{n}-answer-label")
+            add_text(item["answer"], cursor, reveal_duration, "answer", f"q{n}-answer")
         if copied_audio.get(a_key):
             add_audio(a_key, cursor, answer_audio_duration if answer_audio_duration is not None else reveal_duration)
         cursor += reveal_duration + TRANSITION_SECONDS
@@ -228,22 +312,46 @@ def create_composition(quiz, audio_map=None, content_type="full", tracker=None):
         add_text(text, cue_start, duration, "ending", f"ending-text-word-{index + 1}")
     add_text(f"PART {part}", cursor + max(0.0, ending_duration - 2.5), 2.5, "partline", "ending-part")
     if tracker:
-        add_text("Comment your score out of 10 - Share with friends - Follow for more quizzes", cursor, ending_duration, "cta", "ending-cta")
+        add_text("COMMENT YOUR SCORE OUT OF 10", cursor, ending_duration, "cta", "ending-cta")
+        add_text("Share with friends  -  Follow for more quizzes", cursor, ending_duration, "cta-sub", "ending-cta-sub")
     if copied_audio.get("ending"):
         add_audio("ending", cursor, ending_audio_duration if ending_audio_duration is not None else ending_duration)
     cursor += ending_duration
 
     if tracker:
         tracker_end = quiz_end_cursor
-        tracker_start_top = 16.0
-        tracker_step = 6.8
-        for number, question, answer, active_start, answer_reveal_start in tracker_events:
-            row_top = f"{tracker_start_top + (number - 1) * tracker_step:.2f}%"
-            number_extra = f'style="top:{row_top};left:3%;width:5%;height:6%;text-align:left;justify-content:flex-start;padding:0;font-size:30px"'
-            answer_extra = f'style="top:{row_top};left:9%;width:19%;height:6%;text-align:left;justify-content:flex-start;padding:0;font-size:22px;overflow:hidden"'
-            add_text(str(number), quiz_start_cursor, max(0.01, tracker_end - quiz_start_cursor), "tracker-pending", f"tracker-number-{number}", extra=number_extra)
-            add_text(str(number), active_start, max(0.01, answer_reveal_start - active_start), "tracker-active", f"tracker-number-active-{number}", extra=number_extra)
-            add_text(answer, answer_reveal_start, max(0.01, tracker_end - answer_reveal_start), "tracker-answer", f"tracker-answer-{number}", extra=answer_extra)
+        header_duration = max(0.01, tracker_end - quiz_start_cursor)
+        for index, line in enumerate(_title_lines(quiz.get("title", "World General Knowledge Quiz"))):
+            add_text(
+                line,
+                quiz_start_cursor,
+                header_duration,
+                "quiz-title",
+                f"quiz-title-{index + 1}",
+                extra=f'style="top:{168 + index * 66}px"',
+            )
+        add_text(f"PART {part}", quiz_start_cursor, header_duration, "part-badge", "quiz-part-badge")
+        slot_rows = max(1, (len(tracker_events) + 1) // 2)
+        pitch = (SLOT_GRID_BOTTOM_PX - SLOT_GRID_TOP_PX) / slot_rows
+        for number, _question, answer, question_start, answer_reveal_start in tracker_events:
+            row = (number - 1) % slot_rows
+            column = (number - 1) // slot_rows
+            number_left, box_left, box_width = SLOT_COLUMNS[min(column, len(SLOT_COLUMNS) - 1)]
+            top_px = SLOT_GRID_TOP_PX + row * pitch
+            box_height = min(SLOT_BOX_HEIGHT_PX, pitch - 20)
+            number_extra = (
+                f'style="left:{number_left}px;width:{SLOT_NUMBER_WIDTH_PX}px;'
+                f'top:{top_px:.0f}px;height:{box_height:.0f}px"'
+            )
+            box_style = (
+                f"left:{box_left}px;width:{box_width}px;"
+                f"top:{top_px:.0f}px;height:{box_height:.0f}px"
+            )
+            add_text(f"{number})", quiz_start_cursor, header_duration, "slot-num", f"slot-num-{number}", extra=number_extra)
+            add_text(f"{number})", question_start, max(0.01, answer_reveal_start - question_start), "slot-num-active", f"slot-num-active-{number}", extra=number_extra)
+            add_text("", quiz_start_cursor, max(0.01, question_start - quiz_start_cursor), "slot-box slot-box-pending", f"slot-box-pending-{number}", extra=f'style="{box_style}"')
+            add_text("", question_start, max(0.01, answer_reveal_start - question_start), "slot-box slot-box-active", f"slot-box-active-{number}", extra=f'style="{box_style}"')
+            add_text(answer, answer_reveal_start, max(0.01, tracker_end - answer_reveal_start), "slot-box slot-box-done", f"slot-box-done-{number}", extra=f'style="{box_style};font-size:{_answer_font_size(answer)}px"')
 
     if copied_watermark:
         elements.append(
@@ -276,12 +384,23 @@ linear-gradient(145deg,#071426 0%,#102b46 55%,#06101d 100%)}}
 .answer-label{{color:#77e0a3}}
 .answer{{top:34%;height:32%;font-size:76px;line-height:1.15;font-weight:900;color:#77e0a3;text-shadow:0 0 30px rgba(70,220,145,.35)}}
 .ending{{top:34%;height:30%;font-size:66px;line-height:1.2;font-weight:900}}
-.tracker-pending{{position:absolute;z-index:5;color:rgba(245,207,114,.72);font-size:34px;font-weight:800}}
-.tracker-active{{position:absolute;z-index:6;color:#f5cf72;font-size:34px;font-weight:900}}
-.tracker-answer{{position:absolute;z-index:7;color:#8ee8bf;font-size:22px;font-weight:700;overflow:hidden}}
-.tracker-layout .question,.tracker-layout .answer,.tracker-layout .answer-label,.tracker-layout .countdown,.tracker-layout .eyebrow{{left:30%;width:64%}}
-.hook{{top:82%;left:8%;width:84%;font-size:34px;color:#f5cf72;font-weight:900;text-align:center;letter-spacing:2px}}
-.cta{{top:84%;left:8%;width:84%;font-size:26px;color:#d7e6ff;text-align:center}}
+.tracker-layout .question{{top:466px;left:{CONTENT_LEFT_PX}px;width:{CONTENT_WIDTH_PX}px;height:240px;font-size:52px;line-height:1.2;text-align:left;justify-content:flex-start;padding:0}}
+.tracker-layout .countdown{{top:700px;left:930px;width:96px;height:62px;font-size:44px;line-height:1;justify-content:flex-end;text-align:right;padding:0;text-shadow:0 0 24px rgba(245,207,114,.55)}}
+.tracker-layout .watermark{{top:30px;width:120px}}
+.quiz-title{{position:absolute;z-index:4;left:{CONTENT_LEFT_PX}px;width:{CONTENT_WIDTH_PX}px;height:66px;font-size:54px;font-weight:900;letter-spacing:1px;color:#f5cf72;text-align:center;text-shadow:0 5px 0 #06121f,0 0 30px rgba(245,207,114,.35)}}
+.part-badge{{position:absolute;z-index:4;left:50%;top:312px;transform:translateX(-50%);width:250px;height:56px;font-size:30px;font-weight:900;letter-spacing:4px;color:#f5cf72;border:3px solid rgba(245,207,114,.5);border-radius:28px;background:rgba(6,18,31,.65);padding:0}}
+.qlabel{{position:absolute;z-index:4;left:{CONTENT_LEFT_PX}px;top:398px;width:270px;height:56px;font-size:36px;letter-spacing:2px;color:#f5cf72;font-weight:900;justify-content:flex-start;padding:0;text-align:left;text-shadow:0 4px 0 #06121f}}
+.qdiff{{position:absolute;z-index:4;left:336px;top:402px;width:120px;height:46px;font-size:24px;font-weight:900;border-radius:23px;padding:0;letter-spacing:1px}}
+.timer-track{{position:absolute;z-index:4;left:{CONTENT_LEFT_PX}px;top:720px;width:{TIMER_WIDTH_PX}px;height:22px;border-radius:11px;background:rgba(255,255,255,.12);padding:0}}
+.timer-fill{{position:absolute;z-index:5;left:{CONTENT_LEFT_PX}px;top:720px;height:22px;border-radius:11px;padding:0}}
+.slot-num{{position:absolute;z-index:6;color:rgba(245,207,114,.85);font-size:32px;font-weight:900;justify-content:flex-start;padding:0;text-align:left}}
+.slot-num-active{{position:absolute;z-index:7;color:#fff;font-size:36px;font-weight:900;justify-content:flex-start;padding:0;text-align:left;text-shadow:0 0 20px rgba(245,207,114,.9)}}
+.slot-box{{position:absolute;z-index:5;border-radius:16px;border:3px solid rgba(140,170,210,.22);background:rgba(8,22,42,.55);align-items:center;justify-content:flex-start;padding:0 18px;overflow:hidden}}
+.slot-box-active{{border-color:#f5cf72;background:rgba(26,46,76,.6);box-shadow:0 0 28px rgba(245,207,114,.3)}}
+.slot-box-done{{border-color:rgba(120,220,165,.55);background:rgba(8,22,42,.85);color:#fff;font-weight:800;text-align:left;line-height:1.15}}
+.hook{{top:720px;left:{CONTENT_LEFT_PX}px;width:{CONTENT_WIDTH_PX}px;height:60px;font-size:34px;color:#f5cf72;font-weight:900;text-align:center;letter-spacing:2px}}
+.cta{{position:absolute;z-index:4;left:50%;top:1420px;transform:translateX(-50%);width:860px;height:96px;font-size:36px;font-weight:900;letter-spacing:2px;color:#f5cf72;border:3px solid rgba(245,207,114,.6);border-radius:48px;background:rgba(6,18,31,.7);padding:0}}
+.cta-sub{{position:absolute;z-index:4;left:{CONTENT_LEFT_PX}px;top:1540px;width:{CONTENT_WIDTH_PX}px;height:56px;font-size:26px;color:#d7e6ff;text-align:center;letter-spacing:1px}}
 .watermark{{position:absolute;top:24px;left:50%;width:22%;transform:translateX(-50%);opacity:0.82;z-index:8;filter:drop-shadow(0 8px 18px rgba(0,0,0,.35))}}
 </style>
 </head>
