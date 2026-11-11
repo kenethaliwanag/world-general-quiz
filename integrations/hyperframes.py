@@ -24,6 +24,14 @@ from config import (
     WATERMARK_IMAGE_PATH,
 )
 from integrations.kokoro_tts import audio_duration as measure_audio_duration
+from core.quiz_generator import (
+    DEFAULT_ENDING_SECONDS,
+    DEFAULT_INTRO_SECONDS,
+    ENDING_LINE_MIN_SECONDS,
+    INTRO_LINE_MIN_SECONDS,
+    line_duration,
+    plan_line_durations,
+)
 
 # Ten-question quiz screen layout (1080x1920).  Mirrors the reference board:
 # branded header, question block, countdown bar and a two-column answer grid.
@@ -178,11 +186,6 @@ def create_composition(quiz, audio_map=None, content_type="full", tracker=None):
 
     part_id = f"world-quiz-part-{part}"
     intro_lines = quiz["intro"]
-    intro_audio_duration = audio_durations.get("intro")
-    if intro_audio_duration is not None:
-        intro_duration = max(4.0, intro_audio_duration + AUDIO_PADDING_SECONDS)
-    else:
-        intro_duration = 8.0
 
     # Reveal each intro phrase during the portion of the narration that
     # actually speaks it.  Avoid fixed starts so the text and audio stay
@@ -211,21 +214,30 @@ def create_composition(quiz, audio_map=None, content_type="full", tracker=None):
     intro_word_counts = [len(line.split()) for line in intro_lines]
     intro_total_words = sum(intro_word_counts) or 1
     intro_cursor = cursor
-    intro_classes = ["title", "subtitle", "partline"]
-    for class_index, (line, word_count) in enumerate(zip(intro_lines, intro_word_counts)):
-        line_duration = max(0.01, intro_duration * word_count / intro_total_words)
-        css_class = intro_classes[min(class_index, len(intro_classes) - 1)]
-        for index, (cue_start, text, duration) in enumerate(word_progress_cues(line, intro_cursor, line_duration)):
-            add_text(text, cue_start, duration, css_class, f"intro-{css_class}-word-{index + 1}")
-        intro_cursor += line_duration
-    if copied_audio.get("intro"):
-        add_audio("intro", cursor, intro_audio_duration if intro_audio_duration is not None else intro_duration)
+    intro_styles = [
+        ("title", "intro-title"),
+        ("subtitle", "intro-subtitle"),
+        ("partline", "intro-partline"),
+        ("hook", "intro-hook"),
+    ]
+    legacy_intro_duration = line_duration(audio_durations.get("intro"), DEFAULT_INTRO_SECONDS)
+    intro_line_durations = plan_line_durations(
+        intro_lines, audio_durations, "intro", INTRO_LINE_MIN_SECONDS, legacy_intro_duration
+    )
+    has_intro_line_clips = any(f"intro_{index + 1}" in copied_audio for index in range(len(intro_lines)))
+    for class_index, (line, seconds) in enumerate(zip(intro_lines, intro_line_durations)):
+        css_class, element_prefix = intro_styles[min(class_index, len(intro_styles) - 1)]
+        for index, (cue_start, text, duration) in enumerate(word_progress_cues(line, intro_cursor, seconds)):
+            add_text(text, cue_start, duration, css_class, f"{element_prefix}-word-{index + 1}")
+        line_key = f"intro_{class_index + 1}"
+        if has_intro_line_clips and copied_audio.get(line_key):
+            add_audio(line_key, intro_cursor, audio_durations.get(line_key) or seconds)
+        intro_cursor += seconds
+    intro_duration = intro_cursor - cursor
+    if not has_intro_line_clips and copied_audio.get("intro"):
+        add_audio("intro", cursor, audio_durations.get("intro") or intro_duration)
     cursor += intro_duration + TRANSITION_SECONDS
     quiz_start_cursor = cursor
-
-    if tracker:
-        hook_start = max(0.0, quiz_start_cursor - 1.0)
-        add_text("CAN YOU GET ALL 10 CORRECT?", hook_start, max(0.01, quiz_start_cursor - hook_start), "hook", "intro-hook")
 
     tracker_events = []
     for item in quiz["questions"]:
@@ -302,21 +314,35 @@ def create_composition(quiz, audio_map=None, content_type="full", tracker=None):
         cursor += reveal_duration + TRANSITION_SECONDS
 
     quiz_end_cursor = cursor
-    ending_audio_duration = audio_durations.get("ending")
-    if ending_audio_duration is not None:
-        ending_duration = max(4.0, ending_audio_duration + AUDIO_PADDING_SECONDS)
-    else:
-        ending_duration = 6.0
-    add_text("HOW DID YOU DO?", cursor, ending_duration, "eyebrow", "ending-eyebrow")
-    for index, (cue_start, text, duration) in enumerate(word_progress_cues(quiz["ending"], cursor, ending_duration)):
-        add_text(text, cue_start, duration, "ending", f"ending-text-word-{index + 1}")
-    add_text(f"PART {part}", cursor + max(0.0, ending_duration - 2.5), 2.5, "partline", "ending-part")
-    if tracker:
-        add_text("COMMENT YOUR SCORE OUT OF 10", cursor, ending_duration, "cta", "ending-cta")
-        add_text("Share with friends  -  Follow for more quizzes", cursor, ending_duration, "cta-sub", "ending-cta-sub")
-    if copied_audio.get("ending"):
-        add_audio("ending", cursor, ending_audio_duration if ending_audio_duration is not None else ending_duration)
-    cursor += ending_duration
+    ending_lines = quiz.get("ending_lines") or [quiz["ending"]]
+    ending_styles = [
+        ("eyebrow", "ending-eyebrow"),
+        ("ending", "ending-text"),
+        ("cta", "ending-cta"),
+        ("cta-sub", "ending-cta-sub"),
+    ]
+    legacy_ending_duration = line_duration(audio_durations.get("ending"), DEFAULT_ENDING_SECONDS)
+    ending_line_durations = plan_line_durations(
+        ending_lines, audio_durations, "ending", ENDING_LINE_MIN_SECONDS, legacy_ending_duration
+    )
+    has_ending_line_clips = any(f"ending_{index + 1}" in copied_audio for index in range(len(ending_lines)))
+    ending_cursor = cursor
+    for class_index, (line, seconds) in enumerate(zip(ending_lines, ending_line_durations)):
+        css_class, element_prefix = ending_styles[min(class_index, len(ending_styles) - 1)]
+        if css_class in ("cta", "cta-sub"):
+            add_text(line, ending_cursor, seconds, css_class, element_prefix)
+        else:
+            for index, (cue_start, text, duration) in enumerate(word_progress_cues(line, ending_cursor, seconds)):
+                add_text(text, cue_start, duration, css_class, f"{element_prefix}-word-{index + 1}")
+        line_key = f"ending_{class_index + 1}"
+        if has_ending_line_clips and copied_audio.get(line_key):
+            add_audio(line_key, ending_cursor, audio_durations.get(line_key) or seconds)
+        ending_cursor += seconds
+    ending_duration = ending_cursor - cursor
+    add_text(f"PART {part}", ending_cursor - 2.5, 2.5, "partline", "ending-part")
+    if not has_ending_line_clips and copied_audio.get("ending"):
+        add_audio("ending", cursor, audio_durations.get("ending") or ending_duration)
+    cursor = ending_cursor
 
     if tracker:
         tracker_end = quiz_end_cursor
@@ -398,8 +424,8 @@ linear-gradient(145deg,#071426 0%,#102b46 55%,#06101d 100%)}}
 .slot-box{{position:absolute;z-index:5;border-radius:16px;border:3px solid rgba(140,170,210,.22);background:rgba(8,22,42,.55);align-items:center;justify-content:flex-start;padding:0 18px;overflow:hidden}}
 .slot-box-active{{border-color:#f5cf72;background:rgba(26,46,76,.6);box-shadow:0 0 28px rgba(245,207,114,.3)}}
 .slot-box-done{{border-color:rgba(120,220,165,.55);background:rgba(8,22,42,.85);color:#fff;font-weight:800;text-align:left;line-height:1.15}}
-.hook{{top:720px;left:{CONTENT_LEFT_PX}px;width:{CONTENT_WIDTH_PX}px;height:60px;font-size:34px;color:#f5cf72;font-weight:900;text-align:center;letter-spacing:2px}}
-.cta{{position:absolute;z-index:4;left:50%;top:1420px;transform:translateX(-50%);width:860px;height:96px;font-size:36px;font-weight:900;letter-spacing:2px;color:#f5cf72;border:3px solid rgba(245,207,114,.6);border-radius:48px;background:rgba(6,18,31,.7);padding:0}}
+.hook{{top:50%;left:{CONTENT_LEFT_PX}px;width:{CONTENT_WIDTH_PX}px;height:90px;font-size:46px;color:#f5cf72;font-weight:900;text-align:center;letter-spacing:3px;text-transform:uppercase}}
+.cta{{position:absolute;z-index:4;left:50%;top:1420px;transform:translateX(-50%);width:860px;height:96px;font-size:36px;font-weight:900;letter-spacing:2px;color:#f5cf72;border:3px solid rgba(245,207,114,.6);border-radius:48px;background:rgba(6,18,31,.7);padding:0;text-transform:uppercase}}
 .cta-sub{{position:absolute;z-index:4;left:{CONTENT_LEFT_PX}px;top:1540px;width:{CONTENT_WIDTH_PX}px;height:56px;font-size:26px;color:#d7e6ff;text-align:center;letter-spacing:1px}}
 .watermark{{position:absolute;top:24px;left:50%;width:22%;transform:translateX(-50%);opacity:0.82;z-index:8;filter:drop-shadow(0 8px 18px rgba(0,0,0,.35))}}
 </style>

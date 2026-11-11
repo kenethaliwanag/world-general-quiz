@@ -1,7 +1,10 @@
 import re
 from pathlib import Path
 
+import pytest
+
 from core.quiz_generator import build_quiz
+from core.script_exporter import export_srt
 from integrations import hyperframes
 
 
@@ -32,7 +35,7 @@ def test_intro_and_outro_use_progressive_word_elements(tmp_path, monkeypatch):
     monkeypatch.setattr(hyperframes, "OUTPUT_DIR", tmp_path / "output")
     quiz = build_quiz(1, questions)
     quiz["intro"] = ["Welcome to Quiz!", "Get ready for one question!", "This is Part 1."]
-    quiz["ending"] = "How many did you get right? Comment your score!"
+    quiz["ending_lines"] = ["How did you do?", "How many did you get right? Comment your score!"]
     project_dir, duration, timeline = hyperframes.create_composition(quiz, audio_map=None)
 
     html = (project_dir / "index.html").read_text(encoding="utf-8")
@@ -41,7 +44,7 @@ def test_intro_and_outro_use_progressive_word_elements(tmp_path, monkeypatch):
     assert 'intro-subtitle-word-1' in html
     assert 'ending-text-word-1' in html
     assert 'ending-text-word-6' in html
-    assert "HOW DID YOU DO?" in html
+    assert "How did you do?" in html
 
 
 def test_tracker_renders_one_answer_board_with_ten_slots(tmp_path, monkeypatch):
@@ -119,6 +122,12 @@ def test_tracker_countdown_bar_is_synced_with_tick_sfx(tmp_path, monkeypatch):
         assert elements[f"q{number}-timer-track"][0] == elements[f"q{number}-timer-{hyperframes.COUNTDOWN_SECONDS}"][0]
 
 
+def test_reel_keeps_bare_question_text_for_the_90_second_limit():
+    quiz = build_quiz(1, _questions(5), content_type="reel")
+    assert quiz["questions"][0]["spoken"] == quiz["questions"][0]["question"]
+    assert quiz["intro"][2] == "This is Part 1. Can you get all 5 right?"
+
+
 def test_full_video_and_reel_layouts_are_unchanged(tmp_path, monkeypatch):
     monkeypatch.setattr(hyperframes, "OUTPUT_DIR", tmp_path / "output")
     quiz = build_quiz(1, _questions(15))
@@ -139,3 +148,71 @@ def test_full_video_and_reel_layouts_are_unchanged(tmp_path, monkeypatch):
     reel_html = (reel_project / "index.html").read_text(encoding="utf-8")
     assert 'id="slot-num-' not in reel_html
     assert reel_html.count('class="clip answer"') == 5
+
+
+def test_every_visible_line_is_narrated(tmp_path, monkeypatch):
+    monkeypatch.setattr(hyperframes, "OUTPUT_DIR", tmp_path / "output")
+    quiz = build_quiz(1, _questions(10), content_type="ten_question_video")
+    project_dir, duration, timeline = hyperframes.create_composition(
+        quiz, audio_map=None, content_type="ten_question_video", tracker=True
+    )
+    html = (project_dir / "index.html").read_text(encoding="utf-8")
+
+    # Intro: title, subtitle, part line and the challenge hook each get a line.
+    assert len(quiz["intro"]) == 4
+    assert 'id="intro-title-word-1"' in html
+    assert 'id="intro-subtitle-word-1"' in html
+    assert 'id="intro-partline-word-1"' in html
+    assert 'id="intro-hook-word-1"' in html
+
+    # Outro: result eyebrow, score line, comment prompt, share/follow line.
+    assert 'id="ending-eyebrow-word-1"' in html
+    assert 'id="ending-text-word-1"' in html
+    assert 'id="ending-cta"' in html
+    assert 'id="ending-cta-sub"' in html
+
+    # The question label and the difficulty shown on screen are spoken too.
+    first = quiz["questions"][0]
+    assert first["spoken"] == "Question 1, easy. Question 1?"
+    assert first["spoken_answer"] == "Answer 1 is the correct answer."
+
+
+def test_lines_are_timed_to_their_own_narration_clips(tmp_path, monkeypatch):
+    monkeypatch.setattr(hyperframes, "OUTPUT_DIR", tmp_path / "output")
+    monkeypatch.setattr(hyperframes, "measure_audio_duration", lambda path: 2.0)
+    quiz = build_quiz(1, _questions(10), content_type="ten_question_video")
+    audio_map = {}
+    for key in [f"intro_{index}" for index in range(1, 5)] + [f"ending_{index}" for index in range(1, 5)]:
+        path = tmp_path / f"{key}.mp3"
+        path.write_bytes(b"fake")
+        audio_map[key] = path
+
+    project_dir, duration, timeline = hyperframes.create_composition(
+        quiz, audio_map=audio_map, content_type="ten_question_video", tracker=True
+    )
+    html = (project_dir / "index.html").read_text(encoding="utf-8")
+    elements = _elements(html)
+
+    # Every line starts when its own clip starts, and each line is 2.0s + padding.
+    assert elements["intro-title-word-1"][0] == 0.0
+    assert elements["intro-subtitle-word-1"][0] == pytest.approx(2.5)
+    assert elements["intro-partline-word-1"][0] == pytest.approx(5.0)
+    assert elements["intro-hook-word-1"][0] == pytest.approx(7.5)
+    assert elements["audio-intro_4"][0] == pytest.approx(7.5)
+
+    # The call to action appears exactly when it is spoken.
+    assert elements["ending-cta"][0] == elements["audio-ending_3"][0]
+    assert elements["ending-cta-sub"][0] == elements["audio-ending_4"][0]
+    assert elements["ending-eyebrow-word-1"][0] == elements["audio-ending_1"][0]
+
+
+def test_srt_cues_follow_the_spoken_script(tmp_path):
+    quiz = build_quiz(1, _questions(3), content_type="ten_question_video")
+    path = export_srt(quiz, tmp_path, {})
+    srt = path.read_text(encoding="utf-8")
+    for line in quiz["intro"]:
+        assert line in srt
+    for line in quiz["ending_lines"]:
+        assert line in srt
+    assert quiz["questions"][0]["spoken"] in srt
+    assert quiz["questions"][0]["spoken_answer"] in srt

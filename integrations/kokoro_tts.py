@@ -78,22 +78,25 @@ def audio_duration(path):
     if ffprobe is None:
         raise RuntimeError("ffprobe was not found. Install FFmpeg before generating timed audio.")
     path = Path(path)
-    result = subprocess.run(
-        [
-            ffprobe,
-            "-v",
-            "error",
-            "-show_entries",
-            "format=duration",
-            "-of",
-            "json",
-            str(path),
-        ],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True,
-        check=True,
-    )
+    try:
+        result = subprocess.run(
+            [
+                ffprobe,
+                "-v",
+                "error",
+                "-show_entries",
+                "format=duration",
+                "-of",
+                "json",
+                str(path),
+            ],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            check=True,
+        )
+    except subprocess.CalledProcessError as exc:
+        raise RuntimeError(f"ffprobe could not read the audio file: {path}") from exc
     payload = json.loads(result.stdout)
     duration = float(payload["format"]["duration"])
     if duration <= 0:

@@ -74,6 +74,28 @@ def part_audio_extension():
     return KOKORO_RESPONSE_FORMAT.strip(".")
 
 
+def _synthesize_lines(tts, lines, narration_dir, part, prefix, ext):
+    """Synthesize one clip per line so the spoken words match the on-screen text."""
+    audio_map = {}
+    for index, line in enumerate(lines, 1):
+        key = f"{prefix}_{index}"
+        audio_map[key] = tts.synthesize(line, narration_dir / f"part_{part:03d}_{key}.{ext}")
+    return audio_map
+
+
+def _copy_matching_line_audio(target, target_durations, source, source_durations, prefix, target_lines, source_lines):
+    """Copy narration clips only when the spoken lines match the displayed lines."""
+    if list(target_lines) != list(source_lines):
+        return
+    for index in range(len(target_lines)):
+        key = f"{prefix}_{index + 1}"
+        if key in target or key not in source:
+            continue
+        target[key] = source[key]
+        if key in source_durations:
+            target_durations[key] = source_durations[key]
+
+
 def discover_cached_audio(part, part_dir):
     audio_map = {}
     audio_durations = {}
@@ -92,6 +114,8 @@ def discover_cached_audio(part, part_dir):
             audio_map["reel_intro"] = path
         elif suffix == "ending":
             audio_map["ending"] = path
+        elif suffix.startswith("intro_") or suffix.startswith("ending_"):
+            audio_map[suffix] = path
         elif "_" not in suffix and suffix.startswith("q"):
             audio_map[suffix] = path
         elif suffix.startswith("a"):
@@ -121,13 +145,12 @@ def generate_part(part, args, history=None):
         narration_dir.mkdir(parents=True, exist_ok=True)
         ext = part_audio_extension()
         try:
-            intro_text = " ".join([quiz["intro"][0] + ".", *quiz["intro"][1:]])
-            audio_map["intro"] = tts.synthesize(intro_text, narration_dir / f"part_{part:03d}_intro.{ext}")
+            audio_map.update(_synthesize_lines(tts, quiz["intro"], narration_dir, part, "intro", ext))
             for item in quiz["questions"]:
                 n = item["number"]
-                audio_map[f"q{n}"] = tts.synthesize(item["question"], narration_dir / f"part_{part:03d}_q{n:02d}.{ext}")
-                audio_map[f"a{n}"] = tts.synthesize(f"The correct answer is {item['answer']}.", narration_dir / f"part_{part:03d}_a{n:02d}.{ext}")
-            audio_map["ending"] = tts.synthesize(quiz["ending"], narration_dir / f"part_{part:03d}_ending.{ext}")
+                audio_map[f"q{n}"] = tts.synthesize(item["spoken"], narration_dir / f"part_{part:03d}_q{n:02d}.{ext}")
+                audio_map[f"a{n}"] = tts.synthesize(item["spoken_answer"], narration_dir / f"part_{part:03d}_a{n:02d}.{ext}")
+            audio_map.update(_synthesize_lines(tts, quiz["ending_lines"], narration_dir, part, "ending", ext))
         except RuntimeError as exc:
             raise SystemExit(f"TTS failed for Part {part}: {exc}")
         audio_durations = {}
@@ -182,7 +205,7 @@ def generate_part(part, args, history=None):
             reels_dir = part_dir / "facebook" / "reels"
             reels_dir.mkdir(parents=True, exist_ok=True)
             reel_questions = selected[:reel_question_count]
-            quiz_reel = build_quiz(part, reel_questions)
+            quiz_reel = build_quiz(part, reel_questions, content_type="reel")
             _, reel_json_path, _ = export_quiz(quiz_reel, output_dir=reels_dir)
             reel_keys = ["intro", "ending"] + [f"q{number}" for number in range(1, reel_question_count + 1)] + [f"a{number}" for number in range(1, reel_question_count + 1)]
 
@@ -194,12 +217,14 @@ def generate_part(part, args, history=None):
                 reel_narration_dir = reels_dir / "narration"
                 reel_narration_dir.mkdir(parents=True, exist_ok=True)
                 try:
-                    reel_audio_map["intro"] = reel_tts.synthesize(" ".join([quiz_reel["intro"][0] + ".", *quiz_reel["intro"][1:]]), reel_narration_dir / f"part_{part:03d}_intro.{ext}")
+                    # The Reel keeps one intro and one outro clip so its duration
+                    # stays inside Meta's 90 second Reel limit.
+                    reel_audio_map["intro"] = reel_tts.synthesize(" ".join(quiz_reel["intro"]), reel_narration_dir / f"part_{part:03d}_intro.{ext}")
                     for item in quiz_reel["questions"]:
                         number = item["number"]
-                        reel_audio_map[f"q{number}"] = reel_tts.synthesize(item["question"], reel_narration_dir / f"part_{part:03d}_q{number:02d}.{ext}")
-                        reel_audio_map[f"a{number}"] = reel_tts.synthesize(f"The correct answer is {item['answer']}.", reel_narration_dir / f"part_{part:03d}_a{number:02d}.{ext}")
-                    reel_audio_map["ending"] = reel_tts.synthesize(quiz_reel["ending"], reel_narration_dir / f"part_{part:03d}_ending.{ext}")
+                        reel_audio_map[f"q{number}"] = reel_tts.synthesize(item["spoken"], reel_narration_dir / f"part_{part:03d}_q{number:02d}.{ext}")
+                        reel_audio_map[f"a{number}"] = reel_tts.synthesize(item["spoken_answer"], reel_narration_dir / f"part_{part:03d}_a{number:02d}.{ext}")
+                    reel_audio_map["ending"] = reel_tts.synthesize(" ".join(quiz_reel["ending_lines"]), reel_narration_dir / f"part_{part:03d}_ending.{ext}")
                 except RuntimeError as exc:
                     raise SystemExit(f"TTS failed for Part {part} Reel: {exc}")
                 for key, path in reel_audio_map.items():
@@ -220,14 +245,14 @@ def generate_part(part, args, history=None):
                     reel_audio_map[key] = audio_map[key]
                     if key not in reel_audio_durations and key in audio_durations:
                         reel_audio_durations[key] = audio_durations[key]
-            if "intro" not in reel_audio_map and "intro" in audio_map:
-                reel_audio_map["intro"] = audio_map["intro"]
-                if "intro" not in reel_audio_durations:
-                    reel_audio_durations["intro"] = audio_durations.get("intro")
-            if "ending" not in reel_audio_map and "ending" in audio_map:
-                reel_audio_map["ending"] = audio_map["ending"]
-                if "ending" not in reel_audio_durations:
-                    reel_audio_durations["ending"] = audio_durations.get("ending")
+            _copy_matching_line_audio(
+                reel_audio_map, reel_audio_durations, audio_map, audio_durations,
+                "intro", quiz_reel["intro"], quiz["intro"],
+            )
+            _copy_matching_line_audio(
+                reel_audio_map, reel_audio_durations, audio_map, audio_durations,
+                "ending", quiz_reel["ending_lines"], quiz["ending_lines"],
+            )
             reel_srt_path = export_srt(quiz_reel, reels_dir, {key: value for key, value in reel_audio_durations.items() if value is not None})
             if args.render or render_reels:
                 reel_project_dir, reel_duration, reel_timeline = create_composition(quiz_reel, reel_audio_map, content_type="reel")
@@ -250,7 +275,7 @@ def generate_part(part, args, history=None):
             ten_dir = part_dir / "facebook" / "videos"
             ten_dir.mkdir(parents=True, exist_ok=True)
             ten_questions = selected[:ten_question_count]
-            quiz_ten = build_quiz(part, ten_questions)
+            quiz_ten = build_quiz(part, ten_questions, content_type="ten_question_video")
             _, ten_json_path, _ = export_quiz(quiz_ten, output_dir=ten_dir)
             ten_keys = ["intro", "ending"] + [f"q{number}" for number in range(1, ten_question_count + 1)] + [f"a{number}" for number in range(1, ten_question_count + 1)]
             ten_audio_map = {}
@@ -261,12 +286,12 @@ def generate_part(part, args, history=None):
                 ten_narr_dir = ten_dir / "narration"
                 ten_narr_dir.mkdir(parents=True, exist_ok=True)
                 try:
-                    ten_audio_map["intro"] = ten_tts.synthesize(" ".join([quiz_ten["intro"][0] + ".", *quiz_ten["intro"][1:]]), ten_narr_dir / f"part_{part:03d}_intro.{ext}")
+                    ten_audio_map.update(_synthesize_lines(ten_tts, quiz_ten["intro"], ten_narr_dir, part, "intro", ext))
                     for item in quiz_ten["questions"]:
                         number = item["number"]
-                        ten_audio_map[f"q{number}"] = ten_tts.synthesize(item["question"], ten_narr_dir / f"part_{part:03d}_q{number:02d}.{ext}")
-                        ten_audio_map[f"a{number}"] = ten_tts.synthesize(f"The correct answer is {item['answer']}.", ten_narr_dir / f"part_{part:03d}_a{number:02d}.{ext}")
-                    ten_audio_map["ending"] = ten_tts.synthesize(quiz_ten["ending"], ten_narr_dir / f"part_{part:03d}_ending.{ext}")
+                        ten_audio_map[f"q{number}"] = ten_tts.synthesize(item["spoken"], ten_narr_dir / f"part_{part:03d}_q{number:02d}.{ext}")
+                        ten_audio_map[f"a{number}"] = ten_tts.synthesize(item["spoken_answer"], ten_narr_dir / f"part_{part:03d}_a{number:02d}.{ext}")
+                    ten_audio_map.update(_synthesize_lines(ten_tts, quiz_ten["ending_lines"], ten_narr_dir, part, "ending", ext))
                 except RuntimeError as exc:
                     raise SystemExit(f"TTS failed for Part {part} 10-question video: {exc}")
                 for key, path in ten_audio_map.items():
@@ -285,14 +310,14 @@ def generate_part(part, args, history=None):
                     ten_audio_map[key] = audio_map[key]
                     if key not in ten_audio_durations and key in audio_durations:
                         ten_audio_durations[key] = audio_durations[key]
-            if "intro" not in ten_audio_map and "intro" in audio_map:
-                ten_audio_map["intro"] = audio_map["intro"]
-                if "intro" not in ten_audio_durations:
-                    ten_audio_durations["intro"] = audio_durations.get("intro")
-            if "ending" not in ten_audio_map and "ending" in audio_map:
-                ten_audio_map["ending"] = audio_map["ending"]
-                if "ending" not in ten_audio_durations:
-                    ten_audio_durations["ending"] = audio_durations.get("ending")
+            _copy_matching_line_audio(
+                ten_audio_map, ten_audio_durations, audio_map, audio_durations,
+                "intro", quiz_ten["intro"], quiz["intro"],
+            )
+            _copy_matching_line_audio(
+                ten_audio_map, ten_audio_durations, audio_map, audio_durations,
+                "ending", quiz_ten["ending_lines"], quiz["ending_lines"],
+            )
             ten_srt_path = export_srt(quiz_ten, ten_dir, {key: value for key, value in ten_audio_durations.items() if value is not None})
             if args.render or render_ten_video:
                 ten_project_dir, _, _ = create_composition(quiz_ten, ten_audio_map, content_type="ten_question_video", tracker=True)
@@ -342,7 +367,7 @@ def _run_publish_reel(args, dry_run: bool = True):
     if content_type == "ten_question_video":
         description = (
             "🌍 Think you know the world? Test yourself with 10 quick general knowledge questions!\n\n"
-            "Comment your score below 👇 and challenge a friend to beat it.\n\n"
+            "Comment your score out of 10 👇 and challenge a friend to beat it.\n\n"
             "#WorldGeneralKnowledgeQuiz #GeneralKnowledge #Trivia #QuizTime #LearnOnFacebook"
         )
     else:

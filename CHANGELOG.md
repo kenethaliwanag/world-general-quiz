@@ -38,3 +38,8 @@
 - Removed the stale `actions/cache` step for `data/used_questions.json`; the cached copy overwrote the committed history and kept every scheduled run regenerating the same Part.
 - Lowered the preflight audio-bitrate floor to 50000 bps (a narration track measures ~95 kbps, a track without narration ~13 kbps) and fixed the misleading error message.
 - Failed Facebook publications now exit non-zero so a silent publish failure cannot look like a green workflow run.
+- Narration is now generated one clip per intro/outro line, so every on-screen line is spoken and appears exactly when it is said.
+- The spoken script now covers the "QUESTION N" label and the difficulty badge, the challenge hook, and the closing call to action.
+- Rewrote the intro and outro lines to be speakable ("Welcome to the World General Knowledge Quiz!", "How did you do?") and aligned the SRT subtitles with the spoken script.
+- The Reel keeps a single intro and outro clip, and speaks the bare question text, so it stays inside Meta's 90 second Reel limit.
+- `ffprobe` failures while measuring narration length now raise a clear error instead of crashing the generation.
