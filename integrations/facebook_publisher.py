@@ -23,6 +23,9 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+# Measured average AAC bitrate: ~95 kbps with narration, ~13 kbps without it.
+MIN_AUDIO_BITRATE_BPS = 50000
+
 
 class FacebookPublisherError(Exception):
     """Raised when local Facebook publishing preparation cannot proceed."""
@@ -207,8 +210,10 @@ class FacebookPublisher:
                 errors.append(f"Audio sample rate is {audio.get('sample_rate')} Hz; expected 48000 Hz.")
             if audio.get("bit_rate") is None:
                 errors.append("ffprobe did not report an audio bitrate.")
-            elif int(audio["bit_rate"]) < 100000:
-                errors.append(f"Audio bitrate is {audio['bit_rate']} bps; expected at least 128000 bps.")
+            elif int(audio["bit_rate"]) < MIN_AUDIO_BITRATE_BPS:
+                errors.append(
+                    f"Audio bitrate is {audio['bit_rate']} bps; expected at least {MIN_AUDIO_BITRATE_BPS} bps."
+                )
 
         if details["duration_seconds"] <= 0:
             errors.append("Video duration must be greater than zero.")

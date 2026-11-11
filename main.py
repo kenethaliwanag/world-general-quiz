@@ -397,6 +397,8 @@ def _run_publish_reel(args, dry_run: bool = True):
         print("Errors:")
         for error in result["errors"]:
             print(f"  - {error}")
+    if not result.get("success"):
+        raise SystemExit(1)
 
 
 def main():

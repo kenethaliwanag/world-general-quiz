@@ -61,7 +61,7 @@ def _invalid(tmp_path, monkeypatch, key, new_value):
     elif key == "sample_rate":
         probe["streams"][1]["sample_rate"] = "44100"
     elif key == "bitrate":
-        probe["streams"][1]["bit_rate"] = "96000"
+        probe["streams"][1]["bit_rate"] = "13000"
     else:
         raise ValueError(key)
     publisher = FacebookPublisher(dry_run=True)
@@ -75,6 +75,23 @@ def _invalid(tmp_path, monkeypatch, key, new_value):
 def test_failed_preflight_cases(tmp_path, monkeypatch):
     for case in ("resolution", "frame_rate", "video_codec", "audio_codec", "channels", "sample_rate", "bitrate"):
         _invalid(tmp_path, monkeypatch, case, None)
+
+
+def test_narration_bitrate_passes_and_silent_track_fails(tmp_path, monkeypatch):
+    publisher = FacebookPublisher(dry_run=True)
+    video = _video(tmp_path)
+
+    narrated = json.loads(json.dumps(VALID_PROBE))
+    narrated["streams"][1]["bit_rate"] = "95000"
+    monkeypatch.setattr(facebook_publisher, "_run_ffprobe", _stub_preflight(narrated))
+    assert publisher.validate_video(video).success
+
+    silent = json.loads(json.dumps(VALID_PROBE))
+    silent["streams"][1]["bit_rate"] = "13000"
+    monkeypatch.setattr(facebook_publisher, "_run_ffprobe", _stub_preflight(silent))
+    result = publisher.validate_video(video)
+    assert not result.success
+    assert any("bitrate" in error for error in result.errors)
 
 
 def test_content_hash_consistency(tmp_path, monkeypatch):

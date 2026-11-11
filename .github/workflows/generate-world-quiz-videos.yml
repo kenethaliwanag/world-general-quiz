@@ -74,14 +74,6 @@ jobs:
         with:
           enable-cache: true
 
-      - name: Restore question history
-        uses: actions/cache@v4
-        with:
-          path: data/used_questions.json
-          key: world-quiz-question-history-${{ github.ref }}
-          restore-keys: world-quiz-question-history-
-          save-always: true
-
       - name: Restore HyperFrames browser cache
         uses: actions/cache@v4
         with:

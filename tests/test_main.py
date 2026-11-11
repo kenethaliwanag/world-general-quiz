@@ -177,3 +177,29 @@ def test_generate_part_renders_ten_question_facebook_video(tmp_path, monkeypatch
     part_dir, returned_history = main.generate_part(1, args, history=history)
     assert (part_dir / "facebook" / "videos" / "world_general_knowledge_quiz_part_001_10_questions.mp4").exists()
     assert (part_dir / "facebook" / "videos" / "script.json").exists()
+
+
+def test_failed_publish_exits_non_zero(tmp_path, monkeypatch):
+    import config
+    from integrations.facebook_publisher import FacebookPublisher
+
+    part_dir = tmp_path / "output" / "part_001"
+    videos_dir = part_dir / "facebook" / "videos"
+    videos_dir.mkdir(parents=True)
+    (videos_dir / "world_general_knowledge_quiz_part_001_10_questions.mp4").write_bytes(b"video")
+    (part_dir / "script.json").write_text(
+        '{"title": "World General Knowledge Quiz", "part": 1}', encoding="utf-8"
+    )
+    monkeypatch.setattr(main, "OUTPUT_DIR", tmp_path / "output")
+    monkeypatch.setattr(config, "FACEBOOK_PUBLISH_ENABLED", True)
+    monkeypatch.setattr(config, "FACEBOOK_PUBLISH_DRY_RUN", False)
+    monkeypatch.setattr(
+        FacebookPublisher,
+        "publish_ten_question_video",
+        lambda *args, **kwargs: {"success": False, "part_number": 1, "errors": ["preflight failed"]},
+    )
+    args = SimpleNamespace(part=1, publish_content_type="ten_question_video")
+
+    with pytest.raises(SystemExit) as excinfo:
+        main._run_publish_reel(args, dry_run=False)
+    assert excinfo.value.code == 1

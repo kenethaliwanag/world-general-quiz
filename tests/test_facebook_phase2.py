@@ -138,6 +138,15 @@ def test_scheduled_workflow_publishes_ten_question_facebook_page_video():
     assert " || true" not in workflow
 
 
+def test_workflows_never_cache_the_question_history():
+    # A cached history file silently overwrote the committed one and kept every
+    # run regenerating the same Part.  Git stays the only source of truth.
+    for name in ("scheduled-world-quiz-videos.yml", "generate-world-quiz-videos.yml", "facebook-test-reel.yml"):
+        workflow = Path(f".github/workflows/{name}").read_text(encoding="utf-8")
+        assert "world-quiz-question-history" not in workflow
+        assert "git add data/used_questions.json" in workflow
+
+
 def test_phase2_ten_question_page_video_publish_succeeds(tmp_path, monkeypatch):
     publisher, manager = _live_publisher(tmp_path)
     video = Path(tmp_path, "world_general_knowledge_quiz_part_001_10_questions.mp4")

@@ -35,3 +35,6 @@
 - Redesigned the 10-question composition into a two-column answer board (10 numbered slots) with a branded header, difficulty pill, countdown timer bar, and no mascot.
 - Replaced the big centered answer card in the 10-question format with the answer revealed inside its numbered slot; earlier answers stay on screen until the quiz ends.
 - Enlarged the closing call to action into a "COMMENT YOUR SCORE OUT OF 10" pill with a share/follow sub-line.
+- Removed the stale `actions/cache` step for `data/used_questions.json`; the cached copy overwrote the committed history and kept every scheduled run regenerating the same Part.
+- Lowered the preflight audio-bitrate floor to 50000 bps (a narration track measures ~95 kbps, a track without narration ~13 kbps) and fixed the misleading error message.
+- Failed Facebook publications now exit non-zero so a silent publish failure cannot look like a green workflow run.

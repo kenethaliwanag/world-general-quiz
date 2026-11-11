@@ -50,12 +50,6 @@ jobs:
           enable-cache: true
       - uses: actions/cache@v4
         with:
-          path: data/used_questions.json
-          key: world-quiz-question-history-${{ github.ref }}
-          restore-keys: world-quiz-question-history-
-          save-always: true
-      - uses: actions/cache@v4
-        with:
           path: ~/.cache/hyperframes
           key: world-quiz-hyperframes-browser-${{ runner.os }}
           restore-keys: world-quiz-hyperframes-browser-
@@ -176,7 +170,7 @@ jobs:
           python main.py --publish --part "$PART_NUMBER" --publish-content-type ten_question_video
 
       - name: Persist Facebook publication history
-        if: success()
+        if: always()
         run: |
           set -euo pipefail
           if ! git diff --quiet -- data/facebook_publish_history.json; then
