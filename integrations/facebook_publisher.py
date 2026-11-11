@@ -24,6 +24,7 @@ from pathlib import Path
 from typing import Any
 
 # Measured average AAC bitrate: ~95 kbps with narration, ~13 kbps without it.
+# shortcut: average bitrate only proxies "has narration"; switch to a mean-volume check if false positives appear.
 MIN_AUDIO_BITRATE_BPS = 50000
 
 
