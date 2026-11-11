@@ -232,7 +232,29 @@ jobs:
               if duration <= 0:
                   raise SystemExit(f"{video}: invalid duration {duration}")
 
-              print(f"VALIDATED {video}: {width}x{height}, {fps}, {duration:.3f}s")
+              audio = subprocess.check_output(
+                  [
+                      "ffprobe",
+                      "-v",
+                      "error",
+                      "-select_streams",
+                      "a:0",
+                      "-show_entries",
+                      "stream=codec_name,bit_rate",
+                      "-of",
+                      "json",
+                      str(video),
+                  ],
+                  text=True,
+              )
+              audio_streams = json.loads(audio).get("streams", [])
+              if not audio_streams:
+                  raise SystemExit(f"{video}: missing audio stream")
+              audio_stream = audio_streams[0]
+              print(
+                  f"VALIDATED {video}: {width}x{height}, {fps}, {duration:.3f}s, "
+                  f"audio {audio_stream.get('codec_name')} {audio_stream.get('bit_rate')} bps"
+              )
           PY
 
       - name: Upload generated outputs as artifacts

@@ -138,6 +138,15 @@ def test_scheduled_workflow_publishes_ten_question_facebook_page_video():
     assert " || true" not in workflow
 
 
+def test_generate_workflow_stays_test_only():
+    # Used to preview the 10-question video before it is published.
+    workflow = Path(".github/workflows/generate-world-quiz-videos.yml").read_text(encoding="utf-8")
+    assert "--publish" not in workflow
+    assert "META_PAGE_ACCESS_TOKEN" not in workflow
+    assert "--render-ten-video --ten-question-count 10" in workflow
+    assert "enable_tts" in workflow
+
+
 def test_workflows_never_cache_the_question_history():
     # A cached history file silently overwrote the committed one and kept every
     # run regenerating the same Part.  Git stays the only source of truth.
