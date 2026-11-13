@@ -125,10 +125,71 @@ def test_facebook_test_reel_workflow_requires_explicit_confirmation():
     assert "--meta-page" not in workflow
 
 
+# The rule that lets the scheduled workflow publish.  A scheduled run always
+# qualifies; a manual run only does when the confirmation is ticked.
+PUBLISH_CONDITION = "github.event_name == 'schedule' || inputs.confirm_live_publish == true"
+
+
+def _workflow_step(workflow, step_name):
+    """The YAML text of one named step, so its condition can be checked."""
+    lines = workflow.splitlines()
+    start = next(
+        (index for index, line in enumerate(lines) if line.strip() == f"- name: {step_name}"),
+        None,
+    )
+    assert start is not None, f"step {step_name!r} not found"
+    block = [lines[start]]
+    for line in lines[start + 1:]:
+        if line.startswith("      - "):
+            break
+        block.append(line)
+    return "\n".join(block)
+
+
+def _publish_authorized(event_name, confirm_live_publish=False):
+    """The publish condition, evaluated the way GitHub Actions evaluates it."""
+    return event_name == "schedule" or confirm_live_publish is True
+
+
+def test_scheduled_workflow_manual_dispatch_needs_publish_confirmation():
+    # A manual run must generate and render without publishing, unless the
+    # operator ticks the confirmation box.
+    workflow = Path(".github/workflows/scheduled-world-quiz-videos.yml").read_text(encoding="utf-8")
+
+    inputs = workflow.split("workflow_dispatch:")[1].split("\npermissions:")[0]
+    assert "confirm_live_publish:" in inputs
+    assert "type: boolean" in inputs
+    assert "default: false" in inputs
+
+    # The live publish step and the secret check share one authorization rule.
+    publish_step = _workflow_step(workflow, "Publish generated 10-question Facebook Page Video")
+    assert PUBLISH_CONDITION in publish_step
+    secrets_step = _workflow_step(workflow, "Verify required Facebook Meta secrets")
+    assert PUBLISH_CONDITION in secrets_step
+
+    # The generation step stays unconditional, so an unconfirmed manual run
+    # still produces the videos.
+    generate_step = _workflow_step(workflow, "Generate next quiz Part")
+    assert "confirm_live_publish" not in generate_step
+    assert "--publish" not in generate_step
+
+    # A push trigger would let a commit publish; none may be introduced.
+    assert "\n  push:" not in workflow
+
+
+def test_scheduled_publish_condition_truth_table():
+    # Scheduled runs publish automatically; a manual run needs the confirmation.
+    assert _publish_authorized("schedule") is True
+    assert _publish_authorized("workflow_dispatch", False) is False
+    assert _publish_authorized("workflow_dispatch", True) is True
+
+
 def test_scheduled_workflow_publishes_ten_question_facebook_page_video():
     workflow = Path(".github/workflows/scheduled-world-quiz-videos.yml").read_text(encoding="utf-8")
+    # 06:00 PM and 12:00 AM Philippine Time (UTC+8).
     assert '- cron: "0 10 * * *"' in workflow
-    assert '- cron: "0 14 * * *"' in workflow
+    assert '- cron: "0 16 * * *"' in workflow
+    assert '- cron: "0 14 * * *"' not in workflow
     assert 'FACEBOOK_PUBLISH_ENABLED: "true"' in workflow
     assert 'FACEBOOK_PUBLISH_DRY_RUN: "false"' in workflow
     assert "python main.py --publish --part" in workflow

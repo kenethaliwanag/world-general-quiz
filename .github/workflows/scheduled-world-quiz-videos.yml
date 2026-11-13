@@ -2,10 +2,10 @@ name: Scheduled World General Knowledge Quiz Generation
 
 on:
   # Run 06:00 PM Philippine Time (UTC+8).
-  # Run 10:00 PM Philippine Time (UTC+8).
+  # Run 12:00 AM Philippine Time (UTC+8).
   schedule:
     - cron: "0 10 * * *" # 06:00 PM PHT
-    - cron: "0 14 * * *" # 10:00 PM PHT
+    - cron: "0 16 * * *" # 12:00 AM PHT
   workflow_dispatch:
     inputs:
       questions_per_part:
@@ -17,6 +17,11 @@ on:
       enable_render:
         type: boolean
         default: true
+      confirm_live_publish:
+        description: "Explicitly authorize live Facebook publishing"
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -143,6 +148,7 @@ jobs:
           done
 
       - name: Verify required Facebook Meta secrets
+        if: github.event_name == 'schedule' || inputs.confirm_live_publish == true
         env:
           META_PAGE_ID: ${{ secrets.META_PAGE_ID }}
           META_PAGE_ACCESS_TOKEN: ${{ secrets.META_PAGE_ACCESS_TOKEN }}
@@ -154,6 +160,7 @@ jobs:
           fi
 
       - name: Publish generated 10-question Facebook Page Video
+        if: github.event_name == 'schedule' || inputs.confirm_live_publish == true
         env:
           META_PAGE_ID: ${{ secrets.META_PAGE_ID }}
           META_PAGE_ACCESS_TOKEN: ${{ secrets.META_PAGE_ACCESS_TOKEN }}
