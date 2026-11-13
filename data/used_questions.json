@@ -164,7 +164,22 @@
     "la-fam--german",
     "us-lci--kansas",
     "cmp-country-area--australia-finland",
-    "cmp-el-num--gold-tennessine"
+    "cmp-el-num--gold-tennessine",
+    "cn-iso--guatemala",
+    "cn-dem--colombia",
+    "na-det--victoria-falls",
+    "us-ord--north-carolina",
+    "fa-cou--the-telephone-1876",
+    "cn-len-cap--athens",
+    "fa-yr--the-transcontinental-railroad-1869",
+    "cn-lan--france",
+    "us-abb--virginia",
+    "cn-pop--eswatini",
+    "el-per--krypton",
+    "ct-lan--lisbon",
+    "la-reg--finnish",
+    "cmp-us-area--texas-washington",
+    "cmp-na-mea--greenland-hispaniola"
   ],
-  "last_part": 11
+  "last_part": 12
 }
