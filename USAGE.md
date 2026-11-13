@@ -23,6 +23,7 @@ python main.py
 ```
 
 The program automatically chooses the next Part number, selects 15 questions, and writes:
+
 - `output/part_001/script.txt`
 - `output/part_001/script.json`
 - `output/part_001/subtitles/part_001.srt`
@@ -70,7 +71,9 @@ python main.py --tts
 
 The project requests MP3 narration for the intro, each question, each answer and the ending. Audio files are stored under `output/audio/`.
 
-Example voices include `af_heart`, `af_sarah`, `am_adam`, and `am_michael`; availability depends on the Kokoro server/model package you install.
+The production narrator is `af_bella`, spoken at `TTS_SPEED` (0.92) for the 15-question full video and the 10-question Facebook Page Video, and at `TTS_SPEED_REEL` (1.00) for the Reel to help meet Meta's 90-second Reel limit. The actual rendered Reel duration should be validated before publishing. `af_bella` ships with the Kokoro-FastAPI v0.9.2 voice pack (`api/src/voices/v1_0/af_bella.pt`).
+
+Example voices include `af_bella`, `af_heart`, `af_sarah`, `am_adam`, and `am_michael`; availability depends on the Kokoro server/model package you install.
 
 ## 5. HyperFrames video rendering
 

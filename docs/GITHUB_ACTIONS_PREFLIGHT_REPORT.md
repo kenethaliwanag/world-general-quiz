@@ -99,8 +99,9 @@ The application's current implementation is compatible with `remsky/Kokoro-FastA
 | `POST /v1/audio/speech` | supported |
 | `model: kokoro` | supported |
 | `input` | supported |
-| `voice: af_heart` | supported |
+| `voice: af_bella` | supported (`api/src/voices/v1_0/af_bella.pt` ships with the tag) |
 | `response_format: mp3` | supported |
+| `speed: 0.92` (0.25-4.0) | supported |
 | `voice` listed via model endpoint | supported |
 | no API key needed | supported by default |
 | 30-second timeout per clip | supported |

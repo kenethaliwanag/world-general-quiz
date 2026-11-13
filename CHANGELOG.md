@@ -2,6 +2,22 @@
 
 ## Unreleased
 
+- Fixed the scheduled workflow failing with "No unused questions remain for these filters". The question bank now holds about 112,000 questions instead of 121, and when the unused pool still runs dry the questions used longest ago are recycled instead of aborting the run.
+- A Part now keeps its general-knowledge character: the target is 13 single-entity questions and 2 comparison questions, with an absolute maximum of 4 comparisons. When the fresh single-entity questions run out they are recycled, least recently used first, instead of the Part turning into comparison questions only.
+- `data/used_questions.json` keeps `used_ids` in recency order: a question that is used again moves to the end, so recycling rotates instead of repeating the same questions. The file format is unchanged and existing history files keep working.
+- Question quality fixes: the country Georgia and the US state Georgia no longer generate the same question; ambiguous country and field questions are skipped unless the seed supports one answer; the historical facts each name the specific fact they hold; measurements carry their unit; and the questions that repeated a fact (largest city equal to the capital, a region equal to the city name, the atomic number equal to the proton count, and the inverse country questions) are no longer produced.
+- Factual corrections with sources: the Chinese language family is Sino-Tibetan, Bolivia's largest city is Santa Cruz de la Sierra, Bolivia's constitutional capital (Sucre) and its seat of government (La Paz) are asked separately, and the Sahara area is given as about 9,000,000 square kilometres.
+- Added `tests/test_question_bank_content.py`, which checks the raw generated questions before any deduplication, so a question can never hide two different answers.
+- The question bank is now built from the curated questions in `data/questions.json` plus questions generated at run time from the verified seed facts in `data/seeds/` (countries, elements, US states, cities, natural features, dated facts, languages).
+- A Part now draws one question per question family before it takes a second from any family, so a Part mixes capitals, elements, comparisons and history instead of repeating one question shape.
+- The production narrator is now Kokoro `af_bella` instead of `af_heart`. The Kokoro engine is unchanged; the integration now sends the configured speaking speed and requests a short pause between sentences, and the workflows set `KOKORO_VOICE: "af_bella"`.
+- The 10-question Page Video now keeps each question on screen through its countdown and its correct-answer reveal, and replaces it only when the next question starts. The 15-question full video is unchanged.
+- The 10-question outro is larger and re-centred: the main ending line is 92px in the middle of the frame, the call-to-action pill is 42px on one line, and the Part badge no longer overlaps the ending text.
+- Narration is about 8% slower (`speed=0.92`) for the 10-question Page Video and the 15-question full video; the Reel keeps 1.00 to help meet Meta's 90-second Reel limit. The actual rendered Reel duration still needs validation.
+- Narration now asks for a short pause between sentences, so the spoken "Question N, easy." label does not run into the question.
+- Documented the TTS voice comparison in `tts_samples/SAMPLES.md`, covering Kokoro `af_heart`, Kokoro `af_bella` and two Piper voices, with the measured durations and the licensing notes. The production engine is unchanged.
+- Corrected the scheduled Facebook publishing times to 6:00 PM and 12:00 AM Philippine Time. Manual workflow dispatches now require an explicit `confirm_live_publish` selection before checking Meta secrets or publishing; scheduled runs retain automatic publishing.
+
 - Fixed `main.py` import so the CLI runs.
 - Made quiz intro and ending counts follow the selected question count.
 - Added question-bank and history validation, plus atomic history writes.

@@ -49,8 +49,8 @@ Remaining, non-blocking:
 
 - Endpoint used: `{KOKORO_BASE_URL}/v1/audio/speech`
 - Default: `http://localhost:7860/v1/audio/speech`
-- Request fields: `model`, `input`, `voice`, `response_format`
-- Defaults in `config.py`: model `kokoro`, voice `af_heart`, format `mp3`.
+- Request fields: `model`, `input`, `voice`, `response_format`, `speed`
+- Defaults in `config.py`: model `kokoro`, voice `af_bella`, format `mp3`, speed `0.92` (`1.00` for the Reel).
 - Timeout: 180 seconds.
 - Cache: existing valid, non-empty, ffprobe-readable audio is reused.
 - Duration measurement: ffprobe JSON `format.duration`.
