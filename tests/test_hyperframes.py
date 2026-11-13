@@ -28,6 +28,22 @@ def _questions(count):
     ]
 
 
+def _css(html, selector):
+    """Return the declarations of one CSS rule, e.g. '.tracker-layout .ending'."""
+    match = re.search(re.escape(selector) + r"\{([^}]*)\}", html)
+    assert match, f"CSS rule {selector} not found"
+    declarations = {}
+    for part in match.group(1).split(";"):
+        if ":" in part:
+            key, value = part.split(":", 1)
+            declarations[key.strip()] = value.strip()
+    return declarations
+
+
+def _px(rule, key):
+    return int(rule[key].replace("px", ""))
+
+
 def test_intro_and_outro_use_progressive_word_elements(tmp_path, monkeypatch):
     questions = [
         {"id": "q1", "question": "Example?", "answer": "Example.", "category": "general", "difficulty": "easy"}
@@ -120,6 +136,75 @@ def test_tracker_countdown_bar_is_synced_with_tick_sfx(tmp_path, monkeypatch):
             assert fill[0] == tick[0]
             assert elements[f"q{number}-countdown-{second}"][0] == tick[0]
         assert elements[f"q{number}-timer-track"][0] == elements[f"q{number}-timer-{hyperframes.COUNTDOWN_SECONDS}"][0]
+
+
+def test_tracker_question_stays_visible_until_the_next_question(tmp_path, monkeypatch):
+    monkeypatch.setattr(hyperframes, "OUTPUT_DIR", tmp_path / "output")
+    quiz = build_quiz(1, _questions(10), content_type="ten_question_video")
+    project_dir, duration, timeline = hyperframes.create_composition(
+        quiz, audio_map=None, content_type="ten_question_video", tracker=True
+    )
+    html = (project_dir / "index.html").read_text(encoding="utf-8")
+    elements = _elements(html)
+
+    for number in range(1, 11):
+        start, visible = elements[f"q{number}-question"]
+        # The label, the difficulty pill and the question share one lifetime.
+        assert elements[f"q{number}-label"][0] == start
+        assert elements[f"q{number}-difficulty"][1] == visible
+        # Still on screen while the correct answer is revealed.
+        assert start + visible > elements[f"slot-box-done-{number}"][0]
+        if number < 10:
+            # Replaced exactly when the next question starts.
+            assert start + visible == pytest.approx(elements[f"q{number + 1}-question"][0])
+        else:
+            # The last question is replaced by the outro.
+            assert start + visible == pytest.approx(elements["ending-eyebrow-word-1"][0])
+
+
+def test_full_video_question_still_clears_before_the_answer(tmp_path, monkeypatch):
+    monkeypatch.setattr(hyperframes, "OUTPUT_DIR", tmp_path / "output")
+    quiz = build_quiz(1, _questions(15))
+    project_dir, duration, timeline = hyperframes.create_composition(quiz, audio_map=None)
+    html = (project_dir / "index.html").read_text(encoding="utf-8")
+    elements = _elements(html)
+
+    for number in range(1, 16):
+        start, visible = elements[f"q{number}-question"]
+        # The 15-question format keeps its big centred answer card, so the
+        # question still clears when the answer appears.
+        assert start + visible == pytest.approx(elements[f"q{number}-answer-label"][0])
+
+
+def test_tracker_outro_text_is_large_centered_and_inside_the_frame(tmp_path, monkeypatch):
+    monkeypatch.setattr(hyperframes, "OUTPUT_DIR", tmp_path / "output")
+    quiz = build_quiz(1, _questions(10), content_type="ten_question_video")
+    project_dir, duration, timeline = hyperframes.create_composition(
+        quiz, audio_map=None, content_type="ten_question_video", tracker=True
+    )
+    html = (project_dir / "index.html").read_text(encoding="utf-8")
+
+    ending = _css(html, ".tracker-layout .ending")
+    assert _px(ending, "font-size") >= 92
+    top = _px(ending, "top")
+    height = _px(ending, "height")
+    assert top + height <= hyperframes.VIDEO_HEIGHT
+    # Centred in the frame, both ways.
+    assert abs((top + height / 2) - hyperframes.VIDEO_HEIGHT / 2) <= 60
+    assert _px(ending, "left") == hyperframes.CONTENT_LEFT_PX
+    assert _px(ending, "width") == hyperframes.CONTENT_WIDTH_PX
+
+    # Nothing else shares the ending block.
+    for selector in (".tracker-layout .eyebrow", ".tracker-layout .cta", ".tracker-layout .cta-sub"):
+        rule = _css(html, selector)
+        rule_top = _px(rule, "top")
+        rule_bottom = rule_top + _px(rule, "height")
+        assert rule_bottom <= top or rule_top >= top + height
+
+    # The Part badge no longer overlaps the ending text.
+    part = _css(html, ".tracker-layout .ending-partline")
+    assert _px(part, "top") >= top + height
+    assert _px(part, "top") + _px(part, "height") <= hyperframes.VIDEO_HEIGHT
 
 
 def test_reel_keeps_bare_question_text_for_the_90_second_limit():

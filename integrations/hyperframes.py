@@ -250,7 +250,19 @@ def create_composition(quiz, audio_map=None, content_type="full", tracker=None):
             question_duration = max(3.5, question_audio_duration + AUDIO_PADDING_SECONDS)
         else:
             question_duration = 3.5
-        question_visible_duration = question_duration + COUNTDOWN_SECONDS
+        answer_audio_duration = audio_durations.get(a_key)
+        if answer_audio_duration is not None:
+            reveal_duration = max(ANSWER_DISPLAY_SECONDS, answer_audio_duration + AUDIO_PADDING_SECONDS)
+        else:
+            reveal_duration = ANSWER_DISPLAY_SECONDS
+        if tracker:
+            # The question stays up through its countdown, its answer reveal and
+            # the transition, so it is replaced only when the next one starts.
+            question_visible_duration = (
+                question_duration + COUNTDOWN_SECONDS + reveal_duration + TRANSITION_SECONDS
+            )
+        else:
+            question_visible_duration = question_duration + COUNTDOWN_SECONDS
         if tracker:
             add_text(f"QUESTION {n}", cursor, question_visible_duration, "qlabel", f"q{n}-label")
             difficulty = str(item.get("difficulty", "easy")).lower()
@@ -298,11 +310,6 @@ def create_composition(quiz, audio_map=None, content_type="full", tracker=None):
         add_sfx(f"q{n}-timeup", "timeup", timeup_start, SFX_TIMEUP_VOLUME)
         cursor = countdown_start + COUNTDOWN_SECONDS
 
-        answer_audio_duration = audio_durations.get(a_key)
-        if answer_audio_duration is not None:
-            reveal_duration = max(ANSWER_DISPLAY_SECONDS, answer_audio_duration + AUDIO_PADDING_SECONDS)
-        else:
-            reveal_duration = ANSWER_DISPLAY_SECONDS
         answer_reveal_start = cursor
         if tracker:
             tracker_events.append((n, question_text, item["answer"], question_start, answer_reveal_start))
@@ -339,7 +346,7 @@ def create_composition(quiz, audio_map=None, content_type="full", tracker=None):
             add_audio(line_key, ending_cursor, audio_durations.get(line_key) or seconds)
         ending_cursor += seconds
     ending_duration = ending_cursor - cursor
-    add_text(f"PART {part}", ending_cursor - 2.5, 2.5, "partline", "ending-part")
+    add_text(f"PART {part}", ending_cursor - 2.5, 2.5, "partline ending-partline", "ending-part")
     if not has_ending_line_clips and copied_audio.get("ending"):
         add_audio("ending", cursor, audio_durations.get("ending") or ending_duration)
     cursor = ending_cursor
@@ -413,6 +420,11 @@ linear-gradient(145deg,#071426 0%,#102b46 55%,#06101d 100%)}}
 .tracker-layout .question{{top:466px;left:{CONTENT_LEFT_PX}px;width:{CONTENT_WIDTH_PX}px;height:240px;font-size:52px;line-height:1.2;text-align:left;justify-content:flex-start;padding:0}}
 .tracker-layout .countdown{{top:700px;left:930px;width:96px;height:62px;font-size:44px;line-height:1;justify-content:flex-end;text-align:right;padding:0;text-shadow:0 0 24px rgba(245,207,114,.55)}}
 .tracker-layout .watermark{{top:30px;width:120px}}
+.tracker-layout .eyebrow{{top:640px;height:90px;font-size:44px;letter-spacing:6px}}
+.tracker-layout .ending{{top:760px;left:{CONTENT_LEFT_PX}px;width:{CONTENT_WIDTH_PX}px;height:460px;font-size:92px;line-height:1.22}}
+.tracker-layout .cta{{top:1330px;width:940px;height:110px;font-size:42px}}
+.tracker-layout .cta-sub{{top:1460px;height:60px;font-size:30px}}
+.tracker-layout .ending-partline{{top:1580px;height:70px;font-size:34px;letter-spacing:6px}}
 .quiz-title{{position:absolute;z-index:4;left:{CONTENT_LEFT_PX}px;width:{CONTENT_WIDTH_PX}px;height:66px;font-size:54px;font-weight:900;letter-spacing:1px;color:#f5cf72;text-align:center;text-shadow:0 5px 0 #06121f,0 0 30px rgba(245,207,114,.35)}}
 .part-badge{{position:absolute;z-index:4;left:50%;top:312px;transform:translateX(-50%);width:250px;height:56px;font-size:30px;font-weight:900;letter-spacing:4px;color:#f5cf72;border:3px solid rgba(245,207,114,.5);border-radius:28px;background:rgba(6,18,31,.65);padding:0}}
 .qlabel{{position:absolute;z-index:4;left:{CONTENT_LEFT_PX}px;top:398px;width:270px;height:56px;font-size:36px;letter-spacing:2px;color:#f5cf72;font-weight:900;justify-content:flex-start;padding:0;text-align:left;text-shadow:0 4px 0 #06121f}}
