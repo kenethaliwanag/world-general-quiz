@@ -1,6 +1,7 @@
 """KokoroTTS integration using its OpenAI-compatible local HTTP endpoint."""
 import json
 import os
+import re
 import shutil
 import subprocess
 import urllib.error
@@ -12,16 +13,30 @@ from config import (
     KOKORO_MODEL,
     KOKORO_VOICE,
     KOKORO_RESPONSE_FORMAT,
+    TTS_SPEED,
     TTS_TIMEOUT_SECONDS,
 )
 
+# Kokoro reads badly when sentences run together, so ask for a short pause
+# between them.  The server understands [pause:0.25s] tags.
+# shortcut: the Reel picks up ~0.75s of extra pauses; drop them there if its
+# duration ever approaches Meta's 90 second limit.
+SENTENCE_PAUSE_SECONDS = 0.25
+SENTENCE_BREAK = re.compile(r"([.!?])\s+")
+
+
+def with_sentence_pauses(text):
+    """Insert a pause tag between sentences so the narration breathes."""
+    return SENTENCE_BREAK.sub(rf"\1 [pause:{SENTENCE_PAUSE_SECONDS}s] ", text).strip()
+
 
 class KokoroTTS:
-    def __init__(self, base_url=KOKORO_BASE_URL, model=KOKORO_MODEL, voice=KOKORO_VOICE, response_format=KOKORO_RESPONSE_FORMAT):
+    def __init__(self, base_url=KOKORO_BASE_URL, model=KOKORO_MODEL, voice=KOKORO_VOICE, response_format=KOKORO_RESPONSE_FORMAT, speed=TTS_SPEED):
         self.base_url = base_url.rstrip("/")
         self.model = model
         self.voice = voice
         self.response_format = response_format
+        self.speed = speed
 
     def _valid_audio(self, path):
         path = Path(path)
@@ -40,9 +55,10 @@ class KokoroTTS:
 
         payload = {
             "model": self.model,
-            "input": text,
+            "input": with_sentence_pauses(text),
             "voice": self.voice,
             "response_format": self.response_format,
+            "speed": self.speed,
         }
         request = urllib.request.Request(
             f"{self.base_url}/v1/audio/speech",

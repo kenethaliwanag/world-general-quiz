@@ -33,6 +33,11 @@ ENDING_MESSAGE = "How many did you get right? Comment your score below!"
 AUDIO_PADDING_SECONDS = 0.5
 TTS_TIMEOUT_SECONDS = 180
 
+# Narration pacing. 0.92 is about 8% slower than the engine default, which reads
+# more naturally.  The Reel keeps 1.0 so it stays inside Meta's 90 second limit.
+TTS_SPEED = float(os.getenv("TTS_SPEED", "0.92"))
+TTS_SPEED_REEL = float(os.getenv("TTS_SPEED_REEL", "1.0"))
+
 # Part composition. A Part stays a general-knowledge quiz: the target is 13
 # single-entity questions plus 2 comparisons, and a Part never carries more than
 # 4 comparisons so the feed cannot drift into comparison-only questions.
@@ -58,5 +63,5 @@ META_PAGE_ACCESS_TOKEN = os.getenv("META_PAGE_ACCESS_TOKEN", "")
 # KokoroTTS server defaults. Start a local Kokoro-compatible server first.
 KOKORO_BASE_URL = os.getenv("KOKORO_BASE_URL", "http://localhost:7860")
 KOKORO_MODEL = os.getenv("KOKORO_MODEL", "kokoro")
-KOKORO_VOICE = os.getenv("KOKORO_VOICE", "af_heart")
+KOKORO_VOICE = os.getenv("KOKORO_VOICE", "af_bella")
 KOKORO_RESPONSE_FORMAT = os.getenv("KOKORO_RESPONSE_FORMAT", "mp3")

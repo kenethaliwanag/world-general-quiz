@@ -10,6 +10,8 @@ from config import (
     OUTPUT_DIR,
     KOKORO_RESPONSE_FORMAT,
     AUDIO_PADDING_SECONDS,
+    TTS_SPEED,
+    TTS_SPEED_REEL,
 )
 from core.question_manager import load_questions, select_questions
 from core.quiz_generator import build_quiz, format_text_script
@@ -140,7 +142,7 @@ def generate_part(part, args, history=None):
     audio_map, audio_durations = discover_cached_audio(part, part_dir)
 
     if args.tts:
-        tts = KokoroTTS()
+        tts = KokoroTTS(speed=TTS_SPEED)
         narration_dir = part_dir / "narration"
         narration_dir.mkdir(parents=True, exist_ok=True)
         ext = part_audio_extension()
@@ -216,7 +218,7 @@ def generate_part(part, args, history=None):
             reel_audio_map = {}
             reel_audio_durations = {}
             if args.tts:
-                reel_tts = KokoroTTS()
+                reel_tts = KokoroTTS(speed=TTS_SPEED_REEL)
                 ext = part_audio_extension()
                 reel_narration_dir = reels_dir / "narration"
                 reel_narration_dir.mkdir(parents=True, exist_ok=True)
@@ -285,7 +287,7 @@ def generate_part(part, args, history=None):
             ten_audio_map = {}
             ten_audio_durations = {}
             if args.tts:
-                ten_tts = KokoroTTS()
+                ten_tts = KokoroTTS(speed=TTS_SPEED)
                 ext = part_audio_extension()
                 ten_narr_dir = ten_dir / "narration"
                 ten_narr_dir.mkdir(parents=True, exist_ok=True)
