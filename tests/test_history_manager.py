@@ -41,7 +41,8 @@ def test_record_question_usage_advances_history(tmp_path, monkeypatch):
     history_manager.save_history({"used_ids": ["q1"], "last_part": 1})
     original = history_manager.load_history()
     updated = history_manager.record_question_usage(original, ["q3", "q1", "q4"], 2)
-    assert updated["used_ids"] == ["q1", "q3", "q4"]
+    # A reused ID moves to the end so the next Part recycles a different one.
+    assert updated["used_ids"] == ["q3", "q4", "q1"]
     assert updated["last_part"] == 2
     assert history_manager.load_history() == updated
     assert path.stat().st_size > 0

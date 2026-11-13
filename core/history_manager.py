@@ -50,9 +50,19 @@ def record_question_usage(history, question_ids, part_number):
     """Persist newly used question IDs only after a Part succeeds.
 
     The input history is not mutated; a normalized copy is saved and returned.
+
+    `used_ids` stays a list of unique IDs in recency order: the first entry was
+    used longest ago. An ID that is used again moves to the end, so the next
+    Part recycles a different question instead of the same one.
     """
     history = _normalize_history(history)
-    history["used_ids"] = list(dict.fromkeys(history["used_ids"] + [str(item) for item in question_ids]))
+    selected = [str(item) for item in (question_ids or [])]
+    selected_ids = set(selected)
+    previous = set(history["used_ids"])
+    remaining = [qid for qid in history["used_ids"] if qid not in selected_ids]
+    fresh = [qid for qid in selected if qid not in previous]
+    reused = [qid for qid in selected if qid in previous]
+    history["used_ids"] = list(dict.fromkeys(remaining + fresh + reused))
     history["last_part"] = max(int(history.get("last_part", 0)), int(part_number))
     save_history(history)
     return history
