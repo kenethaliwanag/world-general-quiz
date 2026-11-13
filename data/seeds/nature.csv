@@ -1,0 +1,91 @@
+name,kind,continent,country,measure,measure_label,detail,measure_unit
+Nile,river,Africa,Egypt,6650,length,The longest river in the world,km
+Amazon River,river,South America,Brazil,6400,length,The largest river by discharge,km
+Yangtze,river,Asia,China,6300,length,The longest river in Asia,km
+Mississippi River,river,North America,United States,6320,length,The longest river in the United States,km
+Yenisei,river,Asia,Russia,5539,length,The longest river flowing into the Arctic Ocean,km
+Huang He,river,Asia,China,5464,length,The second longest river in Asia,km
+Congo River,river,Africa,DR Congo,4700,length,The second longest river in Africa,km
+Ob River,river,Asia,Russia,3650,length,One of the longest rivers in the world,km
+Lena River,river,Asia,Russia,4400,length,A very long river in Siberia,km
+Mekong,river,Asia,Vietnam,4350,length,The longest river in Southeast Asia,km
+Ganges,river,Asia,India,2525,length,A holy river of India,km
+Danube,river,Europe,Germany,2850,length,The second longest river in Europe,km
+Niger River,river,Africa,Mali,4180,length,A major river in West Africa,km
+Zambezi,river,Africa,Zambia,2574,length,A river that flows over Victoria Falls,km
+Mount Everest,mountain,Asia,Nepal,8849,height,The highest mountain in the world,m
+K2,mountain,Asia,Pakistan,8611,height,The second highest mountain in the world,m
+Kangchenjunga,mountain,Asia,Nepal,8586,height,The third highest mountain in the world,m
+Denali,mountain,North America,United States,6190,height,The highest mountain in North America,m
+Kilimanjaro,mountain,Africa,Tanzania,5895,height,The highest mountain in Africa,m
+Mount Elbrus,mountain,Europe,Russia,5642,height,The highest mountain in Europe,m
+Aconcagua,mountain,South America,Argentina,6961,height,The highest mountain in South America,m
+Mount Fuji,mountain,Asia,Japan,3776,height,The highest mountain in Japan,m
+Mount Kenya,mountain,Africa,Kenya,5199,height,The second highest mountain in Africa,m
+Matterhorn,mountain,Europe,Switzerland,4478,height,A famous mountain on the border of Switzerland and Italy,m
+Mount Kosciuszko,mountain,Oceania,Australia,2228,height,The highest mountain in Australia,m
+Vinson Massif,mountain,Antarctica,Antarctica,4892,height,The highest mountain in Antarctica,m
+Mount Vesuvius,mountain,Europe,Italy,1281,height,The volcano that buried Pompeii,m
+Mount Etna,mountain,Europe,Italy,3357,height,An active volcano on the island of Sicily,m
+Cotopaxi,mountain,South America,Ecuador,5897,height,One of the world's highest active volcanoes,m
+Chimborazo,mountain,South America,Ecuador,6263,height,The mountain whose summit is farthest from the centre of the Earth,m
+Baikal,lake,Asia,Russia,1642,depth,The deepest lake in the world,m
+Lake Superior,lake,North America,United States,406,depth,The largest freshwater lake by surface area,m
+Lake Victoria,lake,Africa,Tanzania,106,depth,The largest lake in Africa,m
+Lake Titicaca,lake,South America,Peru,381,depth,The largest lake in South America,m
+Lake Tana,lake,Africa,Ethiopia,70,depth,A large crater lake in Ethiopia,m
+Vostok Lake,lake,Antarctica,Antarctica,900,depth,The deepest Antarctic lake,m
+Lake Tanganyika,lake,Africa,Tanzania,1470,depth,The second deepest lake in the world,m
+Great Bear Lake,lake,North America,Canada,446,depth,The largest lake entirely within Canada,m
+Great Slave Lake,lake,North America,Canada,614,depth,The second largest lake in Canada,m
+Lake Chad,lake,Africa,Niger,16,depth,A shallow lake in central Africa,m
+Aral Sea,lake,Asia,Uzbekistan,68,depth,A sea that largely dried up,m
+Issyk-Kul,lake,Asia,Kyrgyzstan,668,depth,A very deep mountain lake in Kyrgyzstan,m
+Dead Sea,lake,Asia,Israel,429,depth,The lowest exposed land surface on Earth,m
+Sahara,desert,Africa,Chad,9000000,area,The largest hot desert in the world,km²
+Antarctic,desert,Antarctica,Antarctica,14000000,area,The largest desert on Earth,km²
+Arabian Desert,desert,Asia,Saudi Arabia,2330000,area,The largest desert in Asia,km²
+Gobi,desert,Asia,Mongolia,1300000,area,A cold desert in Mongolia and China,km²
+Mojave,desert,North America,United States,124000,area,A desert in the southwestern United States,km²
+Atacama,desert,South America,Chile,105000,area,One of the driest places on Earth,km²
+Namib,desert,Africa,Namibia,55000,area,An old desert in southwestern Africa,km²
+Kalahari,desert,Africa,Botswana,900000,area,A semi-desert in southern Africa,km²
+Sonoran,desert,North America,Mexico,260000,area,A desert in northwestern Mexico,km²
+Taklamakan,desert,Asia,China,337000,area,A large desert in northwestern China,km²
+Amazon rainforest,forest,South America,Brazil,5500000,area,The largest tropical rainforest in the world,km²
+Congo Basin,forest,Africa,DR Congo,3700000,area,The second largest tropical rainforest,km²
+Boreal forest,forest,North America,Canada,12000000,area,The largest forest biome on Earth,km²
+Taiga,forest,Asia,Russia,8000000,area,The largest land biome in the world,km²
+Pacific Ocean,ocean,Asia,United States,165250000,area,The largest ocean on Earth,km²
+Atlantic Ocean,ocean,North America,United States,106460000,area,The second largest ocean on Earth,km²
+Indian Ocean,ocean,Asia,India,70560000,area,The third largest ocean on Earth,km²
+Southern Ocean,ocean,Antarctica,Antarctica,21916000,area,The fourth largest ocean on Earth,km²
+Arctic Ocean,ocean,North America,Norway,15558000,area,The smallest of the five oceans,km²
+Mediterranean Sea,sea,Europe,Spain,2500000,area,The sea between Europe Africa and Asia,km²
+Coral Sea,sea,Oceania,Australia,4350000,area,A sea north of Australia,km²
+Caribbean Sea,sea,North America,Cuba,2750000,area,A sea between the Americas,km²
+Baltic Sea,sea,Europe,Sweden,377000,area,A brackish sea in northern Europe,km²
+North Sea,sea,Europe,United Kingdom,575000,area,A sea between Britain and Norway,km²
+Black Sea,sea,Europe,Turkey,436000,area,A sea between Europe and Asia,km²
+Caspian Sea,sea,Asia,Kazakhstan,371000,area,The world's largest inland body of water,km²
+Hudson Bay,sea,North America,Canada,1230000,area,A large bay in northern Canada,km²
+Red Sea,sea,Africa,Saudi Arabia,440000,area,A sea between Africa and Asia,km²
+Greenland,island,North America,Denmark,2166086,area,The world's largest island,km²
+New Guinea,island,Oceania,Indonesia,785753,area,The world's second largest island,km²
+Borneo,island,Asia,Indonesia,748168,area,The third largest island in the world,km²
+Madagascar,island,Africa,Madagascar,587041,area,The fourth largest island in the world,km²
+Great Britain,island,Europe,United Kingdom,229495,area,The island holding England Scotland and Wales,km²
+New Zealand North Island,island,Oceania,New Zealand,113729,area,The North Island of New Zealand,km²
+Cuba,island,North America,Cuba,109884,area,The largest island in the Caribbean,km²
+Iceland,island,Europe,Iceland,103000,area,An island in the North Atlantic,km²
+Sri Lanka,island,Asia,Sri Lanka,65632,area,The island country south of India,km²
+Hispaniola,island,North America,Dominican Republic,76192,area,The island shared by Haiti and the Dominican Republic,km²
+Tasmania,island,Oceania,Australia,68401,area,The island state south of mainland Australia,km²
+Svalbard,island,Europe,Norway,61000,area,An Arctic archipelago belonging to Norway,km²
+Mariana Trench,trench,Asia,United States,10994,depth,The deepest known point in the ocean,m
+Victoria Falls,waterfall,Africa,Zambia,108,height,A huge waterfall on the Zambezi River,m
+Niagara Falls,waterfall,North America,United States,51,height,A famous waterfall between Canada and the United States,m
+Angel Falls,waterfall,South America,Venezuela,979,height,The world's highest uninterrupted waterfall,m
+Yosemite Falls,waterfall,North America,United States,739,height,One of the tallest waterfalls in North America,m
+Iguazu Falls,waterfall,South America,Argentina,275,length,A wide waterfall on the border of Argentina and Brazil,km
+Great Barrier Reef,reef,Oceania,Australia,3487000,area,The world's largest coral reef system,km²

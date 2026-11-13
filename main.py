@@ -11,7 +11,7 @@ from config import (
     KOKORO_RESPONSE_FORMAT,
     AUDIO_PADDING_SECONDS,
 )
-from core.question_manager import select_questions
+from core.question_manager import load_questions, select_questions
 from core.quiz_generator import build_quiz, format_text_script
 from core.script_exporter import export_quiz, export_srt
 from core.history_manager import load_history, next_part_number, record_question_usage, reset_history
@@ -170,8 +170,12 @@ def generate_part(part, args, history=None):
     print(f"\nSaved text script: {text_path}")
     print(f"Saved JSON script: {json_path}")
     print(f"Saved subtitles: {srt_path}")
+    print(f"Question bank: {len(load_questions()):,} questions available.")
     if pool_reset:
-        print("\nNOTE: The unused question pool was too small for this selection. History was cycled for this filtered pool.")
+        print(
+            "\nNOTE: The unused question pool was too small for this selection. "
+            "The questions used longest ago were recycled for this Part."
+        )
 
     render_reels = bool(
         getattr(args, "render_reels", False)

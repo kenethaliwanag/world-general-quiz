@@ -33,6 +33,12 @@ ENDING_MESSAGE = "How many did you get right? Comment your score below!"
 AUDIO_PADDING_SECONDS = 0.5
 TTS_TIMEOUT_SECONDS = 180
 
+# Part composition. A Part stays a general-knowledge quiz: the target is 13
+# single-entity questions plus 2 comparisons, and a Part never carries more than
+# 4 comparisons so the feed cannot drift into comparison-only questions.
+COMPARISON_TARGET_PER_PART = int(os.getenv("COMPARISON_TARGET_PER_PART", "2"))
+MAX_COMPARISONS_PER_PART = int(os.getenv("MAX_COMPARISONS_PER_PART", "4"))
+
 SFX_TICK_PATH = PROJECT_ROOT / "assets" / "sfx" / "tick.wav"
 SFX_TIMEUP_PATH = PROJECT_ROOT / "assets" / "sfx" / "timeup.wav"
 SFX_TICK_VOLUME = 0.16

@@ -1,0 +1,51 @@
+name,capital,largest_city,abbreviation,region,statehood_year,area_km2,population_m
+Alabama,Montgomery,Huntsville,AL,Southeast,1819,135191,5.1
+Alaska,Juneau,Anchorage,AK,West,1959,1717858,0.73
+Arizona,Phoenix,Phoenix,AZ,West,1912,295334,7.4
+Arkansas,Little Rock,Little Rock,AR,Southeast,1836,137742,3.1
+California,Sacramento,Los Angeles,CA,West,1850,423967,39.0
+Colorado,Denver,Denver,CO,West,1876,269834,5.9
+Connecticut,Hartford,Bridgeport,CT,Northeast,1788,14356,3.6
+Delaware,Dover,Wilmington,DE,Mid-Atlantic,1787,6489,1.0
+Florida,Tallahassee,Jacksonville,FL,Southeast,1845,170312,22.6
+Georgia,Atlanta,Atlanta,GA,Southeast,1788,148959,11.0
+Hawaii,Honolulu,Honolulu,HI,West,1959,16635,1.4
+Idaho,Boise,Boise,ID,West,1890,216045,2.0
+Illinois,Springfield,Chicago,IL,Midwest,1818,149029,12.7
+Indiana,Indianapolis,Indianapolis,IN,Midwest,1816,36420,6.9
+Iowa,Des Moines,Des Moines,IA,Midwest,1846,145746,3.2
+Kansas,Topeka,Wichita,KS,Midwest,1861,213098,2.9
+Kentucky,Frankfort,Louisville,KY,Southeast,1792,102355,4.5
+Louisiana,Baton Rouge,New Orleans,LA,Southeast,1812,112399,4.6
+Maine,Augusta,Portland,ME,Northeast,1820,80383,1.4
+Maryland,Annapolis,Baltimore,MD,Mid-Atlantic,1788,32134,6.2
+Massachusetts,Boston,Boston,MA,Northeast,1788,27384,7.0
+Michigan,Lansing,Detroit,MI,Midwest,1837,250487,10.0
+Minnesota,Saint Paul,Minneapolis,MN,Midwest,1858,206232,5.7
+Mississippi,Jackson,Jackson,MS,Southeast,1817,121531,2.9
+Missouri,Jefferson City,Kansas City,MO,Midwest,1821,178040,6.2
+Montana,Helena,Billings,MT,West,1889,376962,1.1
+Nebraska,Lincoln,Omaha,NE,Midwest,1867,200330,2.0
+Nevada,Carson City,Las Vegas,NV,West,1864,286412,3.2
+New Hampshire,Concord,Manchester,NH,Northeast,1788,24233,1.4
+New Jersey,Trenton,Newark,NJ,Mid-Atlantic,1787,22558,9.3
+New Mexico,Santa Fe,Albuquerque,NM,West,1912,314161,2.1
+New York,Albany,New York City,NY,Northeast,1788,141297,19.6
+North Carolina,Raleigh,Charlotte,NC,Southeast,1789,136488,10.8
+North Dakota,Bismarck,Fargo,ND,Midwest,1889,183111,0.78
+Ohio,Columbus,Columbus,OH,Midwest,1803,140869,11.8
+Oklahoma,Oklahoma City,Oklahoma City,OK,South Central,1907,181037,4.0
+Oregon,Salem,Portland,OR,West,1859,254741,4.2
+Pennsylvania,Harrisburg,Philadelphia,PA,Mid-Atlantic,1787,119283,13.0
+Rhode Island,Providence,Providence,RI,Northeast,1790,3154,1.1
+South Carolina,Columbia,Charleston,SC,Southeast,1788,82932,5.4
+South Dakota,Pierre,Sioux Falls,SD,Midwest,1889,211717,0.91
+Tennessee,Nashville,Nashville,TN,Southeast,1796,109153,7.1
+Texas,Austin,Houston,TX,South Central,1845,695662,30.5
+Utah,Salt Lake City,Salt Lake City,UT,West,1896,212818,3.4
+Vermont,Montpelier,Burlington,VT,Northeast,1791,24374,0.65
+Virginia,Richmond,Virginia Beach,VA,Mid-Atlantic,1788,102279,8.7
+Washington,Olympia,Seattle,WA,West,1889,172119,7.8
+West Virginia,Charleston,Charleston,WV,Southeast,1863,62259,1.8
+Wisconsin,Madison,Milwaukee,WI,Midwest,1848,140268,5.9
+Wyoming,Cheyenne,Cheyenne,WY,West,1890,251470,0.58

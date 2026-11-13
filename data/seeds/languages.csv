@@ -1,0 +1,82 @@
+name,family,script,region,speakers_m
+English,Germanic,Latin,North America and Europe,1500
+Mandarin Chinese,Sino-Tibetan,Chinese characters,East Asia,1180
+Hindi,Indo-European,Devanagari,South Asia,610
+Spanish,Indo-European,Latin,Europe and Latin America,550
+French,Indo-European,Latin,Europe and Africa,310
+Modern Standard Arabic,Afro-Asiatic,Arabic,North Africa and the Middle East,270
+Bengali,Indo-European,Bengali,South Asia,270
+Portuguese,Indo-European,Latin,Europe and South America,260
+Russian,Indo-European,Cyrillic,Eastern Europe and Central Asia,255
+Urdu,Indo-European,Arabic script,South Asia,230
+Indonesian,Austronesian,Latin,Southeast Asia,245
+Persian,Indo-European,Arabic script,Western and Central Asia,85
+Turkish,Indo-European,Latin,West Asia and Central Asia,90
+German,Indo-European,Latin,Western and Central Europe,95
+Vietnamese,Austroasiatic,Latin,Southeast Asia,85
+Thai,Kra-Dai,Thai,Southeast Asia,80
+Gujarati,Indo-European,Gujarati,South Asia,62
+Telugu,Dravidian,Telugu,South Asia,96
+Tamil,Dravidian,Tamil,India and Sri Lanka,87
+Marathi,Indo-European,Devanagari,South Asia,83
+Korean,Koreanic,Hangul,East Asia,82
+Javanese,Austronesian,Latin,Southeast Asia,68
+Punjabi,Indo-European,Gurmukhi,South Asia,150
+Hausa,Afro-Asiatic,Ajami,West Africa,200
+Swahili,Niger-Congo,Latin,East Africa,71
+Amharic,Afro-Asiatic,Ge'ez,East Africa,60
+Yoruba,Niger-Congo,Latin,West Africa,47
+Zulu,Niger-Congo,Latin,Southern Africa,28
+Somali,Afro-Asiatic,Latin,Horn of Africa,22
+Afrikaans,Germanic,Latin,Southern Africa,17
+Dutch,Germanic,Latin,Europe,25
+Danish,Germanic,Latin,Northern Europe,6
+Swedish,Germanic,Latin,Northern Europe,10
+Norwegian,Germanic,Latin,Northern Europe,5
+Finnish,Uralic,Latin,Northern Europe,5
+Estonian,Uralic,Latin,Northern Europe,1
+Hungarian,Uralic,Latin,Central Europe,13
+Czech,Slavic,Latin,Central Europe,10
+Slovak,Slavic,Latin,Central Europe,5
+Polish,Slavic,Latin,Central Europe,41
+Ukrainian,Slavic,Cyrillic,Eastern Europe,39
+Bulgarian,Slavic,Cyrillic,Southeast Europe,7
+Serbian,Slavic,Cyrillic,Southeast Europe,9
+Croatian,Slavic,Latin,Southeast Europe,6
+Greek,Hellenic,Greek,Southern Europe,13
+Hebrew,Semitic,Hebrew,Western Asia,9
+Kurdish,Indo-European,Arabic script,Western Asia,16
+Pashto,Indo-European,Arabic script,Central and South Asia,43
+Kazakh,Turkic,Cyrillic,Central Asia,13
+Uzbek,Turkic,Latin,Central Asia,27
+Azerbaijani,Turkic,Arabic script,Western Asia,23
+Turkmen,Turkic,Latin,Central Asia,7
+Mongolian,Mongolic,Cyrillic,East Asia,5
+Tibetan,Sino-Tibetan,Tibetan,East Asia and South Asia,6
+Khmer,Austroasiatic,Khmer,Southeast Asia,16
+Lao,Tai-Kadai,Lao,Southeast Asia,30
+Burmese,Sino-Tibetan,Burmese,Southeast Asia,33
+Malay,Austronesian,Latin,Southeast Asia,19
+Tagalog,Austronesian,Latin,Southeast Asia,28
+Cebuano,Austronesian,Latin,Southeast Asia,16
+Hawaiian,Austronesian,Latin,Hawaii,0.024
+Maori,Austronesian,Latin,Oceania,0.19
+Samoan,Austronesian,Latin,Oceania,0.51
+Tongan,Austronesian,Latin,Oceania,0.19
+Fijian,Austronesian,Latin,Oceania,0.69
+Cherokee,Iroquoian,Latin,North America,0.002
+Nahuatl,Uto-Aztecan,Latin,North America,1.7
+Quechua,Lengua,Latin,South America,7
+Aymara,Quechuan,Latin,South America,1.7
+Guarani,Tupian,Latin,South America,5
+Mayan,Mayan,Latin,Central America,5
+Basque,Isolate,Latin,Southwestern Europe,0.75
+Irish,Celtic,Latin,Northern Europe,0.17
+Welsh,Celtic,Latin,Western Europe,0.88
+Scottish Gaelic,Celtic,Latin,Northern Europe,0.057
+Latin,Italic,Latin,Southern Europe,0
+Ancient Greek,Hellenic,Greek,Mediterranean,0
+Sanskrit,Indo-European,Devanagari,South Asia,0.024
+Pali,Indo-European,Devanagari,South Asia,0
+Old Norse,Germanic,Runes,Northern Europe,0
+Got,Germanic,Alphabet,Northern Europe,0

@@ -1,0 +1,181 @@
+name,country,continent,landmark,population_m,region
+Tokyo,Japan,Asia,Tower of Tokyo,37.4,Kanto
+Delhi,India,Asia,India Gate,32.9,Delhi
+Shanghai,China,Asia,The Bund,29.9,Shanghai
+Sao Paulo,Brazil,South America,Ibirapuera Park,22.6,Sao Paulo
+Mexico City,Mexico,North America,Palacio de Bellas Artes,22.3,Central Mexico
+Cairo,Egypt,Africa,Pyramids of Giza,22.1,Cairo
+Mumbai,India,Asia,Gateway of India,21.3,Maharashtra
+Beijing,China,Asia,Forbidden City,21.1,Beijing
+Dhaka,Bangladesh,Asia,Ahsan Manzil,23.2,Dhaka
+Osaka,Japan,Asia,Osaka Castle,19.0,Kansai
+New York City,United States,North America,Central Park,18.9,New York
+Karachi,Pakistan,Asia,Mohenjo-daro,17.2,Sindh
+Buenos Aires,Argentina,South America,Teatro Colon,15.6,Buenos Aires
+Istanbul,Turkey,Asia,Hagia Sophia,15.6,Istanbul
+Kolkata,India,Asia,Victoria Memorial,15.3,West Bengal
+Manila,Philippines,Asia,Rizal Park,14.7,Metro Manila
+Lagos,Nigeria,Africa,National Museum Lagos,15.9,Lagos
+Rio de Janeiro,Brazil,South America,Cristo Redentor,13.7,Rio de Janeiro
+Tianjin,China,Asia,Century Clock,13.6,Tianjin
+Kinshasa,DR Congo,Africa,Independence Monument,15.3,Kinshasa
+Guangzhou,China,Asia,Canton Tower,13.5,Guangdong
+Los Angeles,United States,North America,Griffith Observatory,12.9,California
+Moscow,Russia,Europe,St Basil's Cathedral,12.7,Moscow
+Shenzhen,China,Asia,Window of the World,12.6,Guangdong
+Lahore,Pakistan,Asia,Badshahi Mosque,13.6,Punjab
+Bengaluru,India,Asia,Palace of the Winds,13.6,Karnataka
+Paris,France,Europe,Eiffel Tower,11.3,Ile-de-France
+Bogota,Colombia,South America,La Candelaria,11.3,Bogota
+Jakarta,Indonesia,Asia,Monas,11.2,Jakarta
+Chennai,India,Asia,Marina Beach,11.0,Tamil Nadu
+Lima,Peru,South America,Plaza de Armas,11.0,Lima
+Bangkok,Thailand,Asia,Wat Phra Kaew,10.9,Bangkok
+Seoul,South Korea,Asia,Gyeongbokgung,9.9,Seoul
+Nagoya,Japan,Asia,Nagoya Castle,9.6,Aichi
+Hyderabad,India,Asia,Charminar,10.0,Telangana
+London,United Kingdom,Europe,Big Ben,9.6,Greater London
+Tehran,Iran,Asia,Azadi Tower,9.4,Tehran
+Chicago,United States,North America,Millennium Park,8.9,Illinois
+Chengdu,China,Asia,Jinsha Site Museum,9.3,Sichuan
+Nanjing,China,Asia,Confucius Temple,9.3,Jiangsu
+Wuhan,China,Asia,East Lake,8.9,Hubei
+Ho Chi Minh City,Vietnam,Asia,Independence Palace,9.0,Southeast
+Luanda,Angola,Africa,Fortress of Sao Miguel,8.3,Luanda
+Ahmedabad,India,Asia,Sabarmati Ashram,8.6,Gujarat
+Kuala Lumpur,Malaysia,Asia,Petronas Towers,8.4,Kuala Lumpur
+Xian,China,Asia,Wild Goose Pagoda,8.0,Shaanxi
+Hong Kong,China,Asia,Victoria Peak,7.5,Hong Kong
+Hangzhou,China,Asia,West Lake,7.6,Zhejiang
+Foshan,China,Asia,Anfeng Temple,7.2,Guangdong
+Shenyang,China,Asia,Imperial Palace,6.9,Liaoning
+Riyadh,Saudi Arabia,Asia,Kingdom Centre,7.7,Riyadh
+Baghdad,Iraq,Asia,Mustansiriya Madrasa,7.1,Baghdad
+Santiago,Chile,South America,Plaza de Armas,6.9,Santiago
+Surat,India,Asia,Adajan Pat,6.5,Gujarat
+Madrid,Spain,Europe,Prado Museum,6.7,Madrid
+Suzhou,China,Asia,Humble Administrator's Garden,6.7,Jiangsu
+Pune,India,Asia,Shaniwar Wada,6.6,Maharashtra
+Harbin,China,Asia,Sophia Cathedral,6.4,Heilongjiang
+Houston,United States,North America,Space Center Houston,6.4,Texas
+Dallas,United States,North America,Reunion Tower,6.4,Texas
+Toronto,Canada,North America,CN Tower,6.4,Ontario
+Dar es Salaam,Tanzania,Africa,Askari Monument,7.4,Dar es Salaam
+Miami,United States,North America,South Beach,6.2,Florida
+Belo Horizonte,Brazil,South America,Praca da Liberdade,6.0,Minas Gerais
+Singapore,Singapore,Asia,Marina Bay Sands,6.0,Singapore
+Philadelphia,United States,North America,Independence Hall,5.7,Pennsylvania
+Atlanta,United States,North America,Centennial Olympic Park,5.1,Georgia
+Fukuoka,Japan,Asia,Fukuoka Castle,5.6,Kyushu
+Khartoum,Sudan,Africa,University of Khartoum,6.1,Khartoum
+Barcelona,Spain,Europe,Sagrada Familia,5.6,Catalonia
+Johannesburg,South Africa,Africa,Ponte City,6.0,Gauteng
+Saint Petersburg,Russia,Europe,Winter Palace,5.5,Northwest Russia
+Qingdao,China,Asia,Zhanshan Temple,5.4,Shandong
+Dalian,China,Asia,Xinghai Square,5.4,Liaoning
+Washington D.C.,United States,North America,United States Capitol,6.4,District of Columbia
+Yangon,Myanmar,Asia,Shwedagon Pagoda,5.6,Yangon
+Alexandria,Egypt,Africa,Bibliotheca Alexandrina,5.5,Alexandria
+Jinan,China,Asia,Daming Lake,5.3,Shandong
+Guadalajara,Mexico,North America,Tequila Canyon,5.3,Jalisco
+Sydney,Australia,Oceania,Sydney Opera House,5.3,New South Wales
+Melbourne,Australia,Oceania,Melbourne Cricket Ground,5.1,Victoria
+Abidjan,Ivory Coast,Africa,La Pyramide,5.5,Abidjan
+Ankara,Turkey,Asia,Kizil Kule,5.2,Ankara
+Berlin,Germany,Europe,Brandenburg Gate,4.5,Berlin
+Rome,Italy,Europe,Colosseum,4.3,Lazio
+Naples,Italy,Europe,National Archaeological Museum,3.1,Campania
+Lisbon,Portugal,Europe,Belem Tower,3.0,Lisbon
+Vienna,Austria,Europe,Schonbrunn Palace,2.0,Vienna
+Hamburg,Germany,Europe,Speicherstadt,1.9,Hamburg
+Venice,Italy,Europe,St Marks Square,0.26,Veneto
+Florence,Italy,Europe,Duomo,0.37,Tuscany
+Kyoto,Japan,Asia,Fushimi Inari,1.5,Kansai
+Denver,United States,North America,Red Rocks Amphitheatre,2.9,Colorado
+Seattle,United States,North America,Space Needle,4.0,Washington
+Boston,United States,North America,Freedom Trail,4.9,Massachusetts
+Orlando,United States,North America,Walt Disney World,2.6,Florida
+Cape Town,South Africa,Africa,Table Mountain,4.8,Western Cape
+Marrakesh,Morocco,Africa,Jemaa el-Fnaa,0.93,Marrakesh
+Nairobi,Kenya,Africa,Nairobi National Museum,5.1,Nairobi
+Addis Ababa,Ethiopia,Africa,National Museum,5.2,Addis Ababa
+Accra,Ghana,Africa,Independence Square,2.6,Greater Accra
+Casablanca,Morocco,Africa,Hassan II Mosque,3.8,Casablanca-Settat
+Algiers,Algeria,Africa,The Casbah,2.7,Algiers
+Tunis,Tunisia,Africa,Medina of Tunis,2.4,Tunis
+Rabat,Morocco,Africa,Hassan Tower,1.9,Rabat-Sale-Kenitra
+Tripoli,Libya,Africa,Medina of Tripoli,1.2,Tripoli
+Antananarivo,Madagascar,Africa,Queen Palace,3.6,Analamanga
+Colombo,Sri Lanka,Asia,Gangaramaya Temple,0.75,Western Province
+Kathmandu,Nepal,Asia,Boudhanath,1.5,Bagmati
+Baku,Azerbaijan,Asia,Flame Towers,2.3,Baku
+Tbilisi,Georgia,Asia,Holy Trinity Cathedral,1.2,Tbilisi
+Yerevan,Armenia,Asia,Republic Square,1.1,Yerevan
+Tashkent,Uzbekistan,Asia,Khast Imam,2.9,Tashkent
+Almaty,Kazakhstan,Asia,Medeu,2.0,Almaty
+Astana,Kazakhstan,Asia,Baiterek Tower,1.4,Astana
+Ulaanbaatar,Mongolia,Asia,Gandantegchinlen Monastery,1.6,Ulaanbaatar
+Hanoi,Vietnam,Asia,Hoan Kiem Lake,8.1,Hanoi
+Phnom Penh,Cambodia,Asia,Angkor Wat,2.1,Phnom Penh
+Vientiane,Laos,Asia,Pha That Luang,0.95,Vientiane
+Reykjavik,Iceland,Europe,Blue Lagoon,0.14,Capital Region
+Copenhagen,Denmark,Europe,Little Mermaid,1.4,Capital Region
+Stockholm,Sweden,Europe,Vasa Museum,1.7,Stockholm
+Oslo,Norway,Europe,Opera House,1.1,Oslo
+Helsinki,Finland,Europe,Sibelius Monument,1.3,Capital Region
+Zurich,Switzerland,Europe,Church of the Great Watchmaker,1.4,Zurich
+Geneva,Switzerland,Europe,Lake Geneva,0.6,Geneva
+Brussels,Belgium,Europe,Grand Place,2.1,Brussels
+Amsterdam,Netherlands,Europe,Rijksmuseum,1.2,North Holland
+Rotterdam,Netherlands,Europe,Euromast,1.0,South Holland
+Prague,Czechia,Europe,Charles Bridge,1.3,Prague
+Budapest,Hungary,Europe,Szechenyi Baths,1.8,Budapest
+Warsaw,Poland,Europe,Old Town,1.8,Masovia
+Krakow,Poland,Europe,Wawel Cathedral,0.8,Lesser Poland
+Athens,Greece,Europe,Acropolis,3.1,Attica
+Dublin,Ireland,Europe,Trinity College,1.3,Leinster
+Edinburgh,United Kingdom,Europe,Edinburgh Castle,0.55,Scotland
+Manchester,United Kingdom,Europe,Old Trafford,0.55,England
+Birmingham,United Kingdom,Europe,Birmingham Museum of Art,1.1,England
+Glasgow,United Kingdom,Europe,Glasgow Science Centre,0.6,Scotland
+Nice,France,Europe,Promenade des Anglais,0.34,Cote d'Azur
+Lyon,France,Europe,Fourviere Basilica,0.52,Auvergne-Rhone-Alpes
+Marseille,France,Europe,Notre Dame de la Garde,0.87,Provence-Alpes-Cote d'Azur
+Bordeaux,France,Europe,Place des Quinconces,0.26,Nouvelle-Aquitaine
+Seville,Spain,Europe,Real Alcazar,0.69,Andalusia
+Valencia,Spain,Europe,City of Arts and Sciences,0.53,Valencia
+Bilbao,Spain,Europe,Guggenheim Museum,0.35,Basque Country
+Porto,Portugal,Europe,Dom Luis I Bridge,0.23,Porto
+Salvador,Brazil,South America,Pelourinho,2.9,Bahia
+Fortaleza,Brazil,South America,Catedral da Se,2.7,Ceara
+Recife,Brazil,South America,Capibaribe River,4.2,Pernambuco
+Brasilia,Brazil,South America,National Congress,4.8,Distrito Federal
+Curitiba,Brazil,South America,Federal University of Parana,3.6,Parana
+Porto Alegre,Brazil,South America,Usina do Gasometro,4.1,Rio Grande do Sul
+Manaus,Brazil,South America,Amazon Theatre,2.3,Amazonas
+Guayaquil,Ecuador,South America,Maleccon del Salado,2.9,Guayas
+Quito,Ecuador,South America,La Compania Church,1.8,Pichincha
+Montevideo,Uruguay,South America,Cathedral of Montevideo,1.7,Montevideo
+Asuncion,Paraguay,South America,Panteon Nacional de los Heroes,0.8,Asuncion
+La Paz,Bolivia,South America,Plaza de Murillo,0.9,La Paz
+Cochabamba,Bolivia,South America,Cristo de la Concordia,0.6,Cochabamba
+Caracas,Venezuela,South America,Avenida Bolivar,2.9,Capital District
+Medellin,Colombia,South America,Ciudad Botanica,4.1,Antioquia
+Cali,Colombia,South America,San Francisco Church,2.9,Valle del Cauca
+Cartagena,Colombia,South America,Castillo San Felipe,1.0,Bolivar
+Cordoba,Argentina,South America,Mezquita,1.6,Cordoba
+Mendoza,Argentina,South America,Plaza Independencia,1.1,Mendoza
+Valparaiso,Chile,South America,Ascensor Artilleria,0.98,Valparaiso
+Rosario,Argentina,South America,Monumento Nacional de la Bandera,1.5,Santa Fe
+Jaipur,India,Asia,Hawa Mahal,3.1,Rajasthan
+Lucknow,India,Asia,Bara Imambara,3.6,Uttar Pradesh
+Kanpur,India,Asia,Phool Bagh,3.1,Uttar Pradesh
+Kochi,India,Asia,Mattancherry Palace,2.1,Kerala
+Bhopal,India,Asia,Bhimbetka,2.4,Madhya Pradesh
+Patna,India,Asia,Patna Museum,2.5,Bihar
+Varanasi,India,Asia,Dashashwamedh Ghat,1.8,Uttar Pradesh
+Amritsar,India,Asia,Golden Temple,1.6,Punjab
+Faisalabad,Pakistan,Asia,Clock Tower,3.7,Punjab
+Peshawar,Pakistan,Asia,Bala Hisar,1.9,Khyber Pakhtunkhwa
+Quetta,Pakistan,Asia,Quetta bazaar,1.0,Balochistan
+Multan,Pakistan,Asia,Shahi Qila,2.1,Punjab

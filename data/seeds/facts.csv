@@ -1,0 +1,177 @@
+subject,kind,field,year,year_verb,country,fact
+Albert Einstein,person,theoretical physics,1879,born,Germany,Albert Einstein
+Isaac Newton,person,physics,1643,born,England,Isaac Newton
+Galileo Galilei,person,astronomy,1564,born,Italy,Galileo Galilei
+Nicolaus Copernicus,person,astronomy,1473,born,Poland,Nicolaus Copernicus
+Johannes Kepler,person,astronomy,1571,born,Germany,Johannes Kepler
+Tycho Brahe,person,astronomy,1546,born,Denmark,Tycho Brahe
+Edwin Hubble,person,astronomy,1889,born,United States,Edwin Hubble
+Carl Sagan,person,astronomy,1934,born,United States,Carl Sagan
+Marie Curie,person,physics and chemistry,1867,born,Poland,Marie Curie
+Isaac Newton,person,physics,1687,published,England,Isaac Newton
+Albert Einstein,person,theoretical physics,1905,published,Germany,the special theory of relativity
+Albert Einstein,person,theoretical physics,1915,published,Germany,the general theory of relativity
+Charles Darwin,person,biology,1809,born,England,Charles Darwin
+Gregor Mendel,person,biology,1822,born,Austria,Gregor Mendel
+Louis Pasteur,person,biology,1822,born,France,Louis Pasteur
+Alexander Fleming,person,biology,1881,born,Scotland,Alexander Fleming
+Watson and Crick,person,biology,1953,published,United Kingdom,Watson and Crick
+Rosalind Franklin,person,biology,1920,born,United Kingdom,Rosalind Franklin
+Antonie van Leeuwenhoek,person,biology,1632,born,Netherlands,Antonie van Leeuwenhoek
+Robert Hooke,person,biology,1635,born,England,Robert Hooke
+Dmitri Mendeleev,person,chemistry,1834,born,Russia,Dmitri Mendeleev
+Antoine Lavoisier,person,chemistry,1743,born,France,Antoine Lavoisier
+Wilhelm Roentgen,person,chemistry,1845,born,Germany,Wilhelm Roentgen
+The Telephone,technology,telecommunications,1876,invented,United States,The Telephone
+The Radio,technology,broadcasting,1895,invented,Italy,The Radio
+Television,technology,broadcasting,1927,invented,United States,Television
+The World Wide Web,technology,computing,1989,invented,Switzerland,The World Wide Web
+The Computer Mouse,technology,computing,1964,invented,United States,The Computer Mouse
+The Steam Engine,technology,steam power,1712,invented,United Kingdom,The Steam Engine
+The Printing Press,technology,printing,1440,invented,Germany,The Printing Press
+Dynamite,technology,chemistry,1867,invented,Sweden,Dynamite
+The Light Bulb,technology,electricity,1879,invented,United States,The Light Bulb
+The Aeroplane,technology,aviation,1903,invented,United States,The Aeroplane
+The Refrigerator,technology,appliances,1834,invented,United States,The Refrigerator
+The Vaccine,technology,medicine,1796,invented,England,The Vaccine
+Penicillin,technology,medicine,1928,discovered,United Kingdom,Penicillin
+Insulin,technology,medicine,1921,discovered,Canada,Insulin
+The Circulatory System,concept,biology,1628,published,England,The Circulatory System
+Plate Tectonics,concept,geology,1912,published,Germany,Plate Tectonics
+The Theory of Evolution,concept,biology,1859,published,England,The Theory of Evolution
+General Relativity,concept,physics,1915,published,Germany,General Relativity
+Photosynthesis,concept,biology,1780,published,England,Photosynthesis
+Germ Theory,concept,medicine,1861,published,France,Germ Theory
+The Periodic Table,concept,chemistry,1869,published,Russia,The Periodic Table
+The Black Hole,concept,astronomy,1967,published,United States,The Black Hole
+The Big Bang Theory,concept,astronomy,1948,published,United Kingdom,The Big Bang Theory
+Christopher Columbus,person,exploration,1451,born,Italy,Christopher Columbus
+Ferdinand Magellan,person,exploration,1480,born,Portugal,Ferdinand Magellan
+Marco Polo,person,exploration,1254,born,Italy,Marco Polo
+Vasco da Gama,person,exploration,1469,born,Portugal,Vasco da Gama
+James Cook,person,exploration,1728,born,England,James Cook
+Roald Amundsen,person,exploration,1872,born,Norway,Roald Amundsen
+Ernest Shackleton,person,exploration,1874,born,England,Ernest Shackleton
+Yuri Gagarin,person,spaceflight,1934,born,Russia,Yuri Gagarin
+Neil Armstrong,person,spaceflight,1930,born,United States,Neil Armstrong
+Buzz Aldrin,person,spaceflight,1930,born,United States,Buzz Aldrin
+John Glenn,person,spaceflight,1921,born,United States,John Glenn
+Valentina Tereshkova,person,spaceflight,1937,born,Russia,Valentina Tereshkova
+The First Moon Landing,event,spaceflight,1969,held,United States,The First Moon Landing
+The First Human Spaceflight,event,spaceflight,1961,held,Russia,The First Human Spaceflight
+The Titanic Sinking,event,maritime history,1912,held,United Kingdom,The Titanic Sinking
+The First World War,event,military history,1914,began,Europe,The First World War
+The Second World War,event,military history,1939,began,Europe,The Second World War
+The Chernobyl Disaster,event,industrial accident,1986,held,Ukraine,The Chernobyl Disaster
+The Hindenburg Disaster,event,aviation history,1937,held,Germany,The Hindenburg Disaster
+The Berlin Wall,event,modern history,1961,built,Germany,The Berlin Wall
+The Fall of Constantinople,event,medieval history,1453,held,Turkey,The Fall of Constantinople
+The French Revolution,event,modern history,1789,began,France,The French Revolution
+The American Revolution,event,modern history,1775,began,United States,The American Revolution
+The Industrial Revolution,event,industrial history,1760,began,United Kingdom,The Industrial Revolution
+The Renaissance,event,cultural history,1300,began,Italy,The Renaissance
+The Bronze Age,event,prehistory,3300,began,Europe,The Bronze Age
+The Iron Age,event,prehistory,1200,began,Europe,The Iron Age
+The Olympics,organization,sports,776,began,Greece,The Olympics
+FIFA,organization,sports,1904,founded,France,FIFA
+The United Nations,organization,international relations,1945,founded,United States,The United Nations
+The European Union,organization,international relations,1993,founded,Belgium,The European Union
+NATO,organization,military alliance,1949,founded,United States,NATO
+The Red Cross,organization,humanitarian aid,1863,founded,Switzerland,the International Red Cross
+The World Health Organization,organization,public health,1948,founded,Switzerland,The World Health Organization
+UNESCO,organization,education and culture,1945,founded,United Kingdom,UNESCO
+UNICEF,organization,children's welfare,1946,founded,United States,UNICEF
+The World Trade Organization,organization,trade,1995,founded,Switzerland,The World Trade Organization
+The International Monetary Fund,organization,finance,1944,founded,United States,The International Monetary Fund
+The World Bank,organization,finance,1944,founded,United States,The World Bank
+Greenpeace,organization,environmental activism,1971,founded,Netherlands,Greenpeace
+The Red Cross,organization,humanitarian aid,1881,founded,Switzerland,the American Red Cross
+Marie Curie,person,physics and chemistry,1903,awarded,France,Marie Curie
+Albert Einstein,person,theoretical physics,1921,awarded,Sweden,Albert Einstein
+Nelson Mandela,person,peace,1993,awarded,Norway,Nelson Mandela
+Mother Teresa,person,humanitarian work,1979,awarded,Norway,Mother Teresa
+Martin Luther King Jr,person,civil rights,1964,awarded,United States,Martin Luther King Jr
+Mahatma Gandhi,person,independence,1915,born,India,Mahatma Gandhi
+Abraham Lincoln,person,politics,1809,born,United States,Abraham Lincoln
+Winston Churchill,person,politics,1874,born,United Kingdom,Winston Churchill
+Napoleon Bonaparte,person,military history,1769,born,France,Napoleon Bonaparte
+Julius Caesar,person,ancient history,100,born,Rome,Julius Caesar
+Alexander the Great,person,ancient history,356,born,Macedonia,Alexander the Great
+Cleopatra,person,ancient history,69,born,Egypt,Cleopatra
+Genghis Khan,person,military history,1162,born,Mongolia,Genghis Khan
+Joan of Arc,person,medieval history,1412,born,France,Joan of Arc
+Marco Polo,person,exploration,1295,published,Italy,Marco Polo
+Leonardo da Vinci,person,art and science,1452,born,Italy,Leonardo da Vinci
+Michelangelo,person,art,1475,born,Italy,Michelangelo
+Raphael,person,art,1483,born,Italy,Raphael
+William Shakespeare,person,literature,1564,born,England,William Shakespeare
+Miguel de Cervantes,person,literature,1547,born,Spain,Miguel de Cervantes
+Johann Wolfgang von Goethe,person,literature,1749,born,Germany,Johann Wolfgang von Goethe
+Fyodor Dostoevsky,person,literature,1821,born,Russia,Fyodor Dostoevsky
+Leo Tolstoy,person,literature,1828,born,Russia,Leo Tolstoy
+Jane Austen,person,literature,1775,born,England,Jane Austen
+Virginia Woolf,person,literature,1882,born,England,Virginia Woolf
+Homer,person,ancient literature,750,born,Greece,Homer
+Virgil,person,ancient literature,70,born,Rome,Virgil
+Hippocrates,person,medicine,460,born,Greece,Hippocrates
+William Harvey,person,medicine,1578,born,England,William Harvey
+Edward Jenner,person,medicine,1749,born,England,Edward Jenner
+Joseph Lister,person,medicine,1827,born,United Kingdom,Joseph Lister
+Louis Braille,person,invention,1809,born,France,Louis Braille
+Alexander Graham Bell,person,invention,1847,born,Scotland,Alexander Graham Bell
+Nikola Tesla,person,invention,1856,born,Smyrna,Nikola Tesla
+Thomas Edison,person,invention,1847,born,United States,Thomas Edison
+Benjamin Franklin,person,science and politics,1706,born,United States,Benjamin Franklin
+The Wright Brothers,person,aviation,1867,born,United States,The Wright Brothers
+Henry Ford,person,industry,1863,born,United States,Henry Ford
+Siegfried and Roy,person,entertainment,1944,born,Germany,Siegfried and Roy
+Mother Teresa,person,humanitarian work,1910,born,North Macedonia,Mother Teresa
+Florence Nightingale,person,nursing,1820,born,England,Florence Nightingale
+Helen Keller,person,activism,1880,born,United States,Helen Keller
+Anne Frank,person,author,1929,born,Germany,Anne Frank
+Rosa Parks,person,civil rights,1913,born,United States,Rosa Parks
+Harriet Tubman,person,abolitionism,1822,born,United States,Harriet Tubman
+Ada Lovelace,person,computing,1815,born,England,Ada Lovelace
+Grace Hopper,person,computing,1906,born,United States,Grace Hopper
+Alan Turing,person,computing,1912,born,United Kingdom,Alan Turing
+Katherine Johnson,person,spaceflight,1918,born,United States,Katherine Johnson
+The Metric System,concept,measurement,1795,adopted,France,The Metric System
+The Gregorian Calendar,concept,calendar,1582,adopted,Italy,The Gregorian Calendar
+The Silk Road,concept,trade history,130,opened,China,The Silk Road
+The Transcontinental Railroad,event,transport history,1869,completed,United States,The Transcontinental Railroad
+The Panama Canal,event,transport history,1914,completed,Panama,The Panama Canal
+The Hoover Dam,event,engineering,1936,completed,United States,The Hoover Dam
+The Aswan High Dam,event,engineering,1970,completed,Egypt,The Aswan High Dam
+The Three Gorges Dam,event,engineering,2006,completed,China,The Three Gorges Dam
+The Golden Gate Bridge,event,engineering,1937,completed,United States,The Golden Gate Bridge
+The Empire State Building,event,architecture,1931,completed,United States,The Empire State Building
+The Burj Khalifa,event,architecture,2010,completed,United Arab Emirates,The Burj Khalifa
+The Christ the Redeemer,event,architecture,1931,completed,Brazil,The Christ the Redeemer
+Machu Picchu,event,archaeology,1450,built,Peru,Machu Picchu
+Stonehenge,event,archaeology,2500,built,England,Stonehenge
+The Great Wall of China,event,architecture,220,built,China,The Great Wall of China
+Taj Mahal,event,architecture,1653,completed,India,Taj Mahal
+Colosseum,event,architecture,80,completed,Italy,Colosseum
+Pyramids of Giza,event,architecture,2560,built,Egypt,Pyramids of Giza
+Machu Picchu,event,archaeology,1450,discovered,Peru,Machu Picchu
+Tomb of Tutankhamun,event,archaeology,1922,discovered,Egypt,Tomb of Tutankhamun
+Terracotta Army,event,archaeology,1974,discovered,China,Terracotta Army
+Pompeii,event,archaeology,1592,discovered,Italy,Pompeii
+Machu Picchu,event,archaeology,1911,rediscovered,Peru,Machu Picchu
+Suez Canal,event,engineering,1869,completed,Egypt,Suez Canal
+Eiffel Tower,event,architecture,1889,completed,France,Eiffel Tower
+Statue of Liberty,event,architecture,1886,completed,United States,Statue of Liberty
+Sydney Harbour Bridge,event,engineering,1932,completed,Australia,Sydney Harbour Bridge
+Tower Bridge,event,architecture,1894,completed,England,Tower Bridge
+Charles Darwin,person,biology,1859,published,England,Charles Darwin
+Gregor Mendel,person,biology,1866,published,Austria,Gregor Mendel
+Rosalind Franklin,person,biology,1953,published,United Kingdom,Rosalind Franklin
+Galileo Galilei,person,astronomy,1610,published,Italy,Galileo Galilei
+William Herschel,person,astronomy,1781,discovered,Germany,William Herschel
+Johann Galle,person,astronomy,1846,discovered,Germany,Johann Galle
+Clyde Tombaugh,person,astronomy,1930,discovered,United States,Clyde Tombaugh
+Gerard Kuiper,person,astronomy,1951,discovered,United States,Gerard Kuiper
+Edwin Hubble,person,astronomy,1929,discovered,United States,Edwin Hubble
+Alexander Fleming,person,biology,1928,discovered,United Kingdom,Alexander Fleming
+Frederick Banting,person,medicine,1921,discovered,Canada,Frederick Banting
+Nicholas and Dorothy Hodgkin,person,chemistry,1934,discovered,United Kingdom,Nicholas and Dorothy Hodgkin
