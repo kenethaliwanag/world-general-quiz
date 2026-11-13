@@ -149,7 +149,22 @@
     "cn-are--jordan",
     "cn-ccd--nicaragua",
     "cmp-country-den--papua-new-guinea-paraguay",
-    "cmp-el-num--barium-europium"
+    "cmp-el-num--barium-europium",
+    "us-yr--massachusetts",
+    "us-pop--oregon",
+    "us-abb--west-virginia",
+    "na-mea--new-zealand-north-island",
+    "la-scr--pali",
+    "ct-pop--manchester",
+    "us-ord--maryland",
+    "us-are--tennessee",
+    "us-cap--louisiana",
+    "cn-flg--azerbaijan",
+    "cn-iso--tanzania",
+    "la-fam--german",
+    "us-lci--kansas",
+    "cmp-country-area--australia-finland",
+    "cmp-el-num--gold-tennessine"
   ],
-  "last_part": 10
+  "last_part": 11
 }
