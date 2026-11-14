@@ -179,7 +179,22 @@
     "ct-lan--lisbon",
     "la-reg--finnish",
     "cmp-us-area--texas-washington",
-    "cmp-na-mea--greenland-hispaniola"
+    "cmp-na-mea--greenland-hispaniola",
+    "na-mea--yenisei",
+    "na-det--borneo",
+    "cn-cap--guinea",
+    "us-yr--wisconsin",
+    "us-lci--new-hampshire",
+    "ct-lan--harbin",
+    "cn-lci--brazil",
+    "cn-cal--suriname",
+    "cn-dem--grenada",
+    "el-per--protactinium",
+    "ct-reg--edinburgh",
+    "fa-fld--henry-ford-1863",
+    "us-reg--mississippi",
+    "cmp-la-spk--sanskrit-got",
+    "cmp-country-pop--comoros-nepal"
   ],
-  "last_part": 12
+  "last_part": 13
 }
