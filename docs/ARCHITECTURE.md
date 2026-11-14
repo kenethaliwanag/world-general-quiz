@@ -12,6 +12,7 @@
 - `integrations/hyperframes.py`: writes a vertical HTML composition and invokes the HyperFrames CLI.
 - `data/questions.json`: hand written question bank.
 - `data/seeds/*.csv`: verified facts that the generated questions are built from.
+- `docs/PHILIPPINE_CONTENT_SOURCES.md`: provenance ledger for the Philippine-content expansion.
 - `data/used_questions.json`: persistent no-repeat history.
 
 ## Data flow
@@ -28,9 +29,12 @@
 
 The question bank and generated quiz JSON are separate. This allows future web dashboards, alternative renderers, analytics, and publishing integrations without changing question selection logic.
 
-The bank holds roughly 112,000 questions: the hand written set plus questions generated from
+The bank holds roughly 116,000 questions: the hand written set plus questions generated from
 the seed facts at run time. Generation is deterministic, so the IDs in the history stay
-meaningful, and it costs under a second, so no large data file has to be committed.
+meaningful, and it costs under a second, so no large data file has to be committed. The new
+Philippine facts, natural features and curated questions are attribute-labelled **per-seed-row**
+or **per-ID** in `docs/PHILIPPINE_CONTENT_SOURCES.md`, so the Philippine share of the bank can
+be measured without introducing a new schema column.
 
 A Part keeps its general-knowledge character: the target is 13 single-entity questions and 2
 comparison questions, and a Part never carries more than 4 comparisons. When the fresh

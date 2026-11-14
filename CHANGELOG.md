@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+- Added Philippine-related content to the global knowledge bank: 20 verified Philippine facts,
+  5 verified Philippine natural features (Mount Apo 2,954 m, Mayon Volcano 2,462 m, Mount
+  Hamiguitan 1,637 m, the Puerto Princesa Subterranean River, Tubbataha Reefs Natural Park),
+  and 48 curated questions on national symbols, history, geography, culture, cuisine, sports,
+  government and UNESCO sites. The Philippine count in the bank rose from about 930 to about 4,770,
+  so a refreshed Philippine question appears roughly once every 1–3 Parts; the Part remains an
+  international quiz.
+- The provenance of every added claim is recorded in `docs/PHILIPPINE_CONTENT_SOURCES.md`.
+
 - Fixed the scheduled workflow failing with "No unused questions remain for these filters". The question bank now holds about 112,000 questions instead of 121, and when the unused pool still runs dry the questions used longest ago are recycled instead of aborting the run.
 - A Part now keeps its general-knowledge character: the target is 13 single-entity questions and 2 comparison questions, with an absolute maximum of 4 comparisons. When the fresh single-entity questions run out they are recycled, least recently used first, instead of the Part turning into comparison questions only.
 - `data/used_questions.json` keeps `used_ids` in recency order: a question that is used again moves to the end, so recycling rotates instead of repeating the same questions. The file format is unchanged and existing history files keep working.

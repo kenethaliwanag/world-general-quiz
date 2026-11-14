@@ -313,3 +313,69 @@ def test_history_file_stays_backward_compatible(tmp_path, monkeypatch):
     assert updated["used_ids"] == ["q002", "q003", "q001"]
     assert updated["last_part"] == 6
     assert history_manager.load_history()["last_part"] == 6
+
+
+PH_SLUGS = {"josé-rizal", "katipunan", "emilio-aguinaldo",
+            "first-republic-of-the-philippines", "bataan-death-march",
+            "battle-of-manila", "philippine-independence",
+            "edsa-people-power-revolution", "ferdinand-marcos",
+            "corazon-aquino", "typhoon-haiyan",
+            "fernando-amorsolo", "juan-luna",
+            "carlos-p--romulo", "san-juanico-bridge",
+            "lapu-lapu", "ferdinand-magellan-1521", "manila-international-airport",
+            "mount-apo", "mayon-volcano", "mount-hamiguitan",
+            "puerto-princesa-subterranean-river", "tubbataha-reefs-natural-park",
+            "philippines", "manila", "tagalog", "cebuano"}
+
+
+def _is_ph_question(question):
+    id_ = question["id"].lower()
+    if id_.startswith("q") and "--" not in id_:
+        return int(id_[1:]) >= 122
+    if "--" in id_:
+        body = id_.split("--", 1)[1]
+        return any(slug in body for slug in PH_SLUGS)
+    return False
+
+
+def test_philippine_content_is_present_but_bounded(raw_questions):
+    """The Philippines must be a meaningful part of the bank, not the whole."""
+    bank = load_questions()
+    ph = [q for q in bank if _is_ph_question(q)]
+    single = [q for q in bank if not _is_comparison(q["id"])]
+    ph_single = [q for q in ph if not _is_comparison(q["id"])]
+    ph_comparisons = [q for q in ph if _is_comparison(q["id"])]
+    assert 4_000 <= len(ph) <= 5_500, f"PH-attributable count outside expected range: {len(ph)}"
+    assert 100 <= len(ph_single) <= 200, f"PH single count outside expected range: {len(ph_single)}"
+    assert 3_000 <= len(ph_comparisons) <= 5_000, f"PH comparison count outside expected range: {len(ph_comparisons)}"
+
+
+def test_philippine_seeds_are_in_the_raw_set(raw_questions, seed_rows):
+    """The new seed rows are actually generating questions, with the expected IDs."""
+    ids = {q["id"] for q in raw_questions}
+    assert "fa-yr--josé-rizal-1896" in ids
+    assert "fa-yr--katipunan-1892" in ids
+    assert "na-kin--mount-apo" in ids
+    assert "fa-cou--ferdinand-magellan-1480" not in ids
+    assert "fa-cou--ferdinand-magellan-1521" not in ids
+    assert "na-kin--mayon-volcano" in ids
+
+
+def test_philippine_provenance_document_covers_every_added_row():
+    text = Path("docs/PHILIPPINE_CONTENT_SOURCES.md").read_text(encoding="utf-8")
+    assert "data/seeds/facts.csv" in text
+    assert "data/seeds/nature.csv" in text
+    assert "122" in text and "123" in text and "169" in text
+    assert "UNESCO" in text
+    assert "nhcp.gov.ph" in text
+    assert "psa.gov.ph" in text
+
+
+def test_new_philippine_rows_do_not_violate_existing_policy():
+    """The 13+2 / max-4 comparison rules still hold after expansion."""
+    history = {"used_ids": [], "last_part": 0}
+    selected, _, _ = select_questions(15, "all", "all", 7, history=history)
+    comparisons = [q for q in selected if _is_comparison(q["id"])]
+    assert len(comparisons) <= MAX_COMPARISONS_PER_PART
+    assert len(selected) == 15
+    assert len({q["id"] for q in selected}) == 15

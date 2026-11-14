@@ -109,18 +109,16 @@ Recommended visual changes:
 
 ## 8. Question bank findings
 
-- Total questions: 121.
+- Total questions: **116,199** (169 curated + 116,030 generated).
 - No duplicate normalized questions.
 - No duplicate IDs.
-- Categories: science 27, geography 25, history 24, culture 15, technology 11, sports 10, nature 9.
-- Difficulty: easy 68, medium 48, hard 5.
-- One answer has six words (`q117`), acceptable but slightly long.
-- One question exceeds 90 characters (`q053`), acceptable but should be checked for readability.
-- Master-spec categories call for `World Culture`, `Nature and Animals`, and `General Knowledge`; the current bank uses `culture`, `nature`, and has no general-knowledge category.
+- Categories after expansion: geography 76,566, history 19,469, science 14,862, culture 4,301, nature 977, sports 13, technology 11.
+- Difficulty mix after expansion: easy 44,037, medium 41,825, hard 30,337.
+- Master-spec categories still lack `Nature and Animals` and `General Knowledge`; the current bank uses `nature` and does not use a general-knowledge category.
 
 Recommended question-bank corrections:
 - Increase hard-question coverage to reduce category skew.
-- Add optional `explanation` and `source` fields only before larger-scale validation.
+- Consider adding optional `explanation` and `source` fields per question (the Philippine expansion is documented collectively in `docs/PHILIPPINE_CONTENT_SOURCES.md` instead, to avoid changing the production schema).
 - Map or rename categories only after the intended taxonomy is finalized. Do not rename IDs after publishing.
 
 ## 9. Recommended implementation sequence

@@ -23,9 +23,11 @@ bank is far larger than any Part history can exhaust.
 | `elements.csv` | 118 | symbol, atomic number, group, period, category, mass, block | symbol, group, period, category, mass, block, proton count, reverse symbol lookup, letter counts, and mass / atomic number comparisons |
 | `us_states.csv` | 50 | capital, largest city, abbreviation, region, statehood year, area, population | capital, largest city, abbreviation, region, statehood year, area, population, letter counts, alphabetical position, and area / population comparisons |
 | `cities.csv` | 180 | country, continent, landmark, region, population | country, continent, landmark, population, region, and population comparisons |
-| `nature.csv` | 90 | kind, continent, country, measure, measure unit, superlative | type, continent, country, measurement, superlative, and comparisons **within the same kind and unit** |
-| `facts.csv` | 176 | subject, the specific fact, kind, field, year, verb, country | year, field (only when unambiguous), country (only when unambiguous), and "which came first" comparisons |
+| `nature.csv` | 95 | kind, continent, country, measure, measure unit, superlative | type, continent, country, measurement, superlative, and comparisons **within the same kind and unit** |
+| `facts.csv` | 196 | subject, the specific fact, kind, field, year, verb, country | year, field (only when unambiguous), country (only when unambiguous), and "which came first" comparisons |
 | `languages.csv` | 81 | family, script, region, speakers | family, script, region, speakers, and speaker comparisons |
+
+The Philippines is a full part of the international content through its 192nd country row, a Manila city row, two major languages (Tagalog and Cebuano) **and** 25 added Philippine facts, five natural features and 48 curated questions. The provenance of every new claim is recorded in `docs/PHILIPPINE_CONTENT_SOURCES.md`.
 
 Every generated ID is deterministic (`family--key`), so the question history stays meaningful
 across runs. Questions are generated at run time, so the repository never carries a huge JSON
@@ -46,17 +48,20 @@ file.
 
 | | |
 |---|---|
-| Questions in the bank | **112,363** |
-| Curated hand written | 121 |
-| Generated | 112,242 |
+| Questions in the bank | **116,199** |
+| Curated hand written | 169 |
+| Generated | 116,030 |
 | Template families | 63 |
-| Single-entity questions | 6,392 |
-| Comparison questions | 105,971 |
+| Single-entity questions | 6,517 |
+| Comparison questions | 109,682 |
 | Conflicting question texts | **0** |
 | Generation time | under one second |
 
-30 generated questions repeat the text of a curated or of an earlier generated question and
-are dropped, so 112,242 generated questions plus 121 curated ones make up the bank.
+33 generated questions now repeat a curated or earlier generated text and are dropped. 169 curated questions plus 116,030 generated questions make up the bank.
+
+The Philippine subset measures **4,772** attributable questions — 153 single-entity
+questions (2.3 % of the pool) and 4,619 comparisons (908 inherited + 3,711 new). The
+Philippines remain well under the share needed to dominate the feed.
 
 ## Selection policy
 
@@ -78,9 +83,10 @@ Priority order:
    the eligible bank cannot supply 15 distinct questions at all, the run fails loudly instead
    of breaking the policy.
 
-A simulated 900-Part run: 13.00 single-entity and 2.00 comparisons per Part, 14.92 distinct
-families, 4.39 distinct categories, no Part above the comparison maximum. The 6,392
-single-entity questions cover 491 complete Parts; Part 492 is the first that has to recycle.
+A simulated 900-Part run with isolated history: 13.00 single-entity and 2.00 comparisons
+per Part, 14.95 distinct families, 4.61 distinct categories, zero Parts above the PH comp-max.
+The single-entity pool of 6,517 questions supports roughly 500 fresh Parts before recycling
+is required.
 
 ## Recycling behaviour
 
@@ -89,11 +95,11 @@ entry was used longest ago. When a Part reuses a question, that ID moves to the 
 list, so the next Part recycles a different question instead of the same one. The file format
 is unchanged, so existing history files keep working.
 
-In 900 simulated Parts (13,500 picks) the 6,392 single-entity questions cover 491 complete
-Parts, and Part 492 is the first that has to recycle. 5,308 questions were selected twice,
-each with about 492 Parts between the two uses and never fewer than 491, and no question was
-used more than twice. That is one full turn of the pool: at two Parts a day a fact comes
-back roughly every eight months.
+In 900 simulated Parts with isolated history, 13.00 single-entity and 2.00 comparisons per
+Part were produced with an average 14.95 distinct families and 4.61 distinct categories. 399 of
+those 900 Parts recycled at least one question once the fresh single-entity pool was
+insufficient. At two Parts a day, a fact comes back roughly every eight months once the pool
+turns.
 
 ## Editorial quality checklist
 
