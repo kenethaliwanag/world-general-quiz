@@ -254,7 +254,22 @@
     "la-fam--norwegian",
     "us-lci--delaware",
     "cmp-ct-pop--amsterdam-faisalabad",
-    "cmp-na-mea--denali-matterhorn"
+    "cmp-na-mea--denali-matterhorn",
+    "cn-flg--benin",
+    "cn-ccd--zimbabwe",
+    "us-len--colorado",
+    "el-cat--gadolinium",
+    "el-blk--einsteinium",
+    "cn-are--rwanda",
+    "cn-lci--india",
+    "ct-con--lima",
+    "us-cap--florida",
+    "us-pop--maryland",
+    "ct-lan--amsterdam",
+    "us-reg--california",
+    "cn-pop--afghanistan",
+    "cmp-us-area--mississippi-oklahoma",
+    "cmp-country-pop--india-poland"
   ],
-  "last_part": 17
+  "last_part": 18
 }
