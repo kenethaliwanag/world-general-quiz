@@ -269,7 +269,22 @@
     "us-reg--california",
     "cn-pop--afghanistan",
     "cmp-us-area--mississippi-oklahoma",
-    "cmp-country-pop--india-poland"
+    "cmp-country-pop--india-poland",
+    "ct-con--edinburgh",
+    "ct-pop--london",
+    "us-len--arizona",
+    "cn-len--gambia",
+    "la-spk--guarani",
+    "el-blk--californium",
+    "cn-dem--albania",
+    "ct-reg--florence",
+    "na-con--namib",
+    "cn-flg--el-salvador",
+    "us-are--connecticut",
+    "cn-cap--indonesia",
+    "na-cou--gobi",
+    "cmp-fa-yr--the-iron-age-1200-manila-international-airport-terminal-1-1981",
+    "cmp-country-area--ghana-taiwan"
   ],
-  "last_part": 18
+  "last_part": 19
 }
