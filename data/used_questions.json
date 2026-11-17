@@ -314,7 +314,22 @@
     "el-blk--argon",
     "cn-iso--lithuania",
     "cmp-us-pop--maryland-minnesota",
-    "cmp-fa-yr--antoine-lavoisier-1743-the-printing-press-1440"
+    "cmp-fa-yr--antoine-lavoisier-1743-the-printing-press-1440",
+    "el-r-sym--sc",
+    "na-mea--baikal",
+    "ct-cou--oslo",
+    "cn-drv--australia",
+    "cn-pop--france",
+    "el-per--helium",
+    "na-det--black-sea",
+    "us-yr--washington",
+    "ct-con--tokyo",
+    "cn-cal--saint-lucia",
+    "cn-lci--united-states",
+    "us-lci--north-carolina",
+    "ct-lan--marrakesh",
+    "cmp-country-pop--iran-luxembourg",
+    "cmp-country-area--bulgaria-el-salvador"
   ],
-  "last_part": 21
+  "last_part": 22
 }
