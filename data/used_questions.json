@@ -299,7 +299,22 @@
     "us-len--maryland",
     "el-r-sym--o",
     "cmp-la-spk--somali-cherokee",
-    "cmp-country-area--djibouti-libya"
+    "cmp-country-area--djibouti-libya",
+    "cn-drv--angola",
+    "cn-con--south-sudan",
+    "ct-cou--luanda",
+    "us-reg--virginia",
+    "ct-lan--fukuoka",
+    "us-yr--alabama",
+    "el-len--iron",
+    "el-per--nitrogen",
+    "el-cat--erbium",
+    "el-r-sym--hf",
+    "el-pro--hassium",
+    "el-blk--argon",
+    "cn-iso--lithuania",
+    "cmp-us-pop--maryland-minnesota",
+    "cmp-fa-yr--antoine-lavoisier-1743-the-printing-press-1440"
   ],
-  "last_part": 20
+  "last_part": 21
 }
