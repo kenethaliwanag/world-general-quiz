@@ -329,7 +329,22 @@
     "us-lci--north-carolina",
     "ct-lan--marrakesh",
     "cmp-country-pop--iran-luxembourg",
-    "cmp-country-area--bulgaria-el-salvador"
+    "cmp-country-area--bulgaria-el-salvador",
+    "us-abb--delaware",
+    "na-mea--great-slave-lake",
+    "ct-con--almaty",
+    "el-mass--lithium",
+    "cn-flg--turkey",
+    "fa-cou--dynamite-1867",
+    "cn-cal--norway",
+    "na-cou--new-zealand-north-island",
+    "us-are--michigan",
+    "la-fam--quechua",
+    "cn-drv--romania",
+    "el-cat--caesium",
+    "us-lci--vermont",
+    "cmp-us-pop--california-north-dakota",
+    "cmp-ct-pop--cairo-asuncion"
   ],
-  "last_part": 22
+  "last_part": 23
 }
