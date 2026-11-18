@@ -344,7 +344,22 @@
     "el-cat--caesium",
     "us-lci--vermont",
     "cmp-us-pop--california-north-dakota",
-    "cmp-ct-pop--cairo-asuncion"
+    "cmp-ct-pop--cairo-asuncion",
+    "us-pop--oklahoma",
+    "ct-con--cartagena",
+    "na-mea--tubbataha-reefs-natural-park",
+    "ct-reg--porto-alegre",
+    "cn-are--tuvalu",
+    "cn-drv--nepal",
+    "cn-cap--bahrain",
+    "us-len--texas",
+    "na-cou--great-bear-lake",
+    "us-lci--texas",
+    "us-abb--new-hampshire",
+    "cn-iso--belgium",
+    "el-grp--nickel",
+    "cmp-la-spk--dutch-hebrew",
+    "cmp-fa-yr--the-red-cross-1863-napoleon-bonaparte-1769"
   ],
-  "last_part": 23
+  "last_part": 24
 }
