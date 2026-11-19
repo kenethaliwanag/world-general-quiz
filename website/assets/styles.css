@@ -1,0 +1,186 @@
+:root {
+  --navy: #071426;
+  --navy-2: #102b46;
+  --gold: #f5cf72;
+  --ink: #16283c;
+  --muted: #4a6076;
+  --paper: #f6f8fc;
+  --line: #d5e0ec;
+  --link: #0b5cad;
+  --green: #77e0a3;
+  --radius: 16px;
+}
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font: 17px/1.65 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.wrap { width: min(1040px, calc(100% - 2rem)); margin-inline: auto; }
+
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  background: var(--gold);
+  color: var(--navy);
+  padding: .6rem 1rem;
+  z-index: 10;
+}
+.skip-link:focus { left: .5rem; top: .5rem; }
+
+a { color: var(--link); }
+a:hover { text-decoration-thickness: 2px; }
+a:focus-visible, button:focus-visible {
+  outline: 3px solid var(--gold);
+  outline-offset: 3px;
+}
+
+.site-header {
+  background: linear-gradient(145deg, var(--navy) 0%, var(--navy-2) 100%);
+  color: #fff;
+  border-bottom: 4px solid var(--gold);
+}
+.header-inner {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: center;
+  justify-content: space-between;
+  padding-block: 1rem;
+}
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: .75rem;
+  color: #fff;
+  font-weight: 800;
+  font-size: 1.05rem;
+  text-decoration: none;
+  letter-spacing: .01em;
+}
+.brand img { width: 42px; height: 42px; flex: none; }
+.brand span { max-width: 18ch; }
+
+.site-nav ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .35rem 1rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.site-nav a {
+  display: block;
+  color: #dce8f5;
+  text-decoration: none;
+  padding: .4rem .2rem;
+  border-bottom: 2px solid transparent;
+}
+.site-nav a:hover, .site-nav a[aria-current="page"] {
+  color: var(--gold);
+  border-bottom-color: var(--gold);
+}
+
+main { padding-block: 2.5rem 3rem; }
+
+.hero {
+  background: linear-gradient(160deg, #0e2845 0%, var(--navy) 100%);
+  color: #fff;
+  border-radius: var(--radius);
+  padding: clamp(1.75rem, 5vw, 3.25rem);
+  margin-bottom: 2.25rem;
+}
+.hero h1 {
+  margin: 0 0 .75rem;
+  font-size: clamp(2rem, 5.5vw, 3.1rem);
+  line-height: 1.12;
+  letter-spacing: -.02em;
+}
+.hero p { margin: 0 0 1.5rem; max-width: 65ch; color: #d9e6f5; font-size: 1.1rem; }
+.eyebrow {
+  display: inline-block;
+  color: var(--navy);
+  background: var(--gold);
+  border-radius: 999px;
+  padding: .25rem .8rem;
+  font-size: .78rem;
+  font-weight: 800;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+  margin-bottom: 1rem;
+}
+.actions { display: flex; flex-wrap: wrap; gap: .75rem; }
+.btn {
+  display: inline-block;
+  border-radius: 999px;
+  padding: .65rem 1.15rem;
+  font-weight: 700;
+  text-decoration: none;
+  border: 2px solid transparent;
+}
+.btn-primary { background: var(--gold); color: var(--navy); }
+.btn-secondary { color: #fff; border-color: #7d96b0; }
+
+h1, h2, h3 { line-height: 1.2; }
+h2 { font-size: 1.6rem; margin: 0 0 .75rem; }
+h3 { font-size: 1.15rem; margin: 1.5rem 0 .35rem; }
+p, li { max-width: 75ch; }
+.card {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: clamp(1.25rem, 4vw, 2rem);
+  margin-bottom: 1.25rem;
+}
+.grid { display: grid; gap: 1.25rem; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
+.grid .card { margin-bottom: 0; }
+.card p:last-child { margin-bottom: 0; }
+.muted { color: var(--muted); }
+.placeholder {
+  background: #fff8e1;
+  border-left: 4px solid var(--gold);
+  border-radius: .35rem;
+  padding: .85rem 1rem;
+  color: #5a4510;
+}
+code { background: #e8eef6; padding: .1rem .35rem; border-radius: .3rem; font-size: .92em; }
+.note {
+  font-size: .95rem;
+  color: var(--muted);
+  border-top: 1px solid var(--line);
+  padding-top: 1rem;
+  margin-top: 1.5rem;
+}
+ul, ol { padding-left: 1.3rem; }
+li { margin-bottom: .45rem; }
+
+.site-footer {
+  background: var(--navy);
+  color: #c9d8e9;
+  padding-block: 1.6rem;
+  font-size: .95rem;
+}
+.footer-inner {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .75rem 1.5rem;
+  align-items: center;
+  justify-content: space-between;
+}
+.site-footer a { color: var(--gold); }
+.site-footer ul { display: flex; flex-wrap: wrap; gap: .5rem 1.25rem; list-style: none; margin: 0; padding: 0; }
+
+@media (max-width: 640px) {
+  .brand span { max-width: none; font-size: .98rem; }
+  .site-nav a { padding-block: .55rem; }
+  .hero { padding: 1.5rem 1.25rem; }
+  main { padding-top: 1.5rem; }
+}

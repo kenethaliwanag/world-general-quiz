@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>World General Knowledge Quiz — Home</title>
+  <meta name="description" content="World General Knowledge Quiz creates short educational quiz videos about world geography, science, history, culture and more. Learn about the project and its publishing process.">
+  <link rel="icon" href="assets/globe.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to main content</a>
+
+  <header class="site-header">
+    <div class="wrap header-inner">
+      <a class="brand" href="index.html">
+        <img src="assets/globe.svg" alt="" width="42" height="42">
+        <span>World General Knowledge Quiz</span>
+      </a>
+      <nav class="site-nav" aria-label="Main navigation">
+        <ul>
+          <li><a href="index.html" aria-current="page">Home</a></li>
+          <li><a href="privacy.html">Privacy Policy</a></li>
+          <li><a href="terms.html">Terms of Service</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main" class="wrap">
+    <section class="hero">
+      <span class="eyebrow">General knowledge, one question at a time</span>
+      <h1>World General Knowledge Quiz</h1>
+      <p>Short, educational quiz videos covering world geography, science, history, culture, sports, nature and technology. The project turns a curated question bank into narrated, vertical videos for an international audience.</p>
+      <div class="actions">
+        <a class="btn btn-primary" href="#how-it-works">How it works</a>
+        <a class="btn btn-secondary" href="privacy.html">Read the Privacy Policy</a>
+      </div>
+    </section>
+
+    <div class="grid">
+      <section class="card">
+        <h2>What viewers can expect</h2>
+        <ul>
+          <li>Brief quizzes with an on-screen countdown and a clear answer reveal.</li>
+          <li>A mix of single-answer questions and comparisons, drawn from a wide range of topics.</li>
+          <li>English narration and readable subtitles in a vertical, mobile-friendly format.</li>
+          <li>Separate formats: a short-form quiz, a ten-question video and a full fifteen-question Part.</li>
+        </ul>
+        <p class="muted">Question selection tracks previously used IDs so consecutive videos do not simply repeat the same questions.</p>
+      </section>
+
+      <section class="card" id="how-it-works">
+        <h2>How the project works</h2>
+        <ol>
+          <li>A Part is assembled from the question bank, with topic and difficulty spread.</li>
+          <li>A script, subtitle file and narration are generated for the selected questions.</li>
+          <li>A vertical MP4 is rendered from the script and narration.</li>
+          <li>A manually dispatched GitHub Actions job can upload the short-form video to YouTube as a private test using the YouTube Data API.</li>
+        </ol>
+        <p>Public or scheduled YouTube publishing is <strong>not</strong> enabled. The automated publishing path currently available is a controlled, private test upload started by the repository owner.</p>
+      </section>
+    </div>
+
+    <section class="card">
+      <h2>About this website</h2>
+      <p>This is a static informational site. It has no accounts, sign-in forms, advertising, analytics, tracking pixels or cookie collection. It explains the project and hosts the Privacy Policy and Terms of Service.</p>
+      <p class="note">This site is intended for eventual use as the application home page and as the location of the privacy policy and terms for Google OAuth branding. Those Google branding steps have not been completed. World General Knowledge Quiz is not affiliated with or endorsed by Google or YouTube.</p>
+    </section>
+
+    <section class="card">
+      <h2>Contact</h2>
+      <!-- CONTACT_PLACEHOLDER: no verified contact address exists in the project documentation. Owner must supply one before publishing. -->
+      <p class="placeholder"><strong>Owner action required:</strong> add a verified contact address here before deploying this site for OAuth branding. Search the website files for <code>CONTACT_PLACEHOLDER</code>.</p>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap footer-inner">
+      <p>&copy; World General Knowledge Quiz. Educational and entertainment content.</p>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="privacy.html">Privacy Policy</a></li>
+        <li><a href="terms.html">Terms of Service</a></li>
+      </ul>
+    </div>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Privacy Policy — World General Knowledge Quiz</title>
+  <meta name="description" content="How World General Knowledge Quiz handles YouTube authorization, upload credentials, publication records and visitor information.">
+  <link rel="icon" href="assets/globe.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to main content</a>
+
+  <header class="site-header">
+    <div class="wrap header-inner">
+      <a class="brand" href="index.html">
+        <img src="assets/globe.svg" alt="" width="42" height="42">
+        <span>World General Knowledge Quiz</span>
+      </a>
+      <nav class="site-nav" aria-label="Main navigation">
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="privacy.html" aria-current="page">Privacy Policy</a></li>
+          <li><a href="terms.html">Terms of Service</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main" class="wrap">
+    <section class="card">
+      <span class="eyebrow">Privacy</span>
+      <h1>Privacy Policy</h1>
+      <p><strong>Effective date:</strong> 19 November 2026</p>
+      <p>This policy explains how World General Knowledge Quiz handles information when it requests YouTube upload authorization and when you visit this website. It is written to reflect the current implementation in the project's public repository.</p>
+    </section>
+
+    <section class="card">
+      <h2>1. Application identity and purpose</h2>
+      <p>World General Knowledge Quiz is an independently maintained project that generates general-knowledge quiz scripts, narration and short vertical videos. Its publishing tooling can upload a generated quiz video to YouTube so the content can be viewed by a wider audience. The project is not affiliated with or endorsed by Google or YouTube.</p>
+      <p>This policy covers this website and the project's YouTube publishing tooling. It does not describe the separate practices of Google, YouTube or GitHub, which act under their own terms and privacy policies.</p>
+    </section>
+
+    <section class="card">
+      <h2>2. Visitor information on this website</h2>
+      <p>This website is static HTML and CSS. Its implementation contains no accounts, forms, analytics, advertising, tracking pixels or cookie collection, and it does not ask visitors to sign in with Google. Consequently, the project does not receive quiz answers, visitor profiles or other user data from this website.</p>
+      <p>GitHub Pages serves these files over the internet. Standard technical information exchanged between your browser and GitHub, such as your IP address and browser details, is handled by GitHub under <a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement">GitHub's privacy statement</a>, not by the quiz project.</p>
+    </section>
+
+    <section class="card">
+      <h2>3. YouTube authorization and the exact scope requested</h2>
+      <p>The publishing tooling requests exactly one Google OAuth scope:</p>
+      <p><code>https://www.googleapis.com/auth/youtube.upload</code></p>
+      <p>This permission is needed for one purpose: uploading the generated quiz video to the authorized YouTube channel. The project does not request permission to read Gmail messages, Drive files, contacts, profile details or channel analytics, and it does not request any other Google scope for this workflow.</p>
+    </section>
+
+    <section class="card">
+      <h2>4. How the authorization is used</h2>
+      <p>A repository owner starts the manual YouTube test-upload workflow. The tooling exchanges the stored refresh token for a short-lived access token, then calls the YouTube Data API <code>videos.insert</code> endpoint using a resumable upload to send the generated MP4. It sets the video title, description, tags, category and privacy status, and checks the channel ID returned in the upload response against the configured channel ID.</p>
+      <p>The upload is currently limited to a <strong>private</strong> test video started manually. Public and scheduled uploading is not available in this implementation. Google user data obtained through the upload scope is used only to perform and verify this upload.</p>
+    </section>
+
+    <section class="card">
+      <h2>5. Where credentials are stored</h2>
+      <p>The OAuth client ID, client secret and refresh token, together with a channel identifier, are stored as encrypted GitHub Actions Secrets for this repository. They are mapped into environment variables only for the specific workflow steps that need them. The presence check reports only whether each credential is configured; it never displays credential values.</p>
+      <p>Credentials are not stored in repository files, website files, generated scripts or publication history. Short-lived access tokens and resumable upload session URLs are held only in the memory of the running workflow step. Error messages are redacted so that credential values are not written to logs.</p>
+      <p>During OAuth and API requests, the credentials and access token are transmitted to Google's OAuth token and YouTube API endpoints over HTTPS as required to complete the upload. They are not sent to any other service by this project.</p>
+    </section>
+
+    <section class="card">
+      <h2>6. Records the project keeps</h2>
+      <p>The project maintains its own operational records in the repository:</p>
+      <ul>
+        <li><strong>Question usage history</strong> records which question IDs were used in each Part so later videos avoid repeats.</li>
+        <li><strong>YouTube publication history</strong> records the Part number, video file name, a SHA-256 hash of the video, the video title, the YouTube video ID, upload status, privacy status, timestamps and redacted error information. It is used to prevent duplicate uploads and to reconcile interrupted uploads.</li>
+        <li><strong>Facebook publication history</strong> is a separate record for the project's Facebook publishing feature and is not used by the YouTube uploader.</li>
+      </ul>
+      <p>Workflow runs may also retain generated video files and these history files as GitHub Actions artifacts for a limited period. These records are controlled by the project owner in the GitHub repository; they are not sold or used for advertising. No credential values, access tokens or upload session URLs are written to them.</p>
+    </section>
+
+    <section class="card">
+      <h2>7. Sharing, advertising and limited use</h2>
+      <p>The project contains no advertising, analytics, profiling or data-broker integrations. Google user data and authorization obtained through the upload scope are not sold, shared with third parties, or used for advertising or retargeting. Data is transferred only to Google to carry out the upload and to GitHub as the hosting and automation provider for this repository. Access to stored credentials is limited to the repository's GitHub Actions workflow configuration, which is controlled by the project owner.</p>
+    </section>
+
+    <section class="card">
+      <h2>8. Revoking access</h2>
+      <p>You can review and revoke the application's access at any time in your Google Account under <a href="https://myaccount.google.com/permissions">Security &rarr; Your connections to third-party apps and services</a>. Select World General Knowledge Quiz and remove its access. The project owner can also revoke the OAuth client credentials in the Google Cloud Console.</p>
+      <p>After revocation, the stored refresh token no longer works and future uploads stop until the owner re-authorizes and updates the credential stored in GitHub Actions Secrets.</p>
+    </section>
+
+    <section class="card">
+      <h2>9. Contact</h2>
+      <!-- CONTACT_PLACEHOLDER: no verified contact address exists in the project documentation. Owner must supply one before publishing. -->
+      <p class="placeholder"><strong>Owner action required:</strong> add a verified contact address for privacy questions before deploying this site for OAuth branding. Search the website files for <code>CONTACT_PLACEHOLDER</code>.</p>
+    </section>
+
+    <section class="card">
+      <h2>10. Changes to this policy</h2>
+      <p>This policy may be updated when the project's data handling changes. The current version is the one published on this page with the effective date above. Material changes should be reflected here before any new use of Google authorization data begins.</p>
+      <p class="note">References: <a href="https://developers.google.com/terms/api-services-user-data-policy">Google API Services User Data Policy</a> and <a href="https://developers.google.com/identity/verification/authentication-verification">Google OAuth brand verification guidance</a>.</p>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap footer-inner">
+      <p>&copy; World General Knowledge Quiz. Educational and entertainment content.</p>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="privacy.html">Privacy Policy</a></li>
+        <li><a href="terms.html">Terms of Service</a></li>
+      </ul>
+    </div>
+  </footer>
+</body>
+</html>
