@@ -444,7 +444,22 @@
     "us-len--montana",
     "la-spk--telugu",
     "cmp-us-pop--arizona-illinois",
-    "cmp-na-mea--mount-everest-aconcagua"
+    "cmp-na-mea--mount-everest-aconcagua",
+    "cn-lci--benin",
+    "cn-iso--madagascar",
+    "fa-fld--the-titanic-sinking-1912",
+    "el-r-sym--s",
+    "cn-cur--singapore",
+    "el-grp--potassium",
+    "el-pro--barium",
+    "cn-lan--china",
+    "cn-are--dominican-republic",
+    "us-len--west-virginia",
+    "us-reg--maine",
+    "la-spk--spanish",
+    "fa-yr--the-titanic-sinking-1912",
+    "cmp-la-spk--czech-uzbek",
+    "cmp-fa-yr--the-world-health-organization-1948-ada-lovelace-1815"
   ],
-  "last_part": 28
+  "last_part": 29
 }
