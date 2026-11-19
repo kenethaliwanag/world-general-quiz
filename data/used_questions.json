@@ -389,7 +389,22 @@
     "ct-cou--dublin",
     "el-blk--moscovium",
     "cmp-country-pop--guyana-spain",
-    "cmp-ct-pop--almaty-zurich"
+    "cmp-ct-pop--almaty-zurich",
+    "ct-lan--mexico-city",
+    "la-fam--maori",
+    "cn-flg--austria",
+    "la-reg--modern-standard-arabic",
+    "la-scr--bengali",
+    "el-sym--aluminium",
+    "na-cou--taklamakan",
+    "cn-con--united-states",
+    "cn-len--cyprus",
+    "el-cat--nobelium",
+    "cn-lan--sweden",
+    "el-len--caesium",
+    "q169",
+    "cmp-el-mass--hafnium-tungsten",
+    "cmp-fa-yr--the-berlin-wall-1961-raphael-1483"
   ],
-  "last_part": 26
+  "last_part": 27
 }
