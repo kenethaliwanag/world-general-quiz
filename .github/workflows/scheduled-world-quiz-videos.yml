@@ -189,12 +189,192 @@ jobs:
             git push origin HEAD:main
           fi
 
+      # YouTube runs in this same job, after Facebook generation/persistence, so both
+      # platforms update the shared question history sequentially on one runner.
+      - name: Verify required YouTube secrets
+        if: github.event_name == 'schedule'
+        env:
+          YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
+          YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
+          YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
+          YOUTUBE_CHANNEL_ID: ${{ secrets.YOUTUBE_CHANNEL_ID }}
+        run: |
+          set -euo pipefail
+          python main.py --youtube-check-secrets
+
+      - name: Resolve YouTube Part and output path
+        id: youtube_part
+        if: github.event_name == 'schedule'
+        run: |
+          set -euo pipefail
+          PART="$(python -c 'from core.youtube_output import TEN_QUESTION_CONTENT_TYPE, next_youtube_part_number; print(next_youtube_part_number(content_type=TEN_QUESTION_CONTENT_TYPE))')"
+          if [ "$PART" -lt 1 ]; then
+            echo "Invalid YouTube Part number: ${PART}" >&2
+            exit 1
+          fi
+          echo "part_number=$PART" >> "$GITHUB_OUTPUT"
+          python - "$PART" >> "$GITHUB_OUTPUT" <<'PY'
+          import sys
+          from pathlib import Path
+          from core.youtube_output import youtube_ten_question_video_path
+
+          part = int(sys.argv[1])
+          video = youtube_ten_question_video_path(part, Path("output/youtube"))
+          print(f"video_path={video}")
+          print(f"needs_generation={0 if video.is_file() else 1}")
+          PY
+
+      - name: Generate one YouTube 10-question video
+        if: github.event_name == 'schedule'
+        env:
+          PART_NUMBER: ${{ steps.youtube_part.outputs.part_number }}
+        run: |
+          set -euo pipefail
+          PART_NUMBER="$PART_NUMBER"
+          if [ "${{ steps.youtube_part.outputs.needs_generation }}" = "1" ]; then
+            python main.py \
+              --part "$PART_NUMBER" \
+              --count 10 \
+              --category all \
+              --difficulty all \
+              --tts \
+              --render-ten-video \
+              --ten-question-count 10 \
+              --youtube-ten-question-video \
+              --output-root output/youtube
+          else
+            echo "YouTube 10-question video already exists for Part ${PART_NUMBER}; skipping generation to avoid overwriting it."
+          fi
+
+      - name: Validate generated YouTube 10-question video with ffprobe
+        if: github.event_name == 'schedule'
+        env:
+          PART_NUMBER: ${{ steps.youtube_part.outputs.part_number }}
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          import os
+          import subprocess
+          from pathlib import Path
+
+          from core.youtube_output import youtube_ten_question_video_path
+
+          part = int(os.environ["PART_NUMBER"])
+          video = youtube_ten_question_video_path(part, Path("output/youtube"))
+          if not video.is_file():
+              raise SystemExit(f"Generated YouTube 10-question video not found: {video}")
+          size = video.stat().st_size
+          if size <= 0:
+              raise SystemExit(f"Generated YouTube 10-question video is empty: {video}")
+          script = video.parent / "script.json"
+          if not script.is_file():
+              raise SystemExit(f"Associated script JSON not found: {script}")
+          quiz = json.loads(script.read_text(encoding="utf-8"))
+          questions = quiz.get("questions", [])
+          if len(questions) != 10:
+              raise SystemExit(f"Expected exactly 10 questions in {script}, found {len(questions)}")
+          data = json.loads(subprocess.check_output([
+              "ffprobe", "-v", "error",
+              "-show_entries", "stream=codec_type,codec_name,width,height,r_frame_rate",
+              "-show_entries", "format=duration",
+              "-of", "json", str(video),
+          ], text=True))
+          streams = data.get("streams", [])
+          v = next((s for s in streams if s.get("codec_type") == "video"), None)
+          a = next((s for s in streams if s.get("codec_type") == "audio"), None)
+          duration = float(data.get("format", {}).get("duration", 0) or 0)
+          print(f"Video: {video}")
+          print(f"File size: {size} bytes")
+          print(f"Questions in script: {len(questions)}")
+          if not v:
+              raise SystemExit("No video stream in generated video")
+          if not a:
+              raise SystemExit("No audio stream in generated video")
+          print(f"Video: {v.get('width')}x{v.get('height')} {v.get('codec_name')} {v.get('r_frame_rate')}")
+          print(f"Audio: {a.get('codec_name')}")
+          print(f"Measured duration: {duration:.3f}s")
+          if (v.get("width"), v.get("height")) != (1080, 1920):
+              raise SystemExit("Invalid resolution; expected 1080x1920")
+          if v.get("codec_name") != "h264":
+              raise SystemExit("Invalid video codec; expected h264")
+          if v.get("r_frame_rate") != "30/1":
+              raise SystemExit("Invalid frame rate; expected 30/1")
+          if a.get("codec_name") != "aac":
+              raise SystemExit("Invalid audio codec; expected aac")
+          if duration <= 0:
+              raise SystemExit("Invalid duration; expected a positive value")
+          print("Note: YouTube may classify vertical videos up to 3 minutes as Shorts; no padding is applied.")
+          print("Scheduled YouTube 10-question video preflight: PASS")
+          PY
+
+      - name: Publish generated YouTube 10-question video (Public)
+        id: youtube_publish
+        if: github.event_name == 'schedule'
+        env:
+          YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
+          YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
+          YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
+          YOUTUBE_CHANNEL_ID: ${{ secrets.YOUTUBE_CHANNEL_ID }}
+          YOUTUBE_ALLOW_NETWORK_UPLOAD: "true"
+          YOUTUBE_ALLOW_PUBLIC_UPLOAD: "true"
+          YOUTUBE_PUBLISH_ENABLED: "true"
+          YOUTUBE_PUBLISH_DRY_RUN: "false"
+          YOUTUBE_PRIVACY_STATUS: "public"
+          PART_NUMBER: ${{ steps.youtube_part.outputs.part_number }}
+        run: |
+          set -euo pipefail
+          python main.py --youtube-video-upload \
+            --part "$PART_NUMBER" \
+            --output-root output/youtube \
+            --youtube-scheduled-upload
+
+      - name: Persist YouTube publication history and question history
+        if: always() && github.event_name == 'schedule'
+        env:
+          PART_NUMBER: ${{ steps.youtube_part.outputs.part_number }}
+        run: |
+          set -euo pipefail
+          PART="${PART_NUMBER:-0}"
+          CHANGED="$(git status --porcelain -- data/used_questions.json data/youtube_publish_history.json)"
+          if [ -z "$CHANGED" ]; then
+            echo "No YouTube or question history changes to persist."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git fetch origin
+          if ! git rebase origin/main; then
+            echo "Rebase conflict: histories were not pushed. Reconcile manually." >&2
+            exit 1
+          fi
+          PATHS=()
+          for path in data/used_questions.json data/youtube_publish_history.json; do
+            if [ -e "$path" ]; then
+              PATHS+=("$path")
+            fi
+          done
+          git add -- "${PATHS[@]}"
+          for path in $(git diff --cached --name-only); do
+            case "$path" in
+              data/used_questions.json|data/youtube_publish_history.json) ;;
+              *) echo "Refusing to commit unexpected staged file: $path" >&2; exit 1 ;;
+            esac
+          done
+          git commit -m "Record YouTube 10-question publication for Part $(printf '%03d' "$PART") [skip ci]"
+          if ! git push origin HEAD:main; then
+            echo "Push failed: histories were not published. Do not force push." >&2
+            exit 1
+          fi
+
       - name: Upload generated outputs as artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: world-general-knowledge-quiz-scheduled-${{ github.run_id }}
-          path: output/**
+          path: |
+            output/**
+            data/youtube_publish_history.json
           retention-days: 30
           if-no-files-found: warn
 

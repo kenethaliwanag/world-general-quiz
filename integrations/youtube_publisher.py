@@ -27,7 +27,9 @@ VIDEO_UPLOAD_ENDPOINT = "https://www.googleapis.com/upload/youtube/v3/videos"
 # shortcut: off by default; only the manual 2.7.2 workflow sets YOUTUBE_ALLOW_NETWORK_UPLOAD.
 NETWORK_UPLOADS_ENABLED = False
 NETWORK_UPLOAD_ENV_FLAG = "YOUTUBE_ALLOW_NETWORK_UPLOAD"
+PUBLIC_UPLOAD_ENV_FLAG = "YOUTUBE_ALLOW_PUBLIC_UPLOAD"
 CONTROLLED_PRIVACY_STATUS = "private"
+PUBLIC_PRIVACY_STATUS = "public"
 SECRET_ENV_NAMES = (
     "YOUTUBE_CLIENT_ID",
     "YOUTUBE_CLIENT_SECRET",
@@ -99,6 +101,20 @@ def network_uploads_enabled() -> bool:
     if NETWORK_UPLOADS_ENABLED:
         return True
     return os.getenv(NETWORK_UPLOAD_ENV_FLAG, "").strip().lower() in {"1", "true", "yes"}
+
+
+def public_uploads_enabled() -> bool:
+    """Public privacy is permitted only when the scheduled workflow unlocks it."""
+    return os.getenv(PUBLIC_UPLOAD_ENV_FLAG, "").strip().lower() in {"1", "true", "yes"}
+
+
+def privacy_status_allowed(status: str) -> bool:
+    return status in ALLOWED_PRIVACY_STATUSES or (status == PUBLIC_PRIVACY_STATUS and public_uploads_enabled())
+
+
+def network_privacy_allowed(status: str) -> bool:
+    """Network uploads are private-only unless the scheduled public unlock is set."""
+    return status == CONTROLLED_PRIVACY_STATUS or (status == PUBLIC_PRIVACY_STATUS and public_uploads_enabled())
 
 
 def check_secret_presence(values: dict[str, str] | None = None) -> list[str]:
@@ -241,8 +257,10 @@ class YouTubePublisher:
             raise YouTubePublisherError(
                 "YouTube network uploads require YOUTUBE_PUBLISH_ENABLED=true and YOUTUBE_PUBLISH_DRY_RUN=false."
             )
-        if self.privacy_status != CONTROLLED_PRIVACY_STATUS:
-            raise YouTubePublisherError("Only private YouTube uploads are allowed in this phase.")
+        if not network_privacy_allowed(self.privacy_status):
+            raise YouTubePublisherError(
+                "Only private controlled uploads or explicitly unlocked public scheduled uploads are allowed."
+            )
 
     def validate_configuration(self) -> tuple[str, ...]:
         errors = []
@@ -252,8 +270,8 @@ class YouTubePublisher:
             errors.append("YOUTUBE_CLIENT_SECRET is not configured.")
         if not self.refresh_token:
             errors.append("YOUTUBE_REFRESH_TOKEN is not configured.")
-        if self.privacy_status not in ALLOWED_PRIVACY_STATUSES:
-            errors.append("YouTube privacy status must be private or unlisted in this phase.")
+        if not privacy_status_allowed(self.privacy_status):
+            errors.append("YouTube privacy status must be private or unlisted; public requires an explicit unlock.")
         if not self.category_id.isdigit():
             errors.append("YouTube category ID must be numeric.")
         if self.content_type not in VALID_CONTENT_TYPES:
@@ -344,8 +362,8 @@ class YouTubePublisher:
             errors.append("YouTube tags exceed the total character limit.")
         if not str(snippet.get("categoryId", "")).isdigit():
             errors.append("YouTube categoryId must be numeric.")
-        if status.get("privacyStatus") not in ALLOWED_PRIVACY_STATUSES:
-            errors.append("YouTube privacy status must be private or unlisted in this phase.")
+        if not privacy_status_allowed(str(status.get("privacyStatus", ""))):
+            errors.append("YouTube privacy status must be private or unlisted; public requires an explicit unlock.")
         return tuple(errors)
 
     def build_metadata(

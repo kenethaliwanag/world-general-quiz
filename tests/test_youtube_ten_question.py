@@ -284,5 +284,8 @@ def test_workflow_uses_ten_question_commands():
 def test_facebook_workflows_still_unchanged():
     for name in ("scheduled-world-quiz-videos.yml", "facebook-test-reel.yml", "generate-world-quiz-videos.yml"):
         text = (ROOT / ".github" / "workflows" / name).read_text(encoding="utf-8")
-        assert "--youtube-ten-question-video" not in text
-        assert "--youtube-video-upload" not in text
+        if "- name: Generate next quiz Part" in text:
+            fb_step = text.split("- name: Generate next quiz Part", 1)[1].split("\n      - name:", 1)[0]
+            assert "--youtube-ten-question-video" not in fb_step
+            assert "--youtube-video-upload" not in fb_step
+        assert "--publish-content-type ten_question_video" in text or name != "scheduled-world-quiz-videos.yml"

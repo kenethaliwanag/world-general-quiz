@@ -55,6 +55,7 @@ def parse_args():
     parser.add_argument("--publish-youtube", action="store_true", help="Run the guarded YouTube Shorts dry-run for the existing 5-question Reel.")
     parser.add_argument("--publish-youtube-video", action="store_true", help="Run the guarded YouTube 10-question video dry-run.")
     parser.add_argument("--youtube-video-upload", action="store_true", help="Controlled private-only 10-question video upload; requires an explicit runtime unlock flag.")
+    parser.add_argument("--youtube-scheduled-upload", action="store_true", help="Scheduled upload: use YOUTUBE_PRIVACY_STATUS (public) with an explicit public unlock; never used by the manual test.")
     parser.add_argument("--youtube-dry-run", action="store_true", help="Keep YouTube publishing in dry-run mode (already the default).")
     parser.add_argument("--youtube-privacy", choices=["private", "unlisted"], default=None, help="Privacy status shown in the YouTube dry-run report.")
     parser.add_argument("--youtube-check-secrets", action="store_true", help="Report only which YouTube secrets are present; never print values.")
@@ -603,11 +604,12 @@ def _run_youtube_video_upload(args):
     """Controlled private-only 10-question upload. Requires the explicit runtime unlock flag."""
     import os
 
-    from config import YOUTUBE_PUBLISH_DRY_RUN, YOUTUBE_PUBLISH_ENABLED
+    from config import YOUTUBE_PRIVACY_STATUS, YOUTUBE_PUBLISH_DRY_RUN, YOUTUBE_PUBLISH_ENABLED
     from core.youtube_output import youtube_ten_question_video_path
     from core.youtube_publish_manager import YouTubePublishManager
     from integrations.youtube_publisher import (
         NETWORK_UPLOAD_ENV_FLAG,
+        PUBLIC_UPLOAD_ENV_FLAG,
         TEN_QUESTION_CONTENT_TYPE,
         YouTubePublisher,
         check_secret_presence,
@@ -632,8 +634,21 @@ def _run_youtube_video_upload(args):
     if not video_path.is_file():
         raise SystemExit(f"Generated YouTube 10-question video not found: {video_path}")
 
+    scheduled = bool(getattr(args, "youtube_scheduled_upload", False))
+    if scheduled:
+        if os.getenv(PUBLIC_UPLOAD_ENV_FLAG, "").strip().lower() not in {"1", "true", "yes"}:
+            raise SystemExit(
+                f"Scheduled public uploads require {PUBLIC_UPLOAD_ENV_FLAG}=true in the scheduled workflow only."
+            )
+        if YOUTUBE_PRIVACY_STATUS != "public":
+            raise SystemExit("Scheduled YouTube uploads require YOUTUBE_PRIVACY_STATUS=public.")
+        publisher_privacy = "public"
+    else:
+        # Manual test uploads are always private, regardless of ambient configuration.
+        publisher_privacy = "private"
+
     publisher = YouTubePublisher(
-        privacy_status="private",
+        privacy_status=publisher_privacy,
         dry_run=False,
         publish_enabled=True,
         content_type=TEN_QUESTION_CONTENT_TYPE,
@@ -644,7 +659,7 @@ def _run_youtube_video_upload(args):
     print(f"Part: {result['part_number']}")
     print(f"Status: {result['status']}")
     print(f"Skipped: {'yes' if result.get('skipped') else 'no'}")
-    print("Privacy status: private")
+    print(f"Privacy status: {publisher.privacy_status}")
     print(f"YouTube video ID: {result.get('youtube_video_id', '') or 'none'}")
     if result.get("channel_id"):
         print(f"Verified channel ID: {result['channel_id']}")

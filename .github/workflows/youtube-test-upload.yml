@@ -10,8 +10,9 @@ on:
         type: string
         default: "0"
 
+# Shared with the scheduled workflow so both serialize updates to data/used_questions.json.
 concurrency:
-  group: youtube-shorts-publish
+  group: world-quiz-generation
   cancel-in-progress: false
 
 permissions:

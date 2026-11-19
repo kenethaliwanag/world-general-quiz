@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Added scheduled public publishing of the existing 10-question YouTube video at 6 PM and 12 AM PHT, in the same serialized job as Facebook generation. Public visibility requires an explicit unlock flag and `YOUTUBE_PRIVACY_STATUS=public`; the manual test workflow remains private-only.
 - Added a second, private-only YouTube format: the existing 10-question Facebook tracker video is now rendered under `output/youtube/part_NNN/youtube/videos/`, with independent Part numbering and history records per content type. The legacy Shorts commands and the previously uploaded Part 001 Shorts record are unchanged.
 - Added a manual-only GitHub Actions workflow for one controlled **private** YouTube Shorts upload of the existing 5-question Reel, with presence-only secret checks, channel-ID verification, real ffprobe validation, duplicate protection, an explicit upload unlock flag, independent YouTube history persistence and safe reconciliation of uncertain uploads. No Facebook workflow or behavior changed.
 - Added an independent, dry-run-only YouTube Shorts publisher that reuses the existing 5-question Facebook Reel. It adds ffprobe preflight, SHA-256 hashing, OAuth refresh handling, resumable `videos.insert` upload support (network disabled in this phase), separate YouTube publication history, redacted errors, CLI `--publish-youtube` support, tests and documentation. Facebook publishing and all existing video/TTS/question behaviour are unchanged.

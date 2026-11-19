@@ -123,7 +123,7 @@ def test_workflow_is_manual_only_and_private():
     assert "pull_request:" not in trigger_section
     assert "  push:" not in trigger_section
     assert "concurrency:" in text
-    assert 'group: youtube-shorts-publish' in text
+    assert 'group: world-quiz-generation' in text
     assert 'YOUTUBE_ALLOW_NETWORK_UPLOAD: "true"' in text
     assert 'YOUTUBE_PRIVACY_STATUS: "private"' in text
     assert "--youtube-video-upload --part" in text

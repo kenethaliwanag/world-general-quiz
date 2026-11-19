@@ -180,10 +180,35 @@ classification.
   the GitHub Secret and re-authorize before enabling scheduled publishing.
 - A 403 quota or permission error is reported with status/reason; no token value is logged.
 
+## Scheduled public publishing
+
+The existing scheduled Facebook workflow now also publishes the 10-question YouTube video at
+the same times:
+
+- `0 10 * * *` — 18:00 PHT (6 PM)
+- `0 16 * * *` — 00:00 PHT (12 AM)
+
+The YouTube steps live in the **same job** as Facebook generation (`world-quiz-generation`
+concurrency group; the manual test workflow uses that group too), so both platforms update
+`data/used_questions.json` sequentially on one runner. Scheduled generation uses exactly
+`--count 10` with the existing tracker flags and `--output-root output/youtube`, and resolves
+its Part via `next_youtube_part_number(content_type="youtube_ten_question_video")`.
+
+Scheduled uploads set `YOUTUBE_PRIVACY_STATUS=public`, `YOUTUBE_ALLOW_NETWORK_UPLOAD=true` and
+`YOUTUBE_ALLOW_PUBLIC_UPLOAD=true`, then call
+`main.py --youtube-video-upload --youtube-scheduled-upload`. The CLI requires the explicit
+public unlock and `YOUTUBE_PRIVACY_STATUS=public` before the publisher will allow a public
+upload. The manual test workflow never sets the public unlock and always forces `private`;
+it remains manual-only.
+
+The final always-run step persists both `data/used_questions.json` and
+`data/youtube_publish_history.json` after `git fetch` + `git rebase origin/main`, staging only
+those two paths, with no force push. Existing history records are never reset.
+
 ## Current limitations
 
-- The only network path is the manual private workflow; there is no schedule and no public
-  upload path.
+- Public uploads are limited to the two scheduled daily runs with an explicit unlock flag;
+  there is no manual public path.
 - A Part 1 Shorts video (`yEgHXZc2Gls`) and a Part 26 Shorts video (`c22bxuuTvd8`) were
   previously uploaded privately. The new 10-question workflow has not been used yet.
 - Consent-screen verification and ongoing scheduled publishing remain owner-controlled and

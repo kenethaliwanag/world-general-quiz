@@ -204,9 +204,13 @@ def test_youtube_workflow_uses_youtube_paths_and_resolver():
 def test_facebook_workflows_unchanged():
     for workflow in FACEBOOK_WORKFLOWS:
         text = workflow.read_text(encoding="utf-8")
-        assert "--output-root" not in text
-        assert "--youtube-shorts" not in text
         assert "--render-reels" in text
+        if "- name: Generate next quiz Part" in text:
+            # Facebook's generation command keeps the original output root and flags.
+            fb_step = text.split("- name: Generate next quiz Part", 1)[1].split("\n      - name:", 1)[0]
+            assert "--output-root" not in fb_step
+            assert "--youtube-ten-question-video" not in fb_step
+        assert "--youtube-video-upload" not in text or workflow.name == "scheduled-world-quiz-videos.yml"
 
 
 def test_gitignore_ignores_youtube_output():
