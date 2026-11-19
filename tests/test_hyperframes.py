@@ -301,3 +301,72 @@ def test_srt_cues_follow_the_spoken_script(tmp_path):
         assert line in srt
     assert quiz["questions"][0]["spoken"] in srt
     assert quiz["questions"][0]["spoken_answer"] in srt
+
+
+def _fake_which(name):
+    return name if name in {"npx", "npx.cmd", "ffmpeg"} else None
+
+
+def _fake_render_commands(calls):
+    def fake_run(command, **kwargs):
+        calls.append(command)
+        if command[1] == "hyperframes":
+            raw = Path(command[command.index("--output") + 1])
+            assert raw.is_absolute()
+            raw.parent.mkdir(parents=True, exist_ok=True)
+            raw.write_bytes(b"raw")
+        else:
+            raw = Path(command[command.index("-i") + 1])
+            normalized = Path(command[-1])
+            assert raw.is_absolute() and raw.is_file()
+            assert normalized.is_absolute()
+            normalized.parent.mkdir(parents=True, exist_ok=True)
+            normalized.write_bytes(b"normalized")
+
+    return fake_run
+
+
+def test_relative_render_output_is_resolved_before_subprocess(tmp_path, monkeypatch):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    project = tmp_path / "project" / "part_001" / "reels"
+    project.mkdir(parents=True)
+    relative = Path("output/youtube/part_001/youtube/shorts/part_001.mp4")
+    calls = []
+    validated = []
+
+    monkeypatch.chdir(repo)
+    monkeypatch.setattr(hyperframes.shutil, "which", _fake_which)
+    monkeypatch.setattr(hyperframes.subprocess, "run", _fake_render_commands(calls))
+    monkeypatch.setattr(hyperframes, "_validate_rendered_video", lambda path: validated.append(Path(path)))
+
+    result = hyperframes.render_video(project, 1, output_path=relative)
+
+    raw = repo / relative.with_name("part_001.raw.mp4")
+    normalized = repo / relative.with_name("part_001.normalized.mp4")
+    assert result == repo / relative
+    assert result.is_absolute() and result.is_file()
+    assert not (project / "output").exists(), "HyperFrames must not create a nested output directory"
+    hyper_calls = [call for call in calls if call[1] == "hyperframes"]
+    ffmpeg_calls = [call for call in calls if call[0] == "ffmpeg"]
+    assert len(hyper_calls) == 1 and len(ffmpeg_calls) == 1
+    assert Path(hyper_calls[0][hyper_calls[0].index("--output") + 1]) == raw
+    assert Path(ffmpeg_calls[0][ffmpeg_calls[0].index("-i") + 1]) == raw
+    assert Path(ffmpeg_calls[0][-1]) == normalized
+    assert validated == [raw, normalized, repo / relative]
+
+
+def test_default_render_output_path_is_unchanged(tmp_path, monkeypatch):
+    output_dir = tmp_path / "output"
+    project = tmp_path / "project"
+    project.mkdir()
+    calls = []
+    monkeypatch.setattr(hyperframes, "OUTPUT_DIR", output_dir)
+    monkeypatch.setattr(hyperframes.shutil, "which", _fake_which)
+    monkeypatch.setattr(hyperframes.subprocess, "run", _fake_render_commands(calls))
+    monkeypatch.setattr(hyperframes, "_validate_rendered_video", lambda path: None)
+
+    result = hyperframes.render_video(project, 1)
+
+    assert result == output_dir / "part_001" / "video" / "world_general_knowledge_quiz_part_001.mp4"
+    assert result.is_file()

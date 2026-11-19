@@ -509,8 +509,9 @@ def render_video(project_dir, part_number, output_path=None, output_root=None):
     if output_path is None:
         root = Path(output_root) if output_root is not None else OUTPUT_DIR
         output_path = root / f"part_{part_number:03d}" / "video" / f"world_general_knowledge_quiz_part_{part_number:03d}.mp4"
-    else:
-        output_path = Path(output_path)
+    # Resolve from this process's CWD before subprocess execution: HyperFrames runs
+    # with cwd=project_dir and would otherwise create a nested duplicate directory.
+    output_path = Path(output_path).resolve()
     output_path.parent.mkdir(parents=True, exist_ok=True)
     rendered_path = output_path.with_name(output_path.stem + ".raw.mp4")
     if rendered_path.exists():
