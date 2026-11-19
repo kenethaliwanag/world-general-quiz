@@ -1,25 +1,31 @@
-# YouTube Shorts Publishing — Phase 2.7.1 (Dry-Run Foundation)
+# YouTube Publishing
 
-This phase adds an **independent** YouTube Shorts publisher. It reuses the existing
-5-question Facebook Reel MP4. Ordinary local execution is dry-run only: no video is uploaded,
-no token is exchanged and no history is written. A separate manual workflow can perform one
-controlled **private** test upload. Facebook publishing is unchanged.
+This project has two independent, **private-only** YouTube formats:
 
-## Source video and preflight
+| Format | Content type | Source video | Part sequence |
+|---|---|---|---|
+| Shorts (legacy 5-question Reel) | `youtube_shorts` | `output/youtube/part_NNN/youtube/shorts/world_general_knowledge_quiz_part_NNN.mp4` | YouTube-only |
+| 10-question video (current) | `youtube_ten_question_video` | `output/youtube/part_NNN/youtube/videos/world_general_knowledge_quiz_part_NNN_10_questions.mp4` | YouTube-only, per content type |
 
-- Source: `output/youtube/part_NNN/youtube/shorts/world_general_knowledge_quiz_part_NNN.mp4`.
-  Facebook keeps its existing `output/part_NNN/facebook/reels/` layout; no `facebook/`
-  directory is created under the YouTube root.
-- The workflow passes `--output-root output/youtube --youtube-shorts` to the same Reel
-  generation pipeline; no second renderer is introduced. Question count, narration,
-  Kokoro `af_bella`, TTS speed, countdown, SFX, subtitles and visual design are untouched.
-- `--output-root` defaults to the existing Facebook output directory, so ordinary Facebook
-  commands are unchanged.
-- ffprobe preflight checks: file exists and is non-empty, resolution 1080×1920, aspect ratio
-  9:16, frame rate 30/1, video codec H.264, audio codec AAC, an audio stream is present,
-  duration is greater than zero and at most 180 seconds (YouTube Shorts limit).
-- Actual MP4 specifications must be measured from a generated artifact before assuming any
-  result; this phase does not claim a rendered file was inspected.
+Ordinary local execution is dry-run only: no token is exchanged and no history is written.
+The manual workflow performs one controlled **private** test upload. Facebook publishing is
+unchanged.
+
+## Source videos and preflight
+
+- Shorts: `core.youtube_output.youtube_shorts_path()`; generated with
+  `--render-reels --youtube-shorts --output-root output/youtube`.
+- 10-question video: `core.youtube_output.youtube_ten_question_video_path()`; generated with
+  the existing Facebook tracker pipeline
+  (`--count 10 --render-ten-video --youtube-ten-question-video --output-root output/youtube`).
+  Composition projects live under `output/youtube/hyperframes/part_NNN/videos/`.
+- Facebook keeps its existing `output/part_NNN/facebook/` layout; no `facebook/` directory is
+  created under the YouTube root. `--output-root` defaults to the existing Facebook root.
+- ffprobe checks for both: non-empty file, 1080×1920 (9:16), 30 FPS, H.264 video, AAC audio,
+  both streams present, positive duration. The **180-second limit applies only to Shorts**;
+  the 10-question video has no Shorts duration cap. The workflow prints the measured duration
+  and notes that YouTube may classify vertical videos up to three minutes as Shorts.
+- Specifications must be measured from a generated artifact; no actual MP4 is inspected here.
 
 ## Existing GitHub Secrets and environment mapping
 
@@ -55,10 +61,13 @@ used by the minimum-scope upload client.
 
 ## Metadata configuration
 
-- Title: `World General Knowledge Quiz - Part N #shorts` (max 100 characters).
-- Description: Part number, call to action, `#Shorts` hashtags, and a deterministic
-  `Content hash: <sha256>` marker used to reconcile interrupted operations.
-- Tags: `shorts`, `general knowledge`, `trivia`, `quiz` (500-character total limit).
+- Shorts title: `World General Knowledge Quiz - Part N #shorts`; description with `#Shorts`
+  hashtags and a `Content hash: <sha256>` marker; tags `shorts`, `general knowledge`, `trivia`,
+  `quiz` (legacy behavior, unchanged).
+- 10-question video title: `World General Knowledge Quiz | Part NNN | 10 Questions`;
+  description explains the 10-question quiz, asks viewers to comment their score out of 10,
+  and carries the same content-hash marker; tags `general knowledge`, `quiz`, `trivia`,
+  `education`, `10 questions`. **No `#Shorts` branding** in the new format.
 - Category: `27` (Education) by default.
 - Privacy: explicitly set; only `private` and `unlisted` are accepted in this phase. Public
   uploads are intentionally unavailable until a later approved phase.
@@ -66,10 +75,11 @@ used by the minimum-scope upload client.
 ## Dry-run process
 
 ```powershell
-python main.py --publish-youtube --part 12
+python main.py --publish-youtube --part 12 --output-root output/youtube          # Shorts
+python main.py --publish-youtube-video --part 1 --output-root output/youtube     # 10-question video
 ```
 
-The command locates the Reel, runs ffprobe preflight, computes the SHA-256 hash, checks the
+Each command locates its own MP4 via the shared resolver, runs ffprobe preflight, computes the SHA-256 hash, checks the
 YouTube history for an existing matching upload, builds and validates the metadata, and prints
 a report. It performs **zero HTTP requests**, creates no video, and writes no history record.
 `--youtube-privacy private|unlisted` overrides the privacy shown in the report;
@@ -81,8 +91,10 @@ with an error instead of attempting a network upload.
 ## Duplicate prevention and failure recovery
 
 1. Compute the MP4 SHA-256 hash.
-2. Look for a YouTube history record with the same Part, hash and `youtube_shorts` type.
-3. Skip a Part whose matching upload is already `uploaded` or still `uploading`.
+2. Look for a YouTube history record with the same Part, hash **and content type**
+   (`youtube_shorts` or `youtube_ten_question_video`). A Shorts upload never blocks a different
+   10-question video for the same Part.
+3. Skip a Part whose matching upload of that content type is already `uploaded` or `uploading`.
 4. Never blindly retry an upload with an uncertain result; a `uploading` record or a lost
    resumable session (HTTP 404/410) requires manual reconciliation using the content-hash
    marker in YouTube metadata.
@@ -92,38 +104,38 @@ with an error instead of attempting a network upload.
 `data/youtube_publish_history.json` is entirely separate from
 `data/facebook_publish_history.json` and `data/used_questions.json`. Its schema is
 `{"schema_version": 1, "records": []}`; records carry Part number, video file name, content
-hash, `content_type: youtube_shorts`, title, YouTube video ID, `upload_status`
+hash, `content_type` (`youtube_shorts` or `youtube_ten_question_video`), title, YouTube video ID, `upload_status`
 (`dry_run`/`uploading`/`uploaded`/`failed`), privacy status, timestamps and redacted errors.
 Writes are atomic; malformed history raises instead of being reset. Credential-named keys and
 session URLs are stripped before a record is saved.
 
 ## Manual private test upload
 
-Use the separate workflow **YouTube Shorts Test Upload (Private)**, dispatched manually from
-the Actions tab (no cron, push or PR trigger):
+Use **YouTube 10-Question Video Test Upload (Private)**, dispatched manually from the Actions
+tab (no cron, push or PR trigger). The legacy Shorts workflow behavior is described below for
+backward compatibility; the workflow now targets the 10-question tracker format.
 
-1. Set `part_number` to a positive Part number, or `0` to let
-   `core.youtube_output.next_youtube_part_number()` choose the next YouTube Part. YouTube
-   numbering is independent of Facebook's `next_part_number()`: the first new YouTube Part is
-   **1**, then 2, 3, and so on after successful uploads. A failed attempt without a video ID
-   does not consume a number, so a retry reuses the same Part. The historical failed Part 25
-   record is preserved and is not rewritten merely to restart numbering.
-2. The workflow first checks that all four secrets are present (names only, never values).
-3. It resolves the Short path with `core.youtube_output.youtube_shorts_path()`. If that file
-   already exists, generation is skipped so an existing Part is never overwritten; otherwise
-   it generates exactly one Part's 5-question Reel with the existing pipeline
-   (`python main.py --part N --tts --render-reels --reels-question-count 5 --output-root
-   output/youtube --youtube-shorts`). The actual MP4 is then measured with ffprobe. A new
-   generation updates the global question-history file exactly as the Facebook workflows do.
-4. It runs the zero-HTTP dry-run, then performs one controlled upload. Both commands use
-   `--output-root output/youtube` and the same shared path resolver. Privacy is hardcoded to
-   `private` in `main.py`; the workflow has no privacy input and no public/unlisted path.
-5. Network uploads are unlocked only by `YOUTUBE_ALLOW_NETWORK_UPLOAD=true` in that one step.
-   Local runs remain dry-run unless someone explicitly sets that flag.
+1. Set `part_number`, or `0` to let
+   `next_youtube_part_number(content_type="youtube_ten_question_video")` choose the Part.
+   Numbering is per content type and independent of Facebook: Part 1 is available for the
+   10-question video even though Part 1 already has an uploaded Short (`yEgHXZc2Gls`). The
+   existing failed Part 25 and uploaded Part 26 Shorts records stay untouched. A failed attempt
+   without a video ID does not consume a number.
+2. Presence-only checks confirm all four secrets are configured (names only, never values).
+3. The path comes from `youtube_ten_question_video_path()`. If that exact file exists it is
+   reused; otherwise the workflow generates exactly 10 questions with the Facebook tracker
+   pipeline: `--count 10 --render-ten-video --ten-question-count 10
+   --youtube-ten-question-video --output-root output/youtube`. The ffprobe step also reads the
+   associated `script.json` and requires exactly 10 questions, then prints the measured
+   duration and the possible Shorts-classification caveat.
+4. It runs `--publish-youtube-video` (zero HTTP), then `--youtube-video-upload`. Both use the
+   same resolver and `--output-root output/youtube`. Privacy is forced to `private` in
+   `main.py`; there is no public/unlisted path.
+5. Network uploads are unlocked only by `YOUTUBE_ALLOW_NETWORK_UPLOAD=true` in the upload step.
 
-Metadata for the test upload: title `World General Knowledge Quiz | Part NNN #Shorts`, the
-short quiz description with the content-hash marker, tags `shorts`/`general knowledge`/
-`trivia`/`quiz`, category `27` (Education).
+Legacy Shorts commands (`--publish-youtube`, `--youtube-upload` with `--youtube-shorts`
+generation) remain available and still use `youtube_shorts_path()` and `youtube_shorts`
+history records.
 
 ### Channel verification
 
@@ -153,10 +165,12 @@ are metadata only: `record_question_usage()` keeps the maximum existing `last_pa
 YouTube Part 1 cannot lower Facebook's Part counter. Questions used by a YouTube Short are
 recorded as used, preserving the global no-repeat behavior for both platforms.
 
-After a successful test upload, open **YouTube Studio → Content** to see the video, confirm it
-is listed as a Short (vertical 9:16 video up to three minutes is classified as a Short), and
-check its privacy badge says **Private**. The video ID in the workflow log and history record
-can be used to open it directly.
+After a successful test upload, open **YouTube Studio → Content** to see the video. For the
+10-question format, check that the script contains 10 questions, that the privacy badge says
+**Private**, and note whether YouTube displays it as a Short (vertical videos up to three
+minutes may be classified that way automatically). The video ID in the workflow log and
+history record can be used to open it directly. Do not alter the video design to influence
+classification.
 
 ## Token expiry and revocation
 
@@ -170,7 +184,9 @@ can be used to open it directly.
 
 - The only network path is the manual private workflow; there is no schedule and no public
   upload path.
-- No actual YouTube upload, channel verification or consent-screen validation has occurred
-  yet; the workflow is prepared but has not been dispatched.
+- A Part 1 Shorts video (`yEgHXZc2Gls`) and a Part 26 Shorts video (`c22bxuuTvd8`) were
+  previously uploaded privately. The new 10-question workflow has not been used yet.
+- Consent-screen verification and ongoing scheduled publishing remain owner-controlled and
+  out of scope for this repository change.
 - The four YouTube secrets must already exist in GitHub; a missing `YOUTUBE_CHANNEL_ID`
   stops the workflow before generation or upload.

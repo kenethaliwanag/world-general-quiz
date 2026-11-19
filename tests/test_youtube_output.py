@@ -188,10 +188,14 @@ def test_youtube_part_one_does_not_lower_facebook_part_counter(tmp_path, monkeyp
 
 def test_youtube_workflow_uses_youtube_paths_and_resolver():
     text = YOUTUBE_WORKFLOW.read_text(encoding="utf-8")
+    assert "TEN_QUESTION_CONTENT_TYPE" in text
     assert "next_youtube_part_number" in text
-    assert "youtube_shorts_path" in text
+    assert "youtube_ten_question_video_path" in text
     assert "--output-root output/youtube" in text
-    assert "--youtube-shorts" in text
+    assert "--render-ten-video" in text
+    assert "--youtube-ten-question-video" in text
+    assert '--count "$QUESTIONS_PER_PART"' in text
+    assert 'QUESTIONS_PER_PART: "10"' in text
     assert "output/youtube/**" in text
     assert "facebook/reels" not in text
     assert "next_part_number()" not in text

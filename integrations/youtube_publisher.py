@@ -37,7 +37,11 @@ SECRET_ENV_NAMES = (
 
 MIN_CHUNK_BYTES = 256 * 1024
 DEFAULT_CHUNK_BYTES = 8 * 1024 * 1024
-MAX_DURATION_SECONDS = 180.0
+MAX_DURATION_SECONDS = 180.0  # Shorts-only; the 10-question tracker video has no Shorts cap
+SHORTS_CONTENT_TYPE = "youtube_shorts"
+TEN_QUESTION_CONTENT_TYPE = "youtube_ten_question_video"
+VALID_CONTENT_TYPES = {SHORTS_CONTENT_TYPE, TEN_QUESTION_CONTENT_TYPE}
+TEN_QUESTION_TAGS = ["general knowledge", "quiz", "trivia", "education", "10 questions"]
 REEL_WIDTH = 1080
 REEL_HEIGHT = 1920
 REEL_FRAME_RATE = "30/1"
@@ -87,6 +91,7 @@ class DryRunReport:
     existing_record: dict[str, Any] | None
     would_upload: bool
     publication_status: str = "dry_run"
+    content_type: str = SHORTS_CONTENT_TYPE
 
 
 def network_uploads_enabled() -> bool:
@@ -190,6 +195,7 @@ class YouTubePublisher:
         publish_enabled: bool | None = None,
         privacy_status: str | None = None,
         category_id: str | None = None,
+        content_type: str = SHORTS_CONTENT_TYPE,
         chunk_bytes: int = DEFAULT_CHUNK_BYTES,
         timeout_seconds: int = 30,
         token_endpoint: str = TOKEN_ENDPOINT,
@@ -211,6 +217,7 @@ class YouTubePublisher:
         self.publish_enabled = publish_enabled if publish_enabled is not None else YOUTUBE_PUBLISH_ENABLED
         self.privacy_status = str(privacy_status or YOUTUBE_PRIVACY_STATUS).strip().lower()
         self.category_id = str(category_id or YOUTUBE_CATEGORY_ID).strip()
+        self.content_type = content_type
         self.chunk_bytes = int(chunk_bytes)
         self.timeout_seconds = int(timeout_seconds)
         self.token_endpoint = token_endpoint
@@ -249,6 +256,8 @@ class YouTubePublisher:
             errors.append("YouTube privacy status must be private or unlisted in this phase.")
         if not self.category_id.isdigit():
             errors.append("YouTube category ID must be numeric.")
+        if self.content_type not in VALID_CONTENT_TYPES:
+            errors.append("YouTube content type must be youtube_shorts or youtube_ten_question_video.")
         if self.chunk_bytes < MIN_CHUNK_BYTES or self.chunk_bytes % MIN_CHUNK_BYTES:
             errors.append("YouTube upload chunk size must be a multiple of 256 KiB.")
         if self.timeout_seconds <= 0:
@@ -303,7 +312,7 @@ class YouTubePublisher:
             errors.append(f"Audio codec is {audio.get('codec_name')!r}; expected 'aac'.")
         if duration <= 0:
             errors.append("Video duration must be greater than zero.")
-        elif duration > MAX_DURATION_SECONDS:
+        elif self.content_type == SHORTS_CONTENT_TYPE and duration > MAX_DURATION_SECONDS:
             errors.append(f"Video duration is {duration:.1f}s; YouTube Shorts allow at most 180s.")
         if self.publish_enabled:
             errors.extend(self.validate_configuration())
@@ -348,15 +357,26 @@ class YouTubePublisher:
         description: str | None = None,
         tags: list[str] | None = None,
     ) -> dict[str, Any]:
+        if self.content_type == TEN_QUESTION_CONTENT_TYPE:
+            default_title = f"World General Knowledge Quiz | Part {part_number:03d} | 10 Questions"
+            default_description = (
+                "Test your general knowledge with this 10-question quiz! Answer all 10 "
+                "questions, check your score out of 10, and challenge a friend.\n\n"
+                f"Content hash: {content_hash}"
+            )
+            default_tags = list(TEN_QUESTION_TAGS)
+        else:
+            default_title = f"World General Knowledge Quiz - Part {part_number} #shorts"
+            default_description = (
+                f"World General Knowledge Quiz, Part {part_number}. Answer in the comments!\n\n"
+                f"Content hash: {content_hash}\n#Shorts #GeneralKnowledge #Trivia"
+            )
+            default_tags = ["shorts", "general knowledge", "trivia", "quiz"]
         metadata = {
             "snippet": {
-                "title": title or f"World General Knowledge Quiz - Part {part_number} #shorts",
-                "description": description
-                or (
-                    f"World General Knowledge Quiz, Part {part_number}. Answer in the comments!\n\n"
-                    f"Content hash: {content_hash}\n#Shorts #GeneralKnowledge #Trivia"
-                ),
-                "tags": tags if tags is not None else ["shorts", "general knowledge", "trivia", "quiz"],
+                "title": title or default_title,
+                "description": description or default_description,
+                "tags": tags if tags is not None else default_tags,
                 "categoryId": self.category_id,
             },
             "status": {
@@ -541,7 +561,12 @@ class YouTubePublisher:
         )
         existing = None
         if manager is not None and content_hash:
-            existing = manager.find(part_number=part_number, content_hash=content_hash, upload_status="uploaded")
+            existing = manager.find(
+                part_number=part_number,
+                content_hash=content_hash,
+                upload_status="uploaded",
+                content_type=self.content_type,
+            )
         return DryRunReport(
             success=preflight.success,
             part_number=part_number,
@@ -552,6 +577,7 @@ class YouTubePublisher:
             privacy_status=self.privacy_status,
             existing_record=existing,
             would_upload=existing is None,
+            content_type=self.content_type,
         )
 
     def publish_once(self, part_number: int, video_path: Path | str, manager) -> dict[str, Any]:
@@ -568,10 +594,14 @@ class YouTubePublisher:
         path = Path(video_path)
         preflight = self.validate_video(path)
         if not preflight.success:
-            raise YouTubePublisherError("Reel preflight failed: " + "; ".join(preflight.errors))
+            raise YouTubePublisherError("Video preflight failed: " + "; ".join(preflight.errors))
 
         content_hash = self.calculate_content_hash(path)
-        previous = manager.find(part_number=part_number, content_hash=content_hash)
+        previous = manager.find(
+            part_number=part_number,
+            content_hash=content_hash,
+            content_type=self.content_type,
+        )
         if previous is not None:
             status = previous.get("upload_status")
             if status == "uploaded":
@@ -588,21 +618,28 @@ class YouTubePublisher:
                     "youtube_video_id": previous.get("youtube_video_id", ""),
                 }
 
-        metadata = self.build_metadata(
-            part_number,
-            content_hash,
-            title=f"World General Knowledge Quiz | Part {part_number:03d} #Shorts",
-            description=(
+        if self.content_type == TEN_QUESTION_CONTENT_TYPE:
+            publish_title = f"World General Knowledge Quiz | Part {part_number:03d} | 10 Questions"
+            publish_description = (
+                "Test your general knowledge with this 10-question quiz! Answer all 10 "
+                "questions, check your score out of 10, and challenge a friend.\n\n"
+                f"Content hash: {content_hash}"
+            )
+        else:
+            publish_title = f"World General Knowledge Quiz | Part {part_number:03d} #Shorts"
+            publish_description = (
                 "Test your general knowledge with this quick quiz! Answer the questions, "
                 "check your knowledge, and challenge yourself. Subscribe for more daily quizzes.\n\n"
                 f"Content hash: {content_hash}\n#Shorts #GeneralKnowledge #Quiz"
-            ),
+            )
+        metadata = self.build_metadata(
+            part_number, content_hash, title=publish_title, description=publish_description
         )
         record = {
             "part_number": part_number,
             "video_file_name": path.name,
             "content_hash": content_hash,
-            "content_type": "youtube_shorts",
+            "content_type": self.content_type,
             "title": metadata["snippet"]["title"],
             "youtube_video_id": "",
             "upload_status": "uploading",

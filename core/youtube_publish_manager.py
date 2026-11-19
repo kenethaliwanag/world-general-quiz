@@ -17,7 +17,8 @@ from typing import Any
 
 
 PROJECT_ROOT = None
-CONTENT_TYPE = "youtube_shorts"
+CONTENT_TYPE = "youtube_shorts"  # backward-compatible default
+CONTENT_TYPES = {"youtube_shorts", "youtube_ten_question_video"}
 VALID_UPLOAD_STATUSES = {"dry_run", "uploading", "uploaded", "failed"}
 BLOCKING_UPLOAD_STATUSES = {"uploading", "uploaded"}
 CREDENTIAL_KEY_MARKERS = ("token", "secret", "session", "authorization", "password")
@@ -52,7 +53,7 @@ def normalize_history(history: Any) -> dict[str, Any]:
     for index, record in enumerate(records, 1):
         if not isinstance(record, dict):
             raise YouTubePublishHistoryError(f"YouTube publication record {index} is not a JSON object.")
-        if record.get("content_type", CONTENT_TYPE) != CONTENT_TYPE:
+        if record.get("content_type", CONTENT_TYPE) not in CONTENT_TYPES:
             raise YouTubePublishHistoryError(f"YouTube publication record {index} has an invalid content type.")
         status = record.get("upload_status")
         if status is not None and status not in VALID_UPLOAD_STATUSES:
@@ -127,6 +128,7 @@ def find_record(
     part_number: int | None = None,
     content_hash: str | None = None,
     upload_status: str | None = None,
+    content_type: str | None = None,
 ) -> dict[str, Any] | None:
     for record in reversed(history.get("records", [])):
         if part_number is not None and record.get("part_number") != part_number:
@@ -135,15 +137,23 @@ def find_record(
             continue
         if upload_status is not None and record.get("upload_status") != upload_status:
             continue
+        if content_type is not None and record.get("content_type", CONTENT_TYPE) != content_type:
+            continue
         return record
     return None
 
 
-def is_duplicate(history: dict[str, Any], part_number: int, content_hash: str) -> bool:
-    """True when a matching upload exists or is still in progress."""
+def is_duplicate(
+    history: dict[str, Any],
+    part_number: int,
+    content_hash: str,
+    content_type: str | None = None,
+) -> bool:
+    """True when a matching upload of the same content type exists or is in progress."""
     return any(
         record.get("part_number") == part_number
         and record.get("content_hash") == content_hash
+        and record.get("content_type", CONTENT_TYPE) == (content_type or CONTENT_TYPE)
         and record.get("upload_status") in BLOCKING_UPLOAD_STATUSES
         for record in history.get("records", [])
     )
@@ -152,6 +162,8 @@ def is_duplicate(history: dict[str, Any], part_number: int, content_hash: str) -
 def upsert_record(history_path: Path, record: dict[str, Any]) -> None:
     cleaned = _sanitize_record(record)
     cleaned.setdefault("content_type", CONTENT_TYPE)
+    if cleaned["content_type"] not in CONTENT_TYPES:
+        raise YouTubePublishHistoryError(f"Invalid content type: {cleaned['content_type']}")
     history = load_publish_history(history_path)
     records = history.get("records", [])
     existing_index = next(
@@ -160,7 +172,7 @@ def upsert_record(history_path: Path, record: dict[str, Any]) -> None:
             for index, current in enumerate(records)
             if current.get("part_number") == cleaned.get("part_number")
             and current.get("content_hash") == cleaned.get("content_hash")
-            and current.get("content_type") == CONTENT_TYPE
+            and current.get("content_type", CONTENT_TYPE) == cleaned["content_type"]
         ),
         None,
     )
@@ -195,16 +207,18 @@ class YouTubePublishManager:
         part_number: int | None = None,
         content_hash: str | None = None,
         upload_status: str | None = None,
+        content_type: str | None = None,
     ) -> dict[str, Any] | None:
         return find_record(
             self.load(),
             part_number=part_number,
             content_hash=content_hash,
             upload_status=upload_status,
+            content_type=content_type,
         )
 
-    def is_duplicate(self, part_number: int, content_hash: str) -> bool:
-        return is_duplicate(self.load(), part_number, content_hash)
+    def is_duplicate(self, part_number: int, content_hash: str, content_type: str | None = None) -> bool:
+        return is_duplicate(self.load(), part_number, content_hash, content_type)
 
     def record(self, record: dict[str, Any]) -> dict[str, Any]:
         upsert_record(self.path(), record)

@@ -1,4 +1,4 @@
-name: YouTube Shorts Test Upload (Private)
+name: YouTube 10-Question Video Test Upload (Private)
 
 # Manual, controlled integration test only. No schedule, no push/PR trigger.
 # This workflow never publishes publicly and never touches Facebook publishing.
@@ -24,8 +24,8 @@ env:
   KOKORO_RESPONSE_FORMAT: "mp3"
 
 jobs:
-  upload-one-private-short:
-    name: Generate one Reel and upload it privately to YouTube
+  upload-one-private-video:
+    name: Generate one 10-question video and upload it privately to YouTube
     runs-on: ubuntu-latest
     timeout-minutes: 360
 
@@ -84,7 +84,7 @@ jobs:
           PART="${{ inputs.part_number }}"
           PART="${PART:-0}"
           if [ "$PART" = "0" ]; then
-            PART="$(python -c 'from core.youtube_output import next_youtube_part_number; print(next_youtube_part_number())')"
+            PART="$(python -c 'from core.youtube_output import TEN_QUESTION_CONTENT_TYPE, next_youtube_part_number; print(next_youtube_part_number(content_type=TEN_QUESTION_CONTENT_TYPE))')"
           fi
           if ! [[ "$PART" =~ ^[0-9]+$ ]] || [ "$PART" -lt 1 ]; then
             echo "Part number must be a positive integer (or 0 for the next stored Part)." >&2
@@ -92,8 +92,8 @@ jobs:
           fi
           echo "part_number=$PART" >> "$GITHUB_OUTPUT"
 
-      # The resolver is the single source of truth for the Short path. An existing
-      # Short is reused on retry instead of being overwritten by regeneration.
+      # The resolver is the single source of truth for the 10-question video path.
+      # An existing video is reused on retry instead of being overwritten.
       - name: Resolve YouTube output paths
         id: paths
         env:
@@ -104,18 +104,18 @@ jobs:
           python - "$PART" > /tmp/youtube_paths.txt <<'PY'
           import sys
           from pathlib import Path
-          from core.youtube_output import youtube_part_dir, youtube_shorts_path
+          from core.youtube_output import youtube_part_dir, youtube_ten_question_video_path
 
           part = int(sys.argv[1])
           root = Path("output/youtube")
-          shorts = youtube_shorts_path(part, root)
+          video = youtube_ten_question_video_path(part, root)
           print(f"part_dir={youtube_part_dir(part, root)}")
-          print(f"shorts_path={shorts}")
-          print(f"needs_generation={0 if shorts.is_file() else 1}")
+          print(f"video_path={video}")
+          print(f"needs_generation={0 if video.is_file() else 1}")
           PY
           cat /tmp/youtube_paths.txt >> "$GITHUB_OUTPUT"
           if grep -q '^needs_generation=0$' /tmp/youtube_paths.txt; then
-            echo "Reusing existing YouTube Short for this Part; no regeneration."
+            echo "Reusing existing YouTube 10-question video for this Part; no regeneration."
           fi
 
       - name: Set up Kokoro TTS server
@@ -162,10 +162,10 @@ jobs:
           retention-days: 7
           if-no-files-found: warn
 
-      # Existing Reel pipeline only: no second renderer, no new video format.
-      - name: Generate exactly one Reel
+      # Existing Facebook 10-question tracker pipeline, routed to the YouTube root.
+      - name: Generate exactly one 10-question video
         env:
-          QUESTIONS_PER_PART: "15"
+          QUESTIONS_PER_PART: "10"
         run: |
           set -euo pipefail
           PART_NUMBER="${{ steps.part.outputs.part_number }}"
@@ -176,18 +176,19 @@ jobs:
               --category all \
               --difficulty all \
               --tts \
-              --render-reels \
-              --reels-question-count 5 \
-              --output-root output/youtube \
-              --youtube-shorts
+              --render-ten-video \
+              --ten-question-count 10 \
+              --youtube-ten-question-video \
+              --output-root output/youtube
           else
-            echo "Short already exists for Part ${PART_NUMBER}; skipping generation to avoid overwriting it."
+            echo "10-question video already exists for Part ${PART_NUMBER}; skipping generation to avoid overwriting it."
           fi
           # Question history is persisted by the final always-run step, even if a later
           # validation or upload step fails. Do not commit or push it here.
 
       # Measure the real generated MP4. Values are printed; no mocked probe data is used.
-      - name: Validate the generated Reel with ffprobe
+      # The Shorts-only 180s limit is intentionally NOT applied to this format.
+      - name: Validate the generated 10-question video with ffprobe
         env:
           PART_NUMBER: ${{ steps.part.outputs.part_number }}
         run: |
@@ -198,15 +199,22 @@ jobs:
           import subprocess
           from pathlib import Path
 
-          from core.youtube_output import youtube_shorts_path
+          from core.youtube_output import youtube_ten_question_video_path
 
-          part = os.environ["PART_NUMBER"]
-          video = youtube_shorts_path(int(part), Path("output/youtube"))
+          part = int(os.environ["PART_NUMBER"])
+          video = youtube_ten_question_video_path(part, Path("output/youtube"))
           if not video.is_file():
-              raise SystemExit(f"Generated Reel not found: {video}")
+              raise SystemExit(f"Generated 10-question video not found: {video}")
           size = video.stat().st_size
           if size <= 0:
-              raise SystemExit(f"Generated Reel is empty: {video}")
+              raise SystemExit(f"Generated 10-question video is empty: {video}")
+          script = video.parent / "script.json"
+          if not script.is_file():
+              raise SystemExit(f"Associated script JSON not found: {script}")
+          quiz = json.loads(script.read_text(encoding="utf-8"))
+          questions = quiz.get("questions", [])
+          if len(questions) != 10:
+              raise SystemExit(f"Expected exactly 10 questions in {script}, found {len(questions)}")
           data = json.loads(subprocess.check_output([
               "ffprobe", "-v", "error",
               "-show_entries", "stream=codec_type,codec_name,width,height,r_frame_rate",
@@ -217,15 +225,16 @@ jobs:
           v = next((s for s in streams if s.get("codec_type") == "video"), None)
           a = next((s for s in streams if s.get("codec_type") == "audio"), None)
           duration = float(data.get("format", {}).get("duration", 0) or 0)
-          print(f"Reel: {video}")
+          print(f"Video: {video}")
           print(f"File size: {size} bytes")
+          print(f"Questions in script: {len(questions)}")
           if not v:
-              raise SystemExit("No video stream in generated Reel")
+              raise SystemExit("No video stream in generated video")
           if not a:
-              raise SystemExit("No audio stream in generated Reel")
+              raise SystemExit("No audio stream in generated video")
           print(f"Video: {v.get('width')}x{v.get('height')} {v.get('codec_name')} {v.get('r_frame_rate')}")
           print(f"Audio: {a.get('codec_name')}")
-          print(f"Duration: {duration:.3f}s")
+          print(f"Measured duration: {duration:.3f}s")
           if (v.get("width"), v.get("height")) != (1080, 1920):
               raise SystemExit("Invalid resolution; expected 1080x1920")
           if v.get("codec_name") != "h264":
@@ -234,20 +243,21 @@ jobs:
               raise SystemExit("Invalid frame rate; expected 30/1")
           if a.get("codec_name") != "aac":
               raise SystemExit("Invalid audio codec; expected aac")
-          if not (0 < duration <= 180):
-              raise SystemExit("Invalid duration; expected greater than 0 and at most 180 seconds")
-          print("YouTube Shorts preflight: PASS")
+          if duration <= 0:
+              raise SystemExit("Invalid duration; expected a positive value")
+          print("Note: YouTube may classify vertical videos up to 3 minutes as Shorts; no padding is applied.")
+          print("YouTube 10-question video preflight: PASS")
           PY
 
-      - name: YouTube dry-run preflight (no HTTP)
+      - name: YouTube 10-question video dry-run preflight (no HTTP)
         env:
           PART_NUMBER: ${{ steps.part.outputs.part_number }}
         run: |
           set -euo pipefail
-          python main.py --publish-youtube --part "$PART_NUMBER" --output-root output/youtube
+          python main.py --publish-youtube-video --part "$PART_NUMBER" --output-root output/youtube
 
       # The only step allowed to unlock network uploads. Privacy is forced to private in main.py.
-      - name: Controlled private YouTube upload
+      - name: Controlled private YouTube 10-question video upload
         id: upload
         env:
           YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
@@ -261,7 +271,7 @@ jobs:
           PART_NUMBER: ${{ steps.part.outputs.part_number }}
         run: |
           set -euo pipefail
-          python main.py --youtube-upload --part "$PART_NUMBER" --output-root output/youtube
+          python main.py --youtube-video-upload --part "$PART_NUMBER" --output-root output/youtube
 
       # One always-run step persists both histories, so a generated Part's used questions
       # survive a failed ffprobe/OAuth/upload step. Only these two exact paths are staged.
@@ -319,5 +329,5 @@ jobs:
       - name: Generate step summary on failure
         if: failure()
         run: |
-          echo "YouTube Shorts private test upload failed. Review the job logs and artifacts." >> "$GITHUB_STEP_SUMMARY"
+          echo "YouTube 10-question video private test upload failed. Review the job logs and artifacts." >> "$GITHUB_STEP_SUMMARY"
           echo "Do not retry this Part automatically if the upload result was uncertain." >> "$GITHUB_STEP_SUMMARY"

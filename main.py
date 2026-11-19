@@ -51,7 +51,10 @@ def parse_args():
     parser.add_argument("--facebook-ten-question-count", type=int, default=None, help="Alias for the Facebook 10-video question count.")
     parser.add_argument("--output-root", default=None, help="Output root. Defaults to the existing Facebook output directory.")
     parser.add_argument("--youtube-shorts", action="store_true", help="Write the 5-question Reel as a YouTube Short under youtube/shorts/.")
+    parser.add_argument("--youtube-ten-question-video", action="store_true", help="Write the 10-question tracker video under youtube/videos/.")
     parser.add_argument("--publish-youtube", action="store_true", help="Run the guarded YouTube Shorts dry-run for the existing 5-question Reel.")
+    parser.add_argument("--publish-youtube-video", action="store_true", help="Run the guarded YouTube 10-question video dry-run.")
+    parser.add_argument("--youtube-video-upload", action="store_true", help="Controlled private-only 10-question video upload; requires an explicit runtime unlock flag.")
     parser.add_argument("--youtube-dry-run", action="store_true", help="Keep YouTube publishing in dry-run mode (already the default).")
     parser.add_argument("--youtube-privacy", choices=["private", "unlisted"], default=None, help="Privacy status shown in the YouTube dry-run report.")
     parser.add_argument("--youtube-check-secrets", action="store_true", help="Report only which YouTube secrets are present; never print values.")
@@ -297,7 +300,10 @@ def generate_part(part, args, history=None):
             if len(selected) < ten_question_count:
                 raise SystemExit(f"Only {len(selected)} questions are available; cannot render a 10-question video.")
 
-            ten_dir = part_dir / "facebook" / "videos"
+            if getattr(args, "youtube_ten_question_video", False):
+                ten_dir = part_dir / "youtube" / "videos"
+            else:
+                ten_dir = part_dir / "facebook" / "videos"
             ten_dir.mkdir(parents=True, exist_ok=True)
             ten_questions = selected[:ten_question_count]
             quiz_ten = build_quiz(part, ten_questions, content_type="ten_question_video")
@@ -551,11 +557,118 @@ def _run_youtube_upload(args):
         raise SystemExit(1)
 
 
+def _run_publish_youtube_video(args):
+    """Dry-run only: validate the 10-question tracker video and report an upload plan."""
+    from config import YOUTUBE_PUBLISH_DRY_RUN, YOUTUBE_PUBLISH_ENABLED
+    from core.youtube_output import youtube_ten_question_video_path
+    from core.youtube_publish_manager import YouTubePublishManager
+    from integrations.youtube_publisher import TEN_QUESTION_CONTENT_TYPE, YouTubePublisher
+
+    if YOUTUBE_PUBLISH_ENABLED and not YOUTUBE_PUBLISH_DRY_RUN:
+        raise SystemExit(
+            "YouTube network uploads are not available in this dry-run command. "
+            "Keep YOUTUBE_PUBLISH_ENABLED=false and YOUTUBE_PUBLISH_DRY_RUN=true."
+        )
+
+    part_number = args.part if args.part is not None else 1
+    if part_number < 1:
+        raise SystemExit("--part must be 1 or greater.")
+    video_path = youtube_ten_question_video_path(part_number, getattr(args, "output_root", None))
+    if not video_path.is_file():
+        raise SystemExit(f"Generated YouTube 10-question video not found: {video_path}")
+
+    publisher = YouTubePublisher(
+        privacy_status=getattr(args, "youtube_privacy", None),
+        content_type=TEN_QUESTION_CONTENT_TYPE,
+    )
+    report = publisher.run_dry_run(part_number, video_path, YouTubePublishManager())
+
+    print("\nYouTube 10-question video dry-run report")
+    print(f"Part: {report.part_number}")
+    print(f"Video: {report.video_path}")
+    print(f"Content hash: {report.content_hash}")
+    print(f"Privacy status: {report.privacy_status}")
+    print("Preflight: " + ("PASS" if report.preflight["success"] else "FAIL"))
+    for error in report.preflight["errors"]:
+        print(f"  - {error}")
+    print(f"Title: {report.metadata.get('snippet', {}).get('title', '')}")
+    print(f"Existing matching upload: {'yes' if report.existing_record else 'no'}")
+    print(f"Would upload: {'yes' if report.would_upload else 'no'}")
+    print("No OAuth request, YouTube API request, upload or history write was performed.")
+    if not report.success:
+        raise SystemExit(1)
+
+
+def _run_youtube_video_upload(args):
+    """Controlled private-only 10-question upload. Requires the explicit runtime unlock flag."""
+    import os
+
+    from config import YOUTUBE_PUBLISH_DRY_RUN, YOUTUBE_PUBLISH_ENABLED
+    from core.youtube_output import youtube_ten_question_video_path
+    from core.youtube_publish_manager import YouTubePublishManager
+    from integrations.youtube_publisher import (
+        NETWORK_UPLOAD_ENV_FLAG,
+        TEN_QUESTION_CONTENT_TYPE,
+        YouTubePublisher,
+        check_secret_presence,
+    )
+
+    missing = check_secret_presence()
+    if missing:
+        raise SystemExit("Missing required YouTube secrets: " + ", ".join(missing))
+    if os.getenv(NETWORK_UPLOAD_ENV_FLAG, "").strip().lower() not in {"1", "true", "yes"}:
+        raise SystemExit(
+            f"Controlled YouTube uploads are locked. Set {NETWORK_UPLOAD_ENV_FLAG}=true in the manual workflow only."
+        )
+    if not YOUTUBE_PUBLISH_ENABLED or YOUTUBE_PUBLISH_DRY_RUN:
+        raise SystemExit(
+            "Controlled YouTube uploads require YOUTUBE_PUBLISH_ENABLED=true and YOUTUBE_PUBLISH_DRY_RUN=false."
+        )
+
+    part_number = args.part if args.part is not None else 1
+    if part_number < 1:
+        raise SystemExit("--part must be 1 or greater.")
+    video_path = youtube_ten_question_video_path(part_number, getattr(args, "output_root", None))
+    if not video_path.is_file():
+        raise SystemExit(f"Generated YouTube 10-question video not found: {video_path}")
+
+    publisher = YouTubePublisher(
+        privacy_status="private",
+        dry_run=False,
+        publish_enabled=True,
+        content_type=TEN_QUESTION_CONTENT_TYPE,
+    )
+    result = publisher.publish_once(part_number, video_path, YouTubePublishManager())
+
+    print("\nYouTube 10-question video controlled upload result")
+    print(f"Part: {result['part_number']}")
+    print(f"Status: {result['status']}")
+    print(f"Skipped: {'yes' if result.get('skipped') else 'no'}")
+    print("Privacy status: private")
+    print(f"YouTube video ID: {result.get('youtube_video_id', '') or 'none'}")
+    if result.get("channel_id"):
+        print(f"Verified channel ID: {result['channel_id']}")
+    if result.get("reason"):
+        print(f"Reason: {result['reason']}")
+    if result.get("needs_reconciliation"):
+        print("Manual reconciliation required. Do not retry this Part automatically.")
+    if not result["success"]:
+        raise SystemExit(1)
+
+
 def main():
     args = parse_args()
 
     if args.youtube_check_secrets:
         _run_youtube_secret_check()
+        return
+
+    if args.youtube_video_upload:
+        _run_youtube_video_upload(args)
+        return
+
+    if args.publish_youtube_video:
+        _run_publish_youtube_video(args)
         return
 
     if args.youtube_upload:

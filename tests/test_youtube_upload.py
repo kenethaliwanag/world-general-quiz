@@ -126,7 +126,7 @@ def test_workflow_is_manual_only_and_private():
     assert 'group: youtube-shorts-publish' in text
     assert 'YOUTUBE_ALLOW_NETWORK_UPLOAD: "true"' in text
     assert 'YOUTUBE_PRIVACY_STATUS: "private"' in text
-    assert "--youtube-upload --part" in text
+    assert "--youtube-video-upload --part" in text
     assert "META_" not in text
     assert "--publish-content-type" not in text
 
@@ -138,10 +138,11 @@ def _workflow_step(name):
     return text[start:] if end == -1 else text[start:end]
 
 
-def test_generation_step_only_generates_the_reel():
-    step = _workflow_step("Generate exactly one Reel")
-    assert "--render-reels" in step and "--reels-question-count 5" in step
-    for forbidden in ("git add", "git commit", "git push"):
+def test_generation_step_only_generates_the_ten_question_video():
+    step = _workflow_step("Generate exactly one 10-question video")
+    assert "--render-ten-video" in step and "--youtube-ten-question-video" in step
+    assert "--count \"$QUESTIONS_PER_PART\"" in step and 'QUESTIONS_PER_PART: "10"' in step
+    for forbidden in ("git add", "git commit", "git push", "--render-reels"):
         assert forbidden not in step
     assert "persisted by the final always-run step" in step
 
@@ -159,7 +160,7 @@ def test_persistence_step_covers_both_histories_and_runs_always():
 
 
 def test_question_history_survives_later_upload_failure():
-    generation = _workflow_step("Generate exactly one Reel")
+    generation = _workflow_step("Generate exactly one 10-question video")
     persistence = _workflow_step("Persist question and YouTube publication history")
     artifact = _workflow_step("Upload generated outputs and YouTube history as artifacts")
     assert "git commit" not in generation
