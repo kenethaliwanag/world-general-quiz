@@ -49,6 +49,8 @@ def parse_args():
     parser.add_argument("--facebook-ten-video", action="store_true", help="Alias for --render-ten-video.")
     parser.add_argument("--ten-question-count", type=int, default=FACEBOOK_TEN_VIDEO_QUESTION_COUNT, help="Requested Facebook 10-video question count.")
     parser.add_argument("--facebook-ten-question-count", type=int, default=None, help="Alias for the Facebook 10-video question count.")
+    parser.add_argument("--output-root", default=None, help="Output root. Defaults to the existing Facebook output directory.")
+    parser.add_argument("--youtube-shorts", action="store_true", help="Write the 5-question Reel as a YouTube Short under youtube/shorts/.")
     parser.add_argument("--publish-youtube", action="store_true", help="Run the guarded YouTube Shorts dry-run for the existing 5-question Reel.")
     parser.add_argument("--youtube-dry-run", action="store_true", help="Keep YouTube publishing in dry-run mode (already the default).")
     parser.add_argument("--youtube-privacy", choices=["private", "unlisted"], default=None, help="Privacy status shown in the YouTube dry-run report.")
@@ -136,12 +138,13 @@ def discover_cached_audio(part, part_dir):
 
 
 def generate_part(part, args, history=None):
-    part_dir = OUTPUT_DIR / f"part_{part:03d}"
+    output_root = Path(getattr(args, "output_root", None) or OUTPUT_DIR)
+    part_dir = output_root / f"part_{part:03d}"
     if history is None:
         history = load_history()
     selected, pool_reset, history = select_questions(args.count, args.category, args.difficulty, args.seed, history=history)
     quiz = build_quiz(part, selected)
-    text_path, json_path, resolved_part_dir = export_quiz(quiz)
+    text_path, json_path, resolved_part_dir = export_quiz(quiz, output_root=output_root)
     part_dir = resolved_part_dir
 
     audio_map, audio_durations = discover_cached_audio(part, part_dir)
@@ -196,10 +199,13 @@ def generate_part(part, args, history=None):
     )
     if args.render or render_reels or render_ten_video:
         if args.render:
-            project_dir, duration, timeline = create_composition(quiz, audio_map)
+            project_dir, duration, timeline = create_composition(quiz, audio_map, output_root=output_root)
             print(f"\nHyperFrames project: {project_dir}")
             print(f"Estimated composition duration: {duration:.1f} seconds")
-            video_path = render_video(project_dir, part)
+            video_path = render_video(
+                project_dir, part,
+                output_path=part_dir / "video" / f"world_general_knowledge_quiz_part_{part:03d}.mp4",
+            )
             print(f"Rendered video: {video_path}")
 
         if render_reels:
@@ -213,7 +219,13 @@ def generate_part(part, args, history=None):
             if len(selected) < reel_question_count:
                 raise SystemExit(f"Only {len(selected)} questions are available; cannot render {reel_question_count} Reel questions.")
 
-            reels_dir = part_dir / "facebook" / "reels"
+            youtube_shorts = bool(getattr(args, "youtube_shorts", False))
+            if youtube_shorts:
+                reels_dir = part_dir / "youtube" / "shorts"
+                reel_file_name = f"world_general_knowledge_quiz_part_{part:03d}.mp4"
+            else:
+                reels_dir = part_dir / "facebook" / "reels"
+                reel_file_name = f"world_general_knowledge_quiz_part_{part:03d}_reel.mp4"
             reels_dir.mkdir(parents=True, exist_ok=True)
             reel_questions = selected[:reel_question_count]
             quiz_reel = build_quiz(part, reel_questions, content_type="reel")
@@ -266,12 +278,14 @@ def generate_part(part, args, history=None):
             )
             reel_srt_path = export_srt(quiz_reel, reels_dir, {key: value for key, value in reel_audio_durations.items() if value is not None})
             if args.render or render_reels:
-                reel_project_dir, reel_duration, reel_timeline = create_composition(quiz_reel, reel_audio_map, content_type="reel")
+                reel_project_dir, reel_duration, reel_timeline = create_composition(
+                    quiz_reel, reel_audio_map, content_type="reel", output_root=output_root
+                )
                 print(f"Reel HyperFrames project: {reel_project_dir}")
                 print(f"Reel composition duration: {reel_duration:.1f} seconds")
-                reels_output_path = reels_dir / f"world_general_knowledge_quiz_part_{part:03d}_reel.mp4"
+                reels_output_path = reels_dir / reel_file_name
                 reel_video_path = render_video(reel_project_dir, part, output_path=reels_output_path)
-                print(f"Rendered Facebook Reel: {reel_video_path}")
+                print(f"Rendered 5-question Reel: {reel_video_path}")
                 print(f"Reel SRT: {reel_srt_path}")
 
         if render_ten_video:
@@ -331,7 +345,9 @@ def generate_part(part, args, history=None):
             )
             ten_srt_path = export_srt(quiz_ten, ten_dir, {key: value for key, value in ten_audio_durations.items() if value is not None})
             if args.render or render_ten_video:
-                ten_project_dir, _, _ = create_composition(quiz_ten, ten_audio_map, content_type="ten_question_video", tracker=True)
+                ten_project_dir, _, _ = create_composition(
+                    quiz_ten, ten_audio_map, content_type="ten_question_video", tracker=True, output_root=output_root
+                )
                 print(f"10-question Facebook HyperFrames project: {ten_project_dir}")
                 ten_output_path = ten_dir / f"world_general_knowledge_quiz_part_{part:03d}_10_questions.mp4"
                 ten_video_path = render_video(ten_project_dir, part, output_path=ten_output_path)
@@ -452,12 +468,11 @@ def _run_publish_youtube(args):
     part_number = args.part if args.part is not None else 1
     if part_number < 1:
         raise SystemExit("--part must be 1 or greater.")
-    video_path = (
-        OUTPUT_DIR / f"part_{part_number:03d}" / "facebook" / "reels"
-        / f"world_general_knowledge_quiz_part_{part_number:03d}_reel.mp4"
-    )
+    from core.youtube_output import youtube_shorts_path
+
+    video_path = youtube_shorts_path(part_number, getattr(args, "output_root", None))
     if not video_path.is_file():
-        raise SystemExit(f"Generated Facebook Reel not found: {video_path}")
+        raise SystemExit(f"Generated YouTube Short not found: {video_path}")
 
     publisher = YouTubePublisher(privacy_status=getattr(args, "youtube_privacy", None))
     report = publisher.run_dry_run(part_number, video_path, YouTubePublishManager())
@@ -511,12 +526,11 @@ def _run_youtube_upload(args):
     part_number = args.part if args.part is not None else 1
     if part_number < 1:
         raise SystemExit("--part must be 1 or greater.")
-    video_path = (
-        OUTPUT_DIR / f"part_{part_number:03d}" / "facebook" / "reels"
-        / f"world_general_knowledge_quiz_part_{part_number:03d}_reel.mp4"
-    )
+    from core.youtube_output import youtube_shorts_path
+
+    video_path = youtube_shorts_path(part_number, getattr(args, "output_root", None))
     if not video_path.is_file():
-        raise SystemExit(f"Generated Facebook Reel not found: {video_path}")
+        raise SystemExit(f"Generated YouTube Short not found: {video_path}")
 
     publisher = YouTubePublisher(privacy_status="private", dry_run=False, publish_enabled=True)
     result = publisher.publish_once(part_number, video_path, YouTubePublishManager())

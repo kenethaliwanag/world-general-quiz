@@ -5,6 +5,7 @@ from types import SimpleNamespace
 
 import core.youtube_publish_manager as youtube_manager
 import integrations.youtube_publisher as youtube_publisher
+from core.youtube_output import youtube_shorts_path
 from core.youtube_publish_manager import YouTubePublishManager
 from integrations.youtube_publisher import (
     YouTubeApiError,
@@ -407,19 +408,20 @@ def test_dry_run_detects_existing_upload(tmp_path, monkeypatch):
 def test_cli_dry_run_uses_existing_reel(tmp_path, monkeypatch, capsys):
     import main
 
-    reel_dir = tmp_path / "output" / "part_012" / "facebook" / "reels"
-    reel_dir.mkdir(parents=True)
-    (reel_dir / "world_general_knowledge_quiz_part_012_reel.mp4").write_bytes(b"reel")
+    root = tmp_path / "output" / "youtube"
+    shorts = youtube_shorts_path(12, root)
+    shorts.parent.mkdir(parents=True)
+    shorts.write_bytes(b"reel")
     monkeypatch.setattr(main, "OUTPUT_DIR", tmp_path / "output")
     monkeypatch.setattr(youtube_manager, "PROJECT_ROOT", tmp_path)
     monkeypatch.setattr(youtube_publisher, "_run_ffprobe", _stub_preflight(VALID_PROBE))
     monkeypatch.setattr(youtube_publisher, "_http_request", lambda *args, **kwargs: (_ for _ in ()).throw(AssertionError("HTTP called")))
 
     main._run_publish_youtube(
-        SimpleNamespace(part=12, youtube_privacy="unlisted", youtube_dry_run=True)
+        SimpleNamespace(part=12, youtube_privacy="unlisted", youtube_dry_run=True, output_root=str(root))
     )
     output = capsys.readouterr().out
-    assert "world_general_knowledge_quiz_part_012_reel.mp4" in output
+    assert "world_general_knowledge_quiz_part_012.mp4" in output
     assert "unlisted" in output
     assert "No OAuth request" in output
 

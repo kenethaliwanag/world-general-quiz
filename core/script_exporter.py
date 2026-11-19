@@ -15,13 +15,14 @@ from core.quiz_generator import (
 )
 
 
-def part_directory(part_number):
-    return OUTPUT_DIR / f"part_{part_number:03d}"
+def part_directory(part_number, output_root=None):
+    root = Path(output_root) if output_root is not None else OUTPUT_DIR
+    return root / f"part_{part_number:03d}"
 
 
-def export_quiz(quiz, output_dir=None):
+def export_quiz(quiz, output_dir=None, output_root=None):
     if output_dir is None:
-        part_dir = part_directory(quiz["part"])
+        part_dir = part_directory(quiz["part"], output_root)
     else:
         part_dir = Path(output_dir)
         part_dir.mkdir(parents=True, exist_ok=True)

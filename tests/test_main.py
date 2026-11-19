@@ -87,7 +87,7 @@ def test_failed_render_does_not_advance_history(tmp_path, monkeypatch):
     before = history
     monkeypatch.setattr(main, "create_composition", _fake_create)
 
-    def failing_render(project_dir, part_number):
+    def failing_render(project_dir, part_number, output_path=None):
         raise RuntimeError("render failed")
 
     monkeypatch.setattr(main, "render_video", failing_render)

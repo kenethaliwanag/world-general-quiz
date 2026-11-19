@@ -7,10 +7,14 @@ controlled **private** test upload. Facebook publishing is unchanged.
 
 ## Source video and preflight
 
-- Source: `output/part_NNN/facebook/reels/world_general_knowledge_quiz_part_NNN_reel.mp4`
-  (the same MP4 the Facebook Reel publisher uses).
-- No second renderer is introduced. Question count, narration, Kokoro `af_bella`, TTS speed,
-  countdown, SFX, subtitles and visual design are untouched.
+- Source: `output/youtube/part_NNN/youtube/shorts/world_general_knowledge_quiz_part_NNN.mp4`.
+  Facebook keeps its existing `output/part_NNN/facebook/reels/` layout; no `facebook/`
+  directory is created under the YouTube root.
+- The workflow passes `--output-root output/youtube --youtube-shorts` to the same Reel
+  generation pipeline; no second renderer is introduced. Question count, narration,
+  Kokoro `af_bella`, TTS speed, countdown, SFX, subtitles and visual design are untouched.
+- `--output-root` defaults to the existing Facebook output directory, so ordinary Facebook
+  commands are unchanged.
 - ffprobe preflight checks: file exists and is non-empty, resolution 1080×1920, aspect ratio
   9:16, frame rate 30/1, video codec H.264, audio codec AAC, an audio stream is present,
   duration is greater than zero and at most 180 seconds (YouTube Shorts limit).
@@ -98,14 +102,21 @@ session URLs are stripped before a record is saved.
 Use the separate workflow **YouTube Shorts Test Upload (Private)**, dispatched manually from
 the Actions tab (no cron, push or PR trigger):
 
-1. Set `part_number` to a positive Part number, or `0` to use the repository's existing
-   `next_part_number()` convention.
+1. Set `part_number` to a positive Part number, or `0` to let
+   `core.youtube_output.next_youtube_part_number()` choose the next YouTube Part. YouTube
+   numbering is independent of Facebook's `next_part_number()`: the first new YouTube Part is
+   **1**, then 2, 3, and so on after successful uploads. A failed attempt without a video ID
+   does not consume a number, so a retry reuses the same Part. The historical failed Part 25
+   record is preserved and is not rewritten merely to restart numbering.
 2. The workflow first checks that all four secrets are present (names only, never values).
-3. It generates exactly one Part's 5-question Reel with the existing pipeline
-   (`python main.py --part N --tts --render-reels --reels-question-count 5`), then measures the
-   actual MP4 with ffprobe. The normal question-history commit for that Part is written by
-   the generation step, exactly as in the Facebook workflows.
-4. It runs the zero-HTTP dry-run, then performs one controlled upload. Privacy is hardcoded to
+3. It resolves the Short path with `core.youtube_output.youtube_shorts_path()`. If that file
+   already exists, generation is skipped so an existing Part is never overwritten; otherwise
+   it generates exactly one Part's 5-question Reel with the existing pipeline
+   (`python main.py --part N --tts --render-reels --reels-question-count 5 --output-root
+   output/youtube --youtube-shorts`). The actual MP4 is then measured with ffprobe. A new
+   generation updates the global question-history file exactly as the Facebook workflows do.
+4. It runs the zero-HTTP dry-run, then performs one controlled upload. Both commands use
+   `--output-root output/youtube` and the same shared path resolver. Privacy is hardcoded to
    `private` in `main.py`; the workflow has no privacy input and no public/unlisted path.
 5. Network uploads are unlocked only by `YOUTUBE_ALLOW_NETWORK_UPLOAD=true` in that one step.
    Local runs remain dry-run unless someone explicitly sets that flag.
@@ -133,7 +144,14 @@ lost with the runner. An ambiguous upload
 automatic retry. To reconcile, find the video in YouTube Studio using the `Content hash:`
 marker in its description, then add the `youtube_video_id` and set `upload_status` to
 `uploaded` by hand only after confirming the correct channel and privacy. A definitive 4xx
-failure is recorded as `failed` and is safe to retry with a fresh Part/hash.
+failure is recorded as `failed` and is safe to retry with the same Part.
+
+### Question history
+
+`data/used_questions.json` stays global and is never reset or rewritten. YouTube Part numbers
+are metadata only: `record_question_usage()` keeps the maximum existing `last_part`, so a
+YouTube Part 1 cannot lower Facebook's Part counter. Questions used by a YouTube Short are
+recorded as used, preserving the global no-repeat behavior for both platforms.
 
 After a successful test upload, open **YouTube Studio → Content** to see the video, confirm it
 is listed as a Short (vertical 9:16 video up to three minutes is classified as a Short), and

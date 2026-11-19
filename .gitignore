@@ -37,6 +37,7 @@ output/videos/*
 output/scripts/*
 output/part_*/*
 /output/part_*/*
+output/youtube/*
 
 # Miscellaneous temporary files
 *.tmp

@@ -94,7 +94,7 @@ def _title_lines(title: str) -> list[str]:
     return [" ".join(words[:half]), " ".join(words[half:])]
 
 
-def create_composition(quiz, audio_map=None, content_type="full", tracker=None):
+def create_composition(quiz, audio_map=None, content_type="full", tracker=None, output_root=None):
     audio_map = audio_map or {}
     if tracker is None:
         tracker = content_type.startswith("ten_question")
@@ -105,7 +105,7 @@ def create_composition(quiz, audio_map=None, content_type="full", tracker=None):
         project_subdir = "videos"
     else:
         project_subdir = ""
-    project_components = [OUTPUT_DIR, "hyperframes", f"part_{part:03d}"]
+    project_components = [Path(output_root) if output_root is not None else OUTPUT_DIR, "hyperframes", f"part_{part:03d}"]
     if project_subdir:
         project_components.append(project_subdir)
     project_dir = Path(*project_components)
@@ -502,12 +502,13 @@ def _validate_rendered_video(path):
         raise RuntimeError(f"Rendered video has invalid duration: {payload['format']['duration']}")
 
 
-def render_video(project_dir, part_number, output_path=None):
+def render_video(project_dir, part_number, output_path=None, output_root=None):
     npx = shutil.which("npx") or shutil.which("npx.cmd")
     if npx is None:
         raise RuntimeError("Node.js/npm (npx) was not found. Install Node.js, then install HyperFrames in this project.")
     if output_path is None:
-        output_path = OUTPUT_DIR / f"part_{part_number:03d}" / "video" / f"world_general_knowledge_quiz_part_{part_number:03d}.mp4"
+        root = Path(output_root) if output_root is not None else OUTPUT_DIR
+        output_path = root / f"part_{part_number:03d}" / "video" / f"world_general_knowledge_quiz_part_{part_number:03d}.mp4"
     else:
         output_path = Path(output_path)
     output_path.parent.mkdir(parents=True, exist_ok=True)

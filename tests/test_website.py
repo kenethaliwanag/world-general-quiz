@@ -97,11 +97,12 @@ def test_privacy_statements_match_implementation():
         assert phrase in text, phrase
 
 
-def test_contact_placeholders_are_explicit():
+def test_contact_email_is_present():
     for page in PAGES:
         text = (SITE / page).read_text(encoding="utf-8")
-        assert "CONTACT_PLACEHOLDER" in text, page
-        assert "Owner action required" in text, page
+        assert "mailto:keneth.a.liwanag@gmail.com" in text, page
+        assert "keneth.a.liwanag@gmail.com" in text, page
+        assert "CONTACT_PLACEHOLDER" not in text, page
 
 
 def test_no_credential_values_in_website_files():

@@ -164,6 +164,13 @@ def upsert_record(history_path: Path, record: dict[str, Any]) -> None:
         ),
         None,
     )
+    if (
+        existing_index is not None
+        and records[existing_index].get("upload_status") == "failed"
+        and cleaned.get("upload_status") == "uploaded"
+    ):
+        # Keep the failed attempt as history; a successful retry gets its own record.
+        existing_index = None
     if existing_index is None:
         records.append(cleaned)
     else:

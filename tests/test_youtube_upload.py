@@ -9,6 +9,7 @@ import pytest
 
 import core.youtube_publish_manager as youtube_manager
 import integrations.youtube_publisher as youtube_publisher
+from core.youtube_output import youtube_shorts_path
 import main as app
 from core.youtube_publish_manager import YouTubePublishManager
 from integrations.youtube_publisher import (
@@ -413,9 +414,10 @@ def test_uncertain_upload_is_preserved_and_not_retried(tmp_path, monkeypatch):
 
 def test_cli_upload_does_not_call_facebook(tmp_path, monkeypatch, capsys):
     _setup_cli(tmp_path, monkeypatch)
-    reel_dir = tmp_path / "output" / "part_012" / "facebook" / "reels"
-    reel_dir.mkdir(parents=True)
-    (reel_dir / "world_general_knowledge_quiz_part_012_reel.mp4").write_bytes(b"reel")
+    root = tmp_path / "output" / "youtube"
+    shorts = youtube_shorts_path(12, root)
+    shorts.parent.mkdir(parents=True)
+    shorts.write_bytes(b"reel")
     monkeypatch.setattr(youtube_publisher, "NETWORK_UPLOADS_ENABLED", True)
     monkeypatch.setattr(
         youtube_publisher.YouTubePublisher,
@@ -429,7 +431,7 @@ def test_cli_upload_does_not_call_facebook(tmp_path, monkeypatch, capsys):
     assert "FacebookPublisher" not in source
     assert "publish-content-type" not in source
     assert "META_" not in source
-    app._run_youtube_upload(SimpleNamespace(part=12))
+    app._run_youtube_upload(SimpleNamespace(part=12, output_root=str(root)))
     output = capsys.readouterr().out
     assert "VIDEO_OK" in output
     for secret in ("env-YOUTUBE_CLIENT_ID", "env-YOUTUBE_CLIENT_SECRET", "env-YOUTUBE_REFRESH_TOKEN"):
@@ -439,12 +441,15 @@ def test_cli_upload_does_not_call_facebook(tmp_path, monkeypatch, capsys):
 def test_phase271_dry_run_still_works(tmp_path, monkeypatch):
     monkeypatch.setattr(app, "OUTPUT_DIR", tmp_path / "output")
     monkeypatch.setattr(youtube_manager, "PROJECT_ROOT", tmp_path)
-    reel_dir = tmp_path / "output" / "part_012" / "facebook" / "reels"
-    reel_dir.mkdir(parents=True)
-    (reel_dir / "world_general_knowledge_quiz_part_012_reel.mp4").write_bytes(b"reel")
+    root = tmp_path / "output" / "youtube"
+    shorts = youtube_shorts_path(12, root)
+    shorts.parent.mkdir(parents=True)
+    shorts.write_bytes(b"reel")
     monkeypatch.setattr(youtube_publisher, "_run_ffprobe", _stub_preflight(VALID_PROBE))
     monkeypatch.setattr(
         youtube_publisher, "_http_request", lambda *a, **k: (_ for _ in ()).throw(AssertionError("HTTP called"))
     )
-    app._run_publish_youtube(SimpleNamespace(part=12, youtube_privacy=None, youtube_dry_run=True))
+    app._run_publish_youtube(
+        SimpleNamespace(part=12, youtube_privacy=None, youtube_dry_run=True, output_root=str(root))
+    )
     assert not (tmp_path / "data" / "youtube_publish_history.json").exists()

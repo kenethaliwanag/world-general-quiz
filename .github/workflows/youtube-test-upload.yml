@@ -84,13 +84,39 @@ jobs:
           PART="${{ inputs.part_number }}"
           PART="${PART:-0}"
           if [ "$PART" = "0" ]; then
-            PART="$(python -c 'from core.history_manager import next_part_number; print(next_part_number())')"
+            PART="$(python -c 'from core.youtube_output import next_youtube_part_number; print(next_youtube_part_number())')"
           fi
           if ! [[ "$PART" =~ ^[0-9]+$ ]] || [ "$PART" -lt 1 ]; then
             echo "Part number must be a positive integer (or 0 for the next stored Part)." >&2
             exit 1
           fi
           echo "part_number=$PART" >> "$GITHUB_OUTPUT"
+
+      # The resolver is the single source of truth for the Short path. An existing
+      # Short is reused on retry instead of being overwritten by regeneration.
+      - name: Resolve YouTube output paths
+        id: paths
+        env:
+          PART_NUMBER: ${{ steps.part.outputs.part_number }}
+        run: |
+          set -euo pipefail
+          PART="${PART_NUMBER:-0}"
+          python - "$PART" > /tmp/youtube_paths.txt <<'PY'
+          import sys
+          from pathlib import Path
+          from core.youtube_output import youtube_part_dir, youtube_shorts_path
+
+          part = int(sys.argv[1])
+          root = Path("output/youtube")
+          shorts = youtube_shorts_path(part, root)
+          print(f"part_dir={youtube_part_dir(part, root)}")
+          print(f"shorts_path={shorts}")
+          print(f"needs_generation={0 if shorts.is_file() else 1}")
+          PY
+          cat /tmp/youtube_paths.txt >> "$GITHUB_OUTPUT"
+          if grep -q '^needs_generation=0$' /tmp/youtube_paths.txt; then
+            echo "Reusing existing YouTube Short for this Part; no regeneration."
+          fi
 
       - name: Set up Kokoro TTS server
         run: |
@@ -143,14 +169,20 @@ jobs:
         run: |
           set -euo pipefail
           PART_NUMBER="${{ steps.part.outputs.part_number }}"
-          python main.py \
-            --part "$PART_NUMBER" \
-            --count "$QUESTIONS_PER_PART" \
-            --category all \
-            --difficulty all \
-            --tts \
-            --render-reels \
-            --reels-question-count 5
+          if [ "${{ steps.paths.outputs.needs_generation }}" = "1" ]; then
+            python main.py \
+              --part "$PART_NUMBER" \
+              --count "$QUESTIONS_PER_PART" \
+              --category all \
+              --difficulty all \
+              --tts \
+              --render-reels \
+              --reels-question-count 5 \
+              --output-root output/youtube \
+              --youtube-shorts
+          else
+            echo "Short already exists for Part ${PART_NUMBER}; skipping generation to avoid overwriting it."
+          fi
           # Question history is persisted by the final always-run step, even if a later
           # validation or upload step fails. Do not commit or push it here.
 
@@ -166,10 +198,10 @@ jobs:
           import subprocess
           from pathlib import Path
 
+          from core.youtube_output import youtube_shorts_path
+
           part = os.environ["PART_NUMBER"]
-          video = Path("output") / f"part_{int(part):03d}" / "facebook" / "reels" / (
-              f"world_general_knowledge_quiz_part_{int(part):03d}_reel.mp4"
-          )
+          video = youtube_shorts_path(int(part), Path("output/youtube"))
           if not video.is_file():
               raise SystemExit(f"Generated Reel not found: {video}")
           size = video.stat().st_size
@@ -212,7 +244,7 @@ jobs:
           PART_NUMBER: ${{ steps.part.outputs.part_number }}
         run: |
           set -euo pipefail
-          python main.py --publish-youtube --part "$PART_NUMBER"
+          python main.py --publish-youtube --part "$PART_NUMBER" --output-root output/youtube
 
       # The only step allowed to unlock network uploads. Privacy is forced to private in main.py.
       - name: Controlled private YouTube upload
@@ -229,7 +261,7 @@ jobs:
           PART_NUMBER: ${{ steps.part.outputs.part_number }}
         run: |
           set -euo pipefail
-          python main.py --youtube-upload --part "$PART_NUMBER"
+          python main.py --youtube-upload --part "$PART_NUMBER" --output-root output/youtube
 
       # One always-run step persists both histories, so a generated Part's used questions
       # survive a failed ffprobe/OAuth/upload step. Only these two exact paths are staged.
@@ -278,7 +310,7 @@ jobs:
         with:
           name: youtube-shorts-test-upload-${{ github.run_id }}
           path: |
-            output/**
+            output/youtube/**
             data/used_questions.json
             data/youtube_publish_history.json
           retention-days: 30
