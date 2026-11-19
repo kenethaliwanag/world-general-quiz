@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Added a manual-only GitHub Actions workflow for one controlled **private** YouTube Shorts upload of the existing 5-question Reel, with presence-only secret checks, channel-ID verification, real ffprobe validation, duplicate protection, an explicit upload unlock flag, independent YouTube history persistence and safe reconciliation of uncertain uploads. No Facebook workflow or behavior changed.
+- Added an independent, dry-run-only YouTube Shorts publisher that reuses the existing 5-question Facebook Reel. It adds ffprobe preflight, SHA-256 hashing, OAuth refresh handling, resumable `videos.insert` upload support (network disabled in this phase), separate YouTube publication history, redacted errors, CLI `--publish-youtube` support, tests and documentation. Facebook publishing and all existing video/TTS/question behaviour are unchanged.
 - Added Philippine-related content to the global knowledge bank: 20 verified Philippine facts,
   5 verified Philippine natural features (Mount Apo 2,954 m, Mayon Volcano 2,462 m, Mount
   Hamiguitan 1,637 m, the Puerto Princesa Subterranean River, Tubbataha Reefs Natural Park),

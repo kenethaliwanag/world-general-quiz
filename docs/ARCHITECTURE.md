@@ -10,6 +10,8 @@
 - `core/script_exporter.py`: exports TXT, JSON, and SRT into per-Part directories.
 - `integrations/kokoro_tts.py`: calls a local KokoroTTS HTTP endpoint.
 - `integrations/hyperframes.py`: writes a vertical HTML composition and invokes the HyperFrames CLI.
+- `integrations/youtube_publisher.py`: independent YouTube Shorts publisher foundation (Phase 2.7.1 dry-run only; reuses the Facebook Reel MP4).
+- `core/youtube_publish_manager.py`: separate YouTube publication history (`data/youtube_publish_history.json`), independent of Facebook history.
 - `data/questions.json`: hand written question bank.
 - `data/seeds/*.csv`: verified facts that the generated questions are built from.
 - `docs/PHILIPPINE_CONTENT_SOURCES.md`: provenance ledger for the Philippine-content expansion.

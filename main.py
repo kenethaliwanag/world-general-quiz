@@ -49,6 +49,11 @@ def parse_args():
     parser.add_argument("--facebook-ten-video", action="store_true", help="Alias for --render-ten-video.")
     parser.add_argument("--ten-question-count", type=int, default=FACEBOOK_TEN_VIDEO_QUESTION_COUNT, help="Requested Facebook 10-video question count.")
     parser.add_argument("--facebook-ten-question-count", type=int, default=None, help="Alias for the Facebook 10-video question count.")
+    parser.add_argument("--publish-youtube", action="store_true", help="Run the guarded YouTube Shorts dry-run for the existing 5-question Reel.")
+    parser.add_argument("--youtube-dry-run", action="store_true", help="Keep YouTube publishing in dry-run mode (already the default).")
+    parser.add_argument("--youtube-privacy", choices=["private", "unlisted"], default=None, help="Privacy status shown in the YouTube dry-run report.")
+    parser.add_argument("--youtube-check-secrets", action="store_true", help="Report only which YouTube secrets are present; never print values.")
+    parser.add_argument("--youtube-upload", action="store_true", help="Controlled private-only Reel upload for the manual workflow; requires an explicit runtime unlock flag.")
 
     return parser.parse_args()
 
@@ -432,8 +437,120 @@ def _run_publish_reel(args, dry_run: bool = True):
         raise SystemExit(1)
 
 
+def _run_publish_youtube(args):
+    """Dry-run only: validate the existing Reel, hash it and report a YouTube upload plan."""
+    from config import YOUTUBE_PUBLISH_DRY_RUN, YOUTUBE_PUBLISH_ENABLED
+    from core.youtube_publish_manager import YouTubePublishManager
+    from integrations.youtube_publisher import YouTubePublisher
+
+    if YOUTUBE_PUBLISH_ENABLED and not YOUTUBE_PUBLISH_DRY_RUN:
+        raise SystemExit(
+            "YouTube network uploads are not available in Phase 2.7.1. "
+            "Keep YOUTUBE_PUBLISH_ENABLED=false and YOUTUBE_PUBLISH_DRY_RUN=true."
+        )
+
+    part_number = args.part if args.part is not None else 1
+    if part_number < 1:
+        raise SystemExit("--part must be 1 or greater.")
+    video_path = (
+        OUTPUT_DIR / f"part_{part_number:03d}" / "facebook" / "reels"
+        / f"world_general_knowledge_quiz_part_{part_number:03d}_reel.mp4"
+    )
+    if not video_path.is_file():
+        raise SystemExit(f"Generated Facebook Reel not found: {video_path}")
+
+    publisher = YouTubePublisher(privacy_status=getattr(args, "youtube_privacy", None))
+    report = publisher.run_dry_run(part_number, video_path, YouTubePublishManager())
+
+    print("\nYouTube Shorts publication dry-run report")
+    print(f"Part: {report.part_number}")
+    print(f"Video: {report.video_path}")
+    print(f"Content hash: {report.content_hash}")
+    print(f"Privacy status: {report.privacy_status}")
+    print("Preflight: " + ("PASS" if report.preflight["success"] else "FAIL"))
+    for error in report.preflight["errors"]:
+        print(f"  - {error}")
+    print(f"Title: {report.metadata.get('snippet', {}).get('title', '')}")
+    print(f"Existing matching upload: {'yes' if report.existing_record else 'no'}")
+    print(f"Would upload: {'yes' if report.would_upload else 'no'}")
+    print("No OAuth request, YouTube API request, upload or history write was performed.")
+    if not report.success:
+        raise SystemExit(1)
+
+
+def _run_youtube_secret_check():
+    from integrations.youtube_publisher import SECRET_ENV_NAMES, check_secret_presence
+
+    missing = set(check_secret_presence())
+    for name in SECRET_ENV_NAMES:
+        print(f"{name}: {'MISSING' if name in missing else 'PRESENT'}")
+    if missing:
+        raise SystemExit("Missing required YouTube secrets: " + ", ".join(sorted(missing)))
+
+
+def _run_youtube_upload(args):
+    """Controlled private-only upload. Requires the explicit runtime unlock flag."""
+    import os
+
+    from config import YOUTUBE_PUBLISH_DRY_RUN, YOUTUBE_PUBLISH_ENABLED
+    from core.youtube_publish_manager import YouTubePublishManager
+    from integrations.youtube_publisher import NETWORK_UPLOAD_ENV_FLAG, YouTubePublisher, check_secret_presence
+
+    missing = check_secret_presence()
+    if missing:
+        raise SystemExit("Missing required YouTube secrets: " + ", ".join(missing))
+    if os.getenv(NETWORK_UPLOAD_ENV_FLAG, "").strip().lower() not in {"1", "true", "yes"}:
+        raise SystemExit(
+            f"Controlled YouTube uploads are locked. Set {NETWORK_UPLOAD_ENV_FLAG}=true in the manual workflow only."
+        )
+    if not YOUTUBE_PUBLISH_ENABLED or YOUTUBE_PUBLISH_DRY_RUN:
+        raise SystemExit(
+            "Controlled YouTube uploads require YOUTUBE_PUBLISH_ENABLED=true and YOUTUBE_PUBLISH_DRY_RUN=false."
+        )
+
+    part_number = args.part if args.part is not None else 1
+    if part_number < 1:
+        raise SystemExit("--part must be 1 or greater.")
+    video_path = (
+        OUTPUT_DIR / f"part_{part_number:03d}" / "facebook" / "reels"
+        / f"world_general_knowledge_quiz_part_{part_number:03d}_reel.mp4"
+    )
+    if not video_path.is_file():
+        raise SystemExit(f"Generated Facebook Reel not found: {video_path}")
+
+    publisher = YouTubePublisher(privacy_status="private", dry_run=False, publish_enabled=True)
+    result = publisher.publish_once(part_number, video_path, YouTubePublishManager())
+
+    print("\nYouTube Shorts controlled upload result")
+    print(f"Part: {result['part_number']}")
+    print(f"Status: {result['status']}")
+    print(f"Skipped: {'yes' if result.get('skipped') else 'no'}")
+    print(f"Privacy status: private")
+    print(f"YouTube video ID: {result.get('youtube_video_id', '') or 'none'}")
+    if result.get("channel_id"):
+        print(f"Verified channel ID: {result['channel_id']}")
+    if result.get("reason"):
+        print(f"Reason: {result['reason']}")
+    if result.get("needs_reconciliation"):
+        print("Manual reconciliation required. Do not retry this Part automatically.")
+    if not result["success"]:
+        raise SystemExit(1)
+
+
 def main():
     args = parse_args()
+
+    if args.youtube_check_secrets:
+        _run_youtube_secret_check()
+        return
+
+    if args.youtube_upload:
+        _run_youtube_upload(args)
+        return
+
+    if args.publish_youtube:
+        _run_publish_youtube(args)
+        return
 
     if args.publish_dry_run or args.publish:
         _run_publish_reel(args, dry_run=args.publish_dry_run)

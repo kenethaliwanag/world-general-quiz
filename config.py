@@ -60,6 +60,13 @@ FACEBOOK_PUBLISH_DRY_RUN = (os.getenv("FACEBOOK_PUBLISH_DRY_RUN", "true").strip(
 META_PAGE_ID = os.getenv("META_PAGE_ID", "")
 META_PAGE_ACCESS_TOKEN = os.getenv("META_PAGE_ACCESS_TOKEN", "")
 
+# YouTube Shorts publishing. Network uploads stay gated in the publisher during Phase 2.7.1.
+YOUTUBE_PUBLISH_ENABLED = (os.getenv("YOUTUBE_PUBLISH_ENABLED", "false").strip().lower() == "true")
+YOUTUBE_PUBLISH_DRY_RUN = (os.getenv("YOUTUBE_PUBLISH_DRY_RUN", "true").strip().lower() == "true")
+YOUTUBE_PRIVACY_STATUS = os.getenv("YOUTUBE_PRIVACY_STATUS", "private").strip().lower()
+YOUTUBE_CATEGORY_ID = os.getenv("YOUTUBE_CATEGORY_ID", "27").strip()
+YOUTUBE_CHANNEL_ID = os.getenv("YOUTUBE_CHANNEL_ID", "").strip()
+
 # KokoroTTS server defaults. Start a local Kokoro-compatible server first.
 KOKORO_BASE_URL = os.getenv("KOKORO_BASE_URL", "http://localhost:7860")
 KOKORO_MODEL = os.getenv("KOKORO_MODEL", "kokoro")
