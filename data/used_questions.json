@@ -474,7 +474,22 @@
     "cn-len-cap--panama-city",
     "us-len--new-jersey",
     "cmp-na-mea--mount-kosciuszko-mount-apo",
-    "cmp-country-den--croatia-ethiopia"
+    "cmp-country-den--croatia-ethiopia",
+    "cn-lan--moldova",
+    "la-scr--afrikaans",
+    "cn-lci--china",
+    "us-reg--florida",
+    "cn-ccd--guatemala",
+    "el-mass--selenium",
+    "q133",
+    "ct-reg--kathmandu",
+    "el-r-sym--ru",
+    "cn-drv--uganda",
+    "cn-cal--tanzania",
+    "ct-cou--denver",
+    "fa-fld--the-united-nations-1945",
+    "cmp-el-mass--plutonium-meitnerium",
+    "cmp-country-pop--turkey-venezuela"
   ],
-  "last_part": 30
+  "last_part": 31
 }
