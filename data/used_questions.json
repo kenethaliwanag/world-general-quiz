@@ -489,7 +489,22 @@
     "ct-cou--denver",
     "fa-fld--the-united-nations-1945",
     "cmp-el-mass--plutonium-meitnerium",
-    "cmp-country-pop--turkey-venezuela"
+    "cmp-country-pop--turkey-venezuela",
+    "cn-cur--luxembourg",
+    "na-det--mekong",
+    "el-len--sulfur",
+    "na-mea--great-barrier-reef",
+    "la-reg--mongolian",
+    "cn-lan--singapore",
+    "fa-fld--the-gregorian-calendar-1582",
+    "el-blk--tin",
+    "cn-lci--pakistan",
+    "us-are--nevada",
+    "us-cap--kentucky",
+    "el-r-sym--u",
+    "us-ord--colorado",
+    "cmp-country-den--canada-peru",
+    "cmp-el-mass--phosphorus-flerovium"
   ],
-  "last_part": 31
+  "last_part": 32
 }
