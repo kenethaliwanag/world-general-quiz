@@ -519,7 +519,22 @@
     "ct-reg--recife",
     "us-reg--louisiana",
     "cmp-el-mass--rhodium-gold",
-    "cmp-us-area--massachusetts-tennessee"
+    "cmp-us-area--massachusetts-tennessee",
+    "cn-len-cap--amman",
+    "us-ord--new-york",
+    "ct-pop--new-york-city",
+    "la-spk--indonesian",
+    "us-pop--delaware",
+    "cn-lci--palestine",
+    "ct-con--birmingham",
+    "la-scr--burmese",
+    "na-con--vinson-massif",
+    "na-cou--yangtze",
+    "cn-cap--australia",
+    "us-lci--alabama",
+    "cn-lan--slovenia",
+    "cmp-us-pop--alabama-north-dakota",
+    "cmp-country-den--bangladesh-lithuania"
   ],
-  "last_part": 33
+  "last_part": 34
 }
