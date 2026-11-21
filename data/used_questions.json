@@ -504,7 +504,22 @@
     "el-r-sym--u",
     "us-ord--colorado",
     "cmp-country-den--canada-peru",
-    "cmp-el-mass--phosphorus-flerovium"
+    "cmp-el-mass--phosphorus-flerovium",
+    "cn-dem--netherlands",
+    "la-scr--mayan",
+    "cn-cap--lithuania",
+    "fa-yr--the-burj-khalifa-2010",
+    "fa-fld--nikola-tesla-1856",
+    "na-mea--svalbard",
+    "la-spk--irish",
+    "us-abb--pennsylvania",
+    "us-are--oregon",
+    "cn-con--netherlands",
+    "us-lci--missouri",
+    "ct-reg--recife",
+    "us-reg--louisiana",
+    "cmp-el-mass--rhodium-gold",
+    "cmp-us-area--massachusetts-tennessee"
   ],
-  "last_part": 32
+  "last_part": 33
 }
