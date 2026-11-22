@@ -343,17 +343,20 @@ jobs:
           fi
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git fetch origin
-          if ! git rebase origin/main; then
-            echo "Rebase conflict: histories were not pushed. Reconcile manually." >&2
-            exit 1
-          fi
+
+          # Stage and commit the runner's history changes BEFORE rebasing.
+          # Rebasing with modified but unstaged files fails with:
+          # "cannot rebase: You have unstaged changes."
           PATHS=()
           for path in data/used_questions.json data/youtube_publish_history.json; do
             if [ -e "$path" ]; then
               PATHS+=("$path")
             fi
           done
+          if [ "${#PATHS[@]}" -eq 0 ]; then
+            echo "No history files found to persist." >&2
+            exit 1
+          fi
           git add -- "${PATHS[@]}"
           for path in $(git diff --cached --name-only); do
             case "$path" in
@@ -361,7 +364,19 @@ jobs:
               *) echo "Refusing to commit unexpected staged file: $path" >&2; exit 1 ;;
             esac
           done
+
+          if git diff --cached --quiet; then
+            echo "History files are already committed; nothing to push."
+            exit 0
+          fi
+
           git commit -m "Record YouTube 10-question publication for Part $(printf '%03d' "$PART") [skip ci]"
+          git fetch origin
+          if ! git rebase origin/main; then
+            git rebase --abort || true
+            echo "Rebase conflict: histories were not pushed. Manual reconciliation is required." >&2
+            exit 1
+          fi
           if ! git push origin HEAD:main; then
             echo "Push failed: histories were not published. Do not force push." >&2
             exit 1
