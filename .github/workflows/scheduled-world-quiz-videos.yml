@@ -192,7 +192,7 @@ jobs:
       # YouTube runs in this same job, after Facebook generation/persistence, so both
       # platforms update the shared question history sequentially on one runner.
       - name: Verify required YouTube secrets
-        if: github.event_name == 'schedule'
+        if: success()
         env:
           YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
           YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
@@ -204,7 +204,7 @@ jobs:
 
       - name: Resolve YouTube Part and output path
         id: youtube_part
-        if: github.event_name == 'schedule'
+        if: success()
         run: |
           set -euo pipefail
           PART="$(python -c 'from core.youtube_output import TEN_QUESTION_CONTENT_TYPE, next_youtube_part_number; print(next_youtube_part_number(content_type=TEN_QUESTION_CONTENT_TYPE))')"
@@ -225,7 +225,7 @@ jobs:
           PY
 
       - name: Generate one YouTube 10-question video
-        if: github.event_name == 'schedule'
+        if: success()
         env:
           PART_NUMBER: ${{ steps.youtube_part.outputs.part_number }}
         run: |
@@ -247,7 +247,7 @@ jobs:
           fi
 
       - name: Validate generated YouTube 10-question video with ffprobe
-        if: github.event_name == 'schedule'
+        if: success()
         env:
           PART_NUMBER: ${{ steps.youtube_part.outputs.part_number }}
         run: |
@@ -310,7 +310,7 @@ jobs:
 
       - name: Publish generated YouTube 10-question video (Public)
         id: youtube_publish
-        if: github.event_name == 'schedule'
+        if: success()
         env:
           YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
           YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
@@ -330,7 +330,7 @@ jobs:
             --youtube-scheduled-upload
 
       - name: Persist YouTube publication history and question history
-        if: always() && github.event_name == 'schedule'
+        if: always()
         env:
           PART_NUMBER: ${{ steps.youtube_part.outputs.part_number }}
         run: |
