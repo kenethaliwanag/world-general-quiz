@@ -604,7 +604,17 @@
     "cn-len--cameroon",
     "cn-drv--el-salvador",
     "cmp-el-num--ruthenium-nihonium",
-    "cmp-country-area--kazakhstan-united-kingdom"
+    "cmp-country-area--kazakhstan-united-kingdom",
+    "us-yr--new-mexico",
+    "us-pop--new-hampshire",
+    "cn-lci--morocco",
+    "cn-flg--vietnam",
+    "la-spk--finnish",
+    "cn-cal--romania",
+    "la-fam--serbian",
+    "na-con--zambezi",
+    "cmp-fa-yr--julius-caesar-100-the-empire-state-building-1931",
+    "cmp-el-num--carbon-neptunium"
   ],
   "last_part": 38
 }

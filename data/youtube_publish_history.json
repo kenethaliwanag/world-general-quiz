@@ -91,6 +91,19 @@
       "created_at": "2026-11-22T11:25:27.528198+00:00",
       "published_at": "2026-11-22T11:25:30.062568+00:00",
       "errors": []
+    },
+    {
+      "part_number": 4,
+      "video_file_name": "world_general_knowledge_quiz_part_004_10_questions.mp4",
+      "content_hash": "698de877924c6f9a832d8f964119988fab140c7b79be3bce1e225925b252a509",
+      "content_type": "youtube_ten_question_video",
+      "title": "World General Knowledge Quiz | Part 004 | 10 Questions",
+      "youtube_video_id": "nhV0_KEpux4",
+      "upload_status": "uploaded",
+      "privacy_status": "public",
+      "created_at": "2026-11-22T17:54:54.112248+00:00",
+      "published_at": "2026-11-22T17:54:56.315891+00:00",
+      "errors": []
     }
   ]
 }
