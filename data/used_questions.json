@@ -564,7 +564,22 @@
     "cn-cap--colombia",
     "cn-flg--chile",
     "cmp-el-num--cobalt-californium",
-    "cmp-country-den--taiwan-zambia"
+    "cmp-country-den--taiwan-zambia",
+    "cn-are--oman",
+    "ct-cou--seoul",
+    "cn-drv--oman",
+    "ct-con--seattle",
+    "na-kin--lena-river",
+    "la-spk--punjabi",
+    "cn-ccd--lebanon",
+    "el-cat--protactinium",
+    "us-lci--illinois",
+    "cn-cap--pakistan",
+    "na-con--issyk-kul",
+    "us-pop--tennessee",
+    "na-det--boreal-forest",
+    "cmp-el-num--zinc-indium",
+    "cmp-country-pop--kiribati-myanmar"
   ],
-  "last_part": 36
+  "last_part": 37
 }
