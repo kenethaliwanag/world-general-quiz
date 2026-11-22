@@ -549,7 +549,22 @@
     "cn-drv--syria",
     "cn-are--lithuania",
     "cmp-country-pop--liechtenstein-madagascar",
-    "cmp-la-spk--portuguese-estonian"
+    "cmp-la-spk--portuguese-estonian",
+    "el-pro--vanadium",
+    "us-len--washington",
+    "fa-cou--clyde-tombaugh-1930",
+    "na-con--yangtze",
+    "cn-iso--georgia",
+    "cn-len-cap--damascus",
+    "us-pop--wyoming",
+    "q124",
+    "la-scr--samoan",
+    "cn-dem--sudan",
+    "ct-con--oslo",
+    "cn-cap--colombia",
+    "cn-flg--chile",
+    "cmp-el-num--cobalt-californium",
+    "cmp-country-den--taiwan-zambia"
   ],
-  "last_part": 35
+  "last_part": 36
 }
