@@ -54,6 +54,30 @@
       "created_at": "2026-11-19T12:44:13.940193+00:00",
       "published_at": "2026-11-19T12:44:15.872040+00:00",
       "errors": []
+    },
+    {
+      "part_number": 2,
+      "content_type": "youtube_ten_question_video",
+      "title": "World General Knowledge Quiz | Part 002 | 10 Questions",
+      "youtube_video_id": "ogJzWZtrmkk",
+      "upload_status": "uploaded",
+      "privacy_status": "public",
+      "created_at": "2026-11-21T17:12:00+00:00",
+      "published_at": "2026-11-21T17:12:00+00:00",
+      "errors": [],
+      "recovered_from_workflow_run": 39
+    },
+    {
+      "part_number": 2,
+      "content_type": "youtube_ten_question_video",
+      "title": "World General Knowledge Quiz | Part 002 | 10 Questions",
+      "youtube_video_id": "ReFENvomj1E",
+      "upload_status": "uploaded",
+      "privacy_status": "public",
+      "created_at": "2026-11-21T21:25:00+00:00",
+      "published_at": "2026-11-21T21:25:00+00:00",
+      "errors": [],
+      "recovered_from_workflow_run": 40
     }
   ]
 }
