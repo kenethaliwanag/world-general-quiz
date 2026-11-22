@@ -579,7 +579,17 @@
     "us-pop--tennessee",
     "na-det--boreal-forest",
     "cmp-el-num--zinc-indium",
-    "cmp-country-pop--kiribati-myanmar"
+    "cmp-country-pop--kiribati-myanmar",
+    "ct-lan--guadalajara",
+    "us-cap--new-hampshire",
+    "us-ord--rhode-island",
+    "cn-lci--cameroon",
+    "cn-drv--south-africa",
+    "cn-cur--tunisia",
+    "us-are--north-carolina",
+    "us-yr--idaho",
+    "cmp-el-mass--chlorine-palladium",
+    "cmp-ct-pop--kinshasa-johannesburg"
   ],
   "last_part": 37
 }
