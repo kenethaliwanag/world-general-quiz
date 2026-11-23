@@ -639,7 +639,22 @@
     "cn-len--uzbekistan",
     "cn-iso--brazil",
     "cmp-us-area--connecticut-wyoming",
-    "cmp-el-mass--krypton-thallium"
+    "cmp-el-mass--krypton-thallium",
+    "q136",
+    "na-mea--dead-sea",
+    "cn-dem--lesotho",
+    "cn-cur--cyprus",
+    "ct-reg--rome",
+    "ct-cou--seville",
+    "us-ord--west-virginia",
+    "cn-con--brazil",
+    "cn-pop--norway",
+    "fa-cou--roald-amundsen-1872",
+    "us-cap--west-virginia",
+    "cn-flg--germany",
+    "us-yr--new-hampshire",
+    "cmp-el-num--calcium-neptunium",
+    "cmp-la-spk--serbian-uzbek"
   ],
-  "last_part": 39
+  "last_part": 40
 }
