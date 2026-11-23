@@ -679,7 +679,17 @@
     "q132",
     "la-scr--scottish-gaelic",
     "cmp-country-den--china-france",
-    "cmp-ct-pop--dallas-rome"
+    "cmp-ct-pop--dallas-rome",
+    "us-cap--massachusetts",
+    "us-yr--wyoming",
+    "el-mass--palladium",
+    "na-con--caspian-sea",
+    "us-lci--pennsylvania",
+    "ct-lan--rio-de-janeiro",
+    "el-sym--silver",
+    "na-cou--antarctic",
+    "cmp-ct-pop--chicago-addis-ababa",
+    "cmp-fa-yr--the-transcontinental-railroad-1869-johann-galle-1846"
   ],
   "last_part": 41
 }
