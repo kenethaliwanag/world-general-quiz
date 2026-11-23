@@ -664,7 +664,22 @@
     "cn-pop--tunisia",
     "el-sym--rhodium",
     "cmp-ct-pop--buenos-aires-chennai",
-    "cmp-la-spk--kazakh-irish"
+    "cmp-la-spk--kazakh-irish",
+    "el-mass--phosphorus",
+    "el-per--dubnium",
+    "el-grp--nitrogen",
+    "ct-reg--bengaluru",
+    "cn-lan--canada",
+    "na-con--kalahari",
+    "us-reg--iowa",
+    "cn-lci--ivory-coast",
+    "na-mea--chimborazo",
+    "us-lci--florida",
+    "fa-yr--gregor-mendel-1822",
+    "q132",
+    "la-scr--scottish-gaelic",
+    "cmp-country-den--china-france",
+    "cmp-ct-pop--dallas-rome"
   ],
-  "last_part": 40
+  "last_part": 41
 }
