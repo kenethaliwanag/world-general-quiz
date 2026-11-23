@@ -117,6 +117,19 @@
       "created_at": "2026-11-22T21:42:48.688962+00:00",
       "published_at": "2026-11-22T21:42:50.532865+00:00",
       "errors": []
+    },
+    {
+      "part_number": 6,
+      "video_file_name": "world_general_knowledge_quiz_part_006_10_questions.mp4",
+      "content_hash": "fee85f01d4a05d8109a718e014611fe88998599c4443a446b015a1a3d502c572",
+      "content_type": "youtube_ten_question_video",
+      "title": "World General Knowledge Quiz | Part 006 | 10 Questions",
+      "youtube_video_id": "c7ixEoPJW9w",
+      "upload_status": "uploaded",
+      "privacy_status": "public",
+      "created_at": "2026-11-23T10:34:57.954722+00:00",
+      "published_at": "2026-11-23T10:35:00.396304+00:00",
+      "errors": []
     }
   ]
 }

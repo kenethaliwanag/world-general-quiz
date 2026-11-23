@@ -654,7 +654,17 @@
     "cn-flg--germany",
     "us-yr--new-hampshire",
     "cmp-el-num--calcium-neptunium",
-    "cmp-la-spk--serbian-uzbek"
+    "cmp-la-spk--serbian-uzbek",
+    "cn-len-cap--jakarta",
+    "us-abb--new-york",
+    "us-len--virginia",
+    "us-yr--south-dakota",
+    "el-per--germanium",
+    "cn-flg--liechtenstein",
+    "cn-pop--tunisia",
+    "el-sym--rhodium",
+    "cmp-ct-pop--buenos-aires-chennai",
+    "cmp-la-spk--kazakh-irish"
   ],
   "last_part": 40
 }
