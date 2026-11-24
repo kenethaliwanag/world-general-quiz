@@ -689,7 +689,22 @@
     "el-sym--silver",
     "na-cou--antarctic",
     "cmp-ct-pop--chicago-addis-ababa",
-    "cmp-fa-yr--the-transcontinental-railroad-1869-johann-galle-1846"
+    "cmp-fa-yr--the-transcontinental-railroad-1869-johann-galle-1846",
+    "fa-fld--the-first-human-spaceflight-1961",
+    "cn-lci--canada",
+    "el-len--sodium",
+    "la-reg--hungarian",
+    "cn-cap--cameroon",
+    "cn-len-cap--nicosia",
+    "us-cap--vermont",
+    "ct-cou--venice",
+    "la-scr--dutch",
+    "el-mass--silicon",
+    "q147",
+    "el-blk--seaborgium",
+    "la-fam--polish",
+    "cmp-country-area--antigua-and-barbuda-lebanon",
+    "cmp-la-spk--ukrainian-latin"
   ],
-  "last_part": 41
+  "last_part": 42
 }
