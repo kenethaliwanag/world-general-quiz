@@ -704,7 +704,17 @@
     "el-blk--seaborgium",
     "la-fam--polish",
     "cmp-country-area--antigua-and-barbuda-lebanon",
-    "cmp-la-spk--ukrainian-latin"
+    "cmp-la-spk--ukrainian-latin",
+    "us-are--mississippi",
+    "ct-lan--yangon",
+    "el-r-sym--fl",
+    "us-cap--georgia",
+    "na-kin--gobi",
+    "cn-len-cap--abuja",
+    "na-con--congo-river",
+    "el-cat--strontium",
+    "cmp-el-mass--manganese-neodymium",
+    "cmp-us-area--kentucky-nevada"
   ],
   "last_part": 42
 }
