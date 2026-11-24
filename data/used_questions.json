@@ -729,7 +729,17 @@
     "us-len--indiana",
     "la-reg--serbian",
     "cmp-us-area--colorado-kentucky",
-    "cmp-country-area--albania-georgia"
+    "cmp-country-area--albania-georgia",
+    "na-mea--mayon-volcano",
+    "cn-cap--seychelles",
+    "el-sym--chlorine",
+    "us-cap--maryland",
+    "us-yr--new-jersey",
+    "ct-con--reykjavik",
+    "us-ord--illinois",
+    "us-lci--nebraska",
+    "cmp-fa-yr--the-olympics-776-nelson-mandela-1993",
+    "cmp-la-spk--spanish-cherokee"
   ],
   "last_part": 43
 }
