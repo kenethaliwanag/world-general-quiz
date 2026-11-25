@@ -754,7 +754,17 @@
     "el-sym--boron",
     "la-scr--urdu",
     "cmp-country-area--ethiopia-marshall-islands",
-    "cmp-la-spk--hungarian-tagalog"
+    "cmp-la-spk--hungarian-tagalog",
+    "us-len--mississippi",
+    "cn-len-cap--asmara",
+    "cn-lan--afghanistan",
+    "cn-len--australia",
+    "cn-cap--algeria",
+    "cn-lci--united-arab-emirates",
+    "fa-yr--florence-nightingale-1820",
+    "la-spk--kazakh",
+    "cmp-us-area--alaska-arkansas",
+    "cmp-country-pop--cameroon-qatar"
   ],
   "last_part": 44
 }
