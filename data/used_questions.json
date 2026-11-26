@@ -854,7 +854,17 @@
     "la-reg--yoruba",
     "el-per--bismuth",
     "cmp-country-pop--andorra-venezuela",
-    "cmp-country-area--australia-spain"
+    "cmp-country-area--australia-spain",
+    "cn-iso--bahamas",
+    "cn-dem--botswana",
+    "la-spk--afrikaans",
+    "cn-ccd--gambia",
+    "us-pop--vermont",
+    "ct-lan--denver",
+    "cn-drv--guyana",
+    "el-per--actinium",
+    "cmp-country-area--canada-syria",
+    "cmp-us-pop--rhode-island-vermont"
   ],
   "last_part": 48
 }
