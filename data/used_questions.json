@@ -829,7 +829,17 @@
     "cn-iso--kuwait",
     "us-cap--hawaii",
     "cmp-country-den--brunei-costa-rica",
-    "cmp-country-area--bolivia-cameroon"
+    "cmp-country-area--bolivia-cameroon",
+    "cn-drv--thailand",
+    "na-det--great-slave-lake",
+    "us-cap--new-mexico",
+    "us-lci--virginia",
+    "ct-lan--seville",
+    "cn-con--cameroon",
+    "cn-flg--mongolia",
+    "us-are--new-hampshire",
+    "cmp-na-mea--mount-kosciuszko-vinson-massif",
+    "cmp-us-pop--pennsylvania-tennessee"
   ],
   "last_part": 47
 }
