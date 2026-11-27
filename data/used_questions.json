@@ -904,7 +904,17 @@
     "cn-cur--algeria",
     "ct-pop--seattle",
     "cmp-us-area--georgia-mississippi",
-    "cmp-la-spk--thai-samoan"
+    "cmp-la-spk--thai-samoan",
+    "us-cap--rhode-island",
+    "cn-are--chile",
+    "el-pro--thorium",
+    "cn-lci--kazakhstan",
+    "fa-fld--taj-mahal-1653",
+    "fa-cou--genghis-khan-1162",
+    "cn-lan--ghana",
+    "us-abb--california",
+    "cmp-country-area--kuwait-united-arab-emirates",
+    "cmp-el-num--titanium-lead"
   ],
   "last_part": 50
 }
