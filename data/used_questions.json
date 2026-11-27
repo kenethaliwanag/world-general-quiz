@@ -879,7 +879,17 @@
     "cn-lan--botswana",
     "cn-pop--egypt",
     "cmp-us-pop--nebraska-wyoming",
-    "cmp-us-area--idaho-missouri"
+    "cmp-us-area--idaho-missouri",
+    "us-yr--nevada",
+    "cn-con--gambia",
+    "fa-cou--helen-keller-1880",
+    "na-mea--mount-kosciuszko",
+    "cn-lci--turkey",
+    "el-sym--fluorine",
+    "el-len--lawrencium",
+    "la-fam--javanese",
+    "cmp-ct-pop--algiers-cali",
+    "cmp-el-num--tin-rutherfordium"
   ],
   "last_part": 49
 }
