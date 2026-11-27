@@ -914,7 +914,22 @@
     "cn-lan--ghana",
     "us-abb--california",
     "cmp-country-area--kuwait-united-arab-emirates",
-    "cmp-el-num--titanium-lead"
+    "cmp-el-num--titanium-lead",
+    "cn-lci--nigeria",
+    "us-ord--nevada",
+    "fa-cou--tomb-of-tutankhamun-1922",
+    "us-abb--illinois",
+    "us-lci--nevada",
+    "el-r-sym--nd",
+    "us-yr--delaware",
+    "na-cou--black-sea",
+    "el-mass--praseodymium",
+    "cn-drv--montenegro",
+    "el-blk--selenium",
+    "el-grp--flerovium",
+    "us-reg--indiana",
+    "cmp-ct-pop--pune-stockholm",
+    "cmp-el-num--terbium-dubnium"
   ],
-  "last_part": 50
+  "last_part": 51
 }
