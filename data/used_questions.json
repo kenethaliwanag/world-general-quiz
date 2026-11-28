@@ -929,7 +929,17 @@
     "el-grp--flerovium",
     "us-reg--indiana",
     "cmp-ct-pop--pune-stockholm",
-    "cmp-el-num--terbium-dubnium"
+    "cmp-el-num--terbium-dubnium",
+    "el-sym--lead",
+    "na-mea--arctic-ocean",
+    "cn-lan--new-zealand",
+    "ct-reg--medellin",
+    "el-per--fluorine",
+    "us-cap--illinois",
+    "la-spk--nahuatl",
+    "us-ord--california",
+    "cmp-el-mass--rhodium-neptunium",
+    "cmp-ct-pop--venice-amsterdam"
   ],
   "last_part": 51
 }
